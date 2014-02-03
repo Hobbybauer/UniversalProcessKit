@@ -1,3 +1,3 @@
-die heruntegeladene Datei zu "UPK.zip" umbenennen und in den Modsordner speichern
+die heruntegeladene Datei entpacken und die Skripte in "UPK.zip" neu packen und in den Modsordner speichern
 
-name the downloaded zip "UPK.zip" and place it in your mods folder
+unpack the downloaded zip and zip the scripts to "UPK.zip" and place it in your mods folder
