@@ -23,9 +23,11 @@ end
 
 function UPK_TipTrigger:load(id, parent)
 	if not UPK_TipTrigger:superClass().load(self, id, parent) then
-		print('  [UniversalProcessKit] Error: loading TipTrigger failed')
+		print('Error: loading TipTrigger failed')
 		return false
 	end
+	
+	print('TipTrigger loaded')
 	
 	table.insert(self.triggerIds,id)
 	addTrigger(id, "triggerCallback", self)
@@ -117,6 +119,7 @@ function UPK_TipTrigger:getNoAllowedText(trailer)
 end
 
 function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
+	print('UPK_TipTrigger:triggerCallback')
 	if self.isEnabled then
 		if onEnter then
 			local trailer = g_currentMission.objectToTrailer[otherShapeId]

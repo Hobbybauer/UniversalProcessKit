@@ -192,6 +192,9 @@ function UniversalProcessKit:load(id,parent)
 	if self.capacity==nil and self.parent~=nil then
 		self.capacity=self.parent.capacity
 	end
+	if self.capacity==nil then
+		self.capacity=math.huge
+	end
 	
 	-- self.capacity = tonumber(Utils.getNoNil(getUserAttribute(self.nodeId, "capacity"),math.huge))
 	-- self.capacities not quite implemented yet
@@ -303,13 +306,20 @@ function UniversalProcessKit:findChildren(id,numKids)
 			local scriptCallback = getUserAttribute(childId, "scriptCallback")
 			if scriptCallback==nil then
 				local type = getUserAttribute(childId, "type")
-				local capacity = getUserAttribute(childId, "capacity")
 				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
+					childName=Utils.getNoNil(getName(childId),"")
+					if childName~="" then
+						childName="\""..childName.."\" "
+					end
+					print('found module '..childName..'of type '..tostring(type)..' and id '..tostring(childId))
 					self.kids[numKids]=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
 					if self.kids[numKids]~=nil then
 						self.kids[numKids]:load(childId,self)
 						self.kids[numKids]:register(true)
 						numKids=numKids+1
+						print('.. loaded module '..childName..'with id '..tostring(childId)..' successfully')
+					else
+						print('.. loading module '..childName..'with id '..tostring(childId)..' failed')
 					end
 				else
 					self:findChildren(childId,numKids)
@@ -363,7 +373,7 @@ function UniversalProcessKit:getFillLevel(fillType)
 	return nil
 end
 
-function UniversalProcessKit:setFillLevel(fillLevel, fillType, raw)
+function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 	fillType=fillType or self.fillType
 	if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
 		local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)

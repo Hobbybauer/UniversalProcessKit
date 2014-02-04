@@ -50,26 +50,26 @@ function UPK_Mover:load(id,parent)
 	
 	-- move
 	self.startMovingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "startMovingAt")), 0)
-	self.stopMovingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopMovingAt")), self.capacity or 0)
+	self.stopMovingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopMovingAt")), self.capacity)
 	local posMin = getVectorFromUserAttribute(self.nodeId, "lowPosition", "0 0 0")
 	self.posMin = self.pos + posMin
-	local posMax = getVectorFromUserAttribute(self.nodeId, "highPosition", self.posMin)
+	local posMax = getVectorFromUserAttribute(self.nodeId, "highPosition", posMin)
 	self.posMax = self.pos + posMax
-	local posLower = getVectorFromUserAttribute(self.nodeId, "lowerPosition", self.posMin)
-	local posHigher = getVectorFromUserAttribute(self.nodeId, "higherPosition", self.posMax)
+	local posLower = getVectorFromUserAttribute(self.nodeId, "lowerPosition", posMin)
+	local posHigher = getVectorFromUserAttribute(self.nodeId, "higherPosition", posMax)
 	self.posLower = self.pos + posLower
 	self.posHigher = self.pos + posHigher
 	self.moveType = Utils.getNoNil(getUserAttribute(id, "moveType"), "linear")
 	
 	-- rotation
 	self.startRotatingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "startRotatingAt")), 0)
-	self.stopRotatingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopRotatingAt")), self.capacity or 0)
+	self.stopRotatingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopRotatingAt")), self.capacity)
 	local rpsMin = getVectorFromUserAttribute(self.nodeId, "lowRotationsPerSecond", "0 0 0")
 	self.rpsMin = rpsMin*(2*math.pi)
-	local rpsMax = getVectorFromUserAttribute(self.nodeId, "highRotationsPerSecond", self.rpsMin)
+	local rpsMax = getVectorFromUserAttribute(self.nodeId, "highRotationsPerSecond", rpsMin)
 	self.rpsMax = rpsMax*(2*math.pi)
-	local rpsLower = getVectorFromUserAttribute(self.nodeId, "lowerRotationsPerSecond", self.rpsMin)
-	local rpsHigher = getVectorFromUserAttribute(self.nodeId, "higherRotationsPerSecond", self.rpsMax)
+	local rpsLower = getVectorFromUserAttribute(self.nodeId, "lowerRotationsPerSecond", rpsMin)
+	local rpsHigher = getVectorFromUserAttribute(self.nodeId, "higherRotationsPerSecond", rpsMax)
 	self.rpsLower = rpsLower*(2*math.pi)
 	self.rpsHigher = rpsHigher*(2*math.pi)
 	self.rotationType = Utils.getNoNil(getUserAttribute(id, "rotationType"), "linear")
@@ -92,17 +92,17 @@ function UPK_Mover:update(dt)
 	if self.nodeId~=0 then
 		local newFillLevel
 		if self.fillTypeChoiceMax then
-			newFillLevel= self.fillLevels(self.fillTypes):max() or 0
+			newFillLevel= self.fillLevels(self.fillTypes):max()
 		else
-			newFillLevel= self.fillLevels(self.fillTypes):min() or 0
+			newFillLevel= self.fillLevels(self.fillTypes):min()
 		end
-		newFillLevel=math.min(math.max(newFillLevel,0),self.capacity or 0)
+		newFillLevel=math.min(math.max(newFillLevel,0),self.capacity)
 
 		-- move only if sth changed
-		if newFillLevel~=self.oldFillLevel then
-			if newFillLevel<(self.startMovingAt or 0) then
+		if newFillLevel~=nil and newFillLevel~=self.oldFillLevel then
+			if newFillLevel<(self.startMovingAt) then
 				self.pos=self.posLower
-			elseif newFillLevel>(self.stopMovingAt or 0) then
+			elseif newFillLevel>(self.stopMovingAt) then
 				self.pos=self.posHigher
 			else
 				local ratio=self:getRatio("pos",self.moveType,newFillLevel,self.startMovingAt,self.stopMovingAt)
