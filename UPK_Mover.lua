@@ -40,7 +40,7 @@ end
 
 function UPK_Mover:load(id,parent)
 	if not UPK_Mover:superClass().load(self, id, parent) then
-		print('  [UniversalProcessKit] Error: loading Mover failed')
+		print('Error: loading Mover failed',true)
 		return false
 	end
 	
@@ -79,6 +79,7 @@ function UPK_Mover:load(id,parent)
 	self.stopVisibilityAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopVisibilityAt")), self.capacity)
 	self.visibilityType=Utils.getNoNil(getUserAttribute(id, "visibilityType"), "show")=="show"
 	
+	print('loaded Mover successfully')
     return true
 end
 
@@ -100,7 +101,7 @@ function UPK_Mover:update(dt)
 
 		-- move only if sth changed
 		if newFillLevel~=nil and newFillLevel~=self.oldFillLevel then
-			if newFillLevel<(self.startMovingAt) then
+			if newFillLevel<=(self.startMovingAt) then -- startMovingAt included in posLower
 				self.pos=self.posLower
 			elseif newFillLevel>(self.stopMovingAt) then
 				self.pos=self.posHigher
@@ -111,7 +112,7 @@ function UPK_Mover:update(dt)
 			setTranslation(self.nodeId,unpack(self.pos))
 		
 			-- rotation
-			if newFillLevel<self.startRotatingAt then
+			if newFillLevel<=self.startRotatingAt then -- startRotatingAt included in rpsLower
 				self.rotStep=self.rpsLower
 			elseif newFillLevel>self.stopRotatingAt then
 				self.rotStep=self.rpsHigher
@@ -121,7 +122,7 @@ function UPK_Mover:update(dt)
 			end
 		
 			-- visibility
-			setVisibility(self.nodeId,self.visibilityType==(newFillLevel>=self.startVisibilityAt and newFillLevel<=self.stopVisibilityAt))
+			setVisibility(self.nodeId,self.visibilityType==(newFillLevel>self.startVisibilityAt and newFillLevel<=self.stopVisibilityAt))
 		end
 
 		-- rotate all the time

@@ -5,7 +5,6 @@ UniversalProcessKitSyncEvent_mt = Class(UniversalProcessKitSyncEvent, Event)
 
 function UniversalProcessKitSyncEvent:emptyNew()
 	local self = Event:new(UniversalProcessKitSyncEvent_mt)
-	local id=UniversalProcessKitSyncEvent.eventId
 	return self
 end
 
@@ -28,7 +27,7 @@ function UniversalProcessKitSyncEvent:run(connection)
 				g_server:finishRegisterObject(connection, object)
 				object:raiseDirtyFlags(object.syncDirtyFlag)
 			else
-				print("  [UPK] Warning: no network object found to synchronize")
+				print("Warning: no network object found to synchronize",true)
 			end
 		end
 	end

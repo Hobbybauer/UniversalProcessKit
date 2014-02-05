@@ -19,8 +19,8 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 	self.i18nNameSpace=nil
 
 	self.syncDirtyFlag = self:getNextDirtyFlag()
-	self.upkDirtyFlag = self:getNextDirtyFlag()
-	self.enableDirtyFlag = self:getNextDirtyFlag()
+	self.fillLevelDirtyFlag = self:getNextDirtyFlag()
+	self.enabledDirtyFlag = self:getNextDirtyFlag()
 	self.maphotspotDirtyFlag = self:getNextDirtyFlag()
 
 	-- lets make things easy dealing with fillLevels, parents and stuff
@@ -256,32 +256,63 @@ end
 function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	UniversalProcessKit:superClass().readUpdateStream(self, streamId, timestamp, connection)
 	if connection:getIsServer() then
-		nrFillTypesToSync=streamReadInt8(streamId)
-		for i=1,nrFillTypesToSync do
-			fillType=streamReadInt8(streamId)
-			fillLevel=streamReadFloat32(streamId)
-			self.fillLevels[fillType]=fillLevel
+		local dirtyMask=streamReadInt8(streamId)
+		local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
+		
+		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
+			nrFillTypesToSync=streamReadInt8(streamId)
+			for i=1,nrFillTypesToSync do
+				fillType=streamReadInt8(streamId)
+				fillLevel=streamReadFloat32(streamId)
+				self.fillLevels[fillType]=fillLevel
+			end
 		end
+		
+		if bitAND(dirtyMask,self.enabledDirtyFlag)~=0 or syncall then
+			local isEnabled=streamReadBool(streamId)
+			self:setEnabled(isEnabled,true)
+		end
+		
+		if bitAND(dirtyMask,self.maphotspotDirtyFlag)~=0 or syncall then
+			local showMapHostspot=streamReadBool(streamId)
+			self:showMapHotspot(showMapHostspot,true)
+		end
+
 	end
 end
 
 function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 	UniversalProcessKit:superClass().writeUpdateStream(self, streamId, connection, dirtyMask)
 	if not connection:getIsServer() then
-		local nrFillTypesToSync=0
-		for k,v in pairs(self.fillTypesToSync) do
-			if v then
-				nrFillTypesToSync=nrFillTypesToSync+1
+		streamWriteInt8(streamId,dirtyMask) -- max 8 dirtyFlags, 4 already used by default
+		local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
+		
+		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
+			local nrFillTypesToSync=0
+			for k,v in pairs(self.fillTypesToSync) do
+				if v then
+					nrFillTypesToSync=nrFillTypesToSync+1
+				end
 			end
-		end
-		streamWriteInt8(streamId,nrFillTypesToSync)
-		for k,v in pairs(self.fillTypesToSync) do
-			if v then
-				streamWriteInt8(streamId,k)
-				streamWriteFloat32(streamId,self.fillLevels[k])
+			streamWriteInt8(streamId,nrFillTypesToSync) -- max 256 fillTypes
+			for k,v in pairs(self.fillTypesToSync) do
+				if v then
+					streamWriteInt8(streamId,k)
+					streamWriteFloat32(streamId,self.fillLevels[k])
+				end
 			end
+			self.fillTypesToSync={}
 		end
-		self.fillTypesToSync={}
+		
+		if bitAND(dirtyMask,self.enabledDirtyFlag)~=0 or syncall then
+			streamWriteBool(streamId,self.isEnabled)
+		end
+		
+		if bitAND(dirtyMask,self.maphotspotDirtyFlag)~=0 or syncall then
+			streamWriteBool(streamId,self.mapHotspot~=nil)
+		end
+		
+		-- you know how to sync your modules by now, right?
 	end
 end
 
@@ -317,9 +348,6 @@ function UniversalProcessKit:findChildren(id,numKids)
 						self.kids[numKids]:load(childId,self)
 						self.kids[numKids]:register(true)
 						numKids=numKids+1
-						print('.. loaded module '..childName..'with id '..tostring(childId)..' successfully')
-					else
-						print('.. loading module '..childName..'with id '..tostring(childId)..' failed')
 					end
 				else
 					self:findChildren(childId,numKids)
@@ -379,7 +407,7 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 		local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
 		self.fillLevels[fillType]=fillLevel
 		self.fillTypesToSync[fillType]=true
-		self:raiseDirtyFlags(self.upkDirtyFlag)
+		self:raiseDirtyFlags(self.fillLevelDirtyFlag)
 		return newFillLevel-fillLevel
 	elseif fillType==UniversalProcessKit.FILLTYPE_MONEY then
 		-- can't set money
@@ -406,8 +434,10 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 end
 
 -- show or hide an icon on the pda map
-function UniversalProcessKit:showMapHotspot(on)
-	self:raiseDirtyFlags(self.maphotspotDirtyFlag)
+function UniversalProcessKit:showMapHotspot(on,alreadySent)
+	if alreadySent==nil or not alreadySent then
+		self:raiseDirtyFlags(self.maphotspotDirtyFlag)
+	end
 	if on==true and self.mapHotspot == nil then
 		local iconSize = g_currentMission.missionPDA.pdaMapWidth / 15
 		local x,_,z = unpack(self.pos)
@@ -416,11 +446,19 @@ function UniversalProcessKit:showMapHotspot(on)
 	if on==false and self.mapHotspot ~= nil then
 		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
 	end
+	for _,v in pairs(self.kids) do
+		v:showMapHotspot(on,alreadySent)
+	end
 end
 
-function UniversalProcessKit:setEnable(isEnable)
-	self.isEnabled=isEnable
-	self:raiseDirtyFlags(self.enableDirtyFlag)
+function UniversalProcessKit:setEnable(isEnabled,alreadySent)
+	self.isEnabled=isEnabled
+	if alreadySent==nil or not alreadySent then
+		self:raiseDirtyFlags(self.enabledDirtyFlag)
+	end
+	for _,v in pairs(self.kids) do
+		v:setEnable(isEnabled,alreadySent)
+	end
 end
 
 function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)

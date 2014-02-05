@@ -23,11 +23,9 @@ end
 
 function UPK_TipTrigger:load(id, parent)
 	if not UPK_TipTrigger:superClass().load(self, id, parent) then
-		print('Error: loading TipTrigger failed')
+		print('Error: loading TipTrigger failed',true)
 		return false
 	end
-	
-	print('TipTrigger loaded')
 	
 	table.insert(self.triggerIds,id)
 	addTrigger(id, "triggerCallback", self)
@@ -50,6 +48,7 @@ function UPK_TipTrigger:load(id, parent)
 	self.capacityReachedText = g_i18n:getText(Utils.getNoNil(getUserAttribute(self.nodeId, "CapacityReachedText"), "capacityReached"))
 	self.playerInRange = false
 
+	print('loaded TipTrigger successfully')
 	return true
 end
 

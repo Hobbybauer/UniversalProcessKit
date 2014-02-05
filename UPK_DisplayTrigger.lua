@@ -16,7 +16,7 @@ end
 
 function UPK_DisplayTrigger:load(id, parent)
 	if not UPK_DisplayTrigger:superClass().load(self, id, parent) then
-		print('  [UniversalProcessKit] Error: loading DisplayTrigger failed')
+		print('Error: loading DisplayTrigger failed',true)
 		return false
 	end
 	
@@ -36,6 +36,7 @@ function UPK_DisplayTrigger:load(id, parent)
 		print(tostring(self.id).." nodeId: "..tostring(self.nodeId)..", k: "..tostring(k)..", v: "..tostring(v))
 	end
 
+	print('loaded DisplayTrigger successfully')
 	return true
 end
 

@@ -25,12 +25,13 @@ end
 
 function UPK_Base:load(id)
 	if not UPK_Base:superClass().load(self, id, nil) then
-		print('  [UniversalProcessKit] Error: loading Base failed')
+		print('Error: loading Base failed',true)
 		return false
 	end
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end
+	print('loaded Base successfully')
 	return true
 end
 

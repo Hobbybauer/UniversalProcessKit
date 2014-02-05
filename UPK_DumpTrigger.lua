@@ -15,7 +15,7 @@ end
 
 function UPK_DumpTrigger:load(id, parent)
 	if not UPK_DumpTrigger:superClass().load(self, id, parent) then
-		print('  [UniversalProcessKit] Error: loading DumpTrigger failed')
+		print('Error: loading DumpTrigger failed',true)
 		return false
 	end
 
@@ -29,6 +29,7 @@ function UPK_DumpTrigger:load(id, parent)
 	self.resetFillLevelIfNeeded=self.setFillType
 	self.addFillLevel=self.setFillLevel
 	
+	print('loaded DumpTrigger successfully')
 	return true
 end
 

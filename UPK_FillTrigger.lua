@@ -22,7 +22,7 @@ end
 
 function UPK_FillTrigger:load(id,parent)
 	if not UPK_FillTrigger:superClass().load(self, id, parent) then
-		print('Error: loading FillTrigger failed')
+		print('Error: loading FillTrigger failed',true)
 		return false
 	end
  
@@ -120,6 +120,8 @@ function UPK_FillTrigger:load(id,parent)
       link(id, self.siloFillSound)
       setVisibility(self.siloFillSound, false)
   end
+  
+  print('loaded FillTrigger successfully')
   return true
 end
 

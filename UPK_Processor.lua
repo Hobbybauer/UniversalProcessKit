@@ -32,7 +32,7 @@ end
 
 function UPK_Processor:load(id, parent)
 	if not UPK_Processor:superClass().load(self, id, parent) then
-		print('  [UniversalProcessKit] Error: loading Processor failed')
+		print('Error: loading Processor failed',true)
 		return false
 	end
 
@@ -99,7 +99,7 @@ function UPK_Processor:load(id, parent)
 		end
 	end
 	
-
+	print('loaded Processor successfully')
 	return true
 end
 
