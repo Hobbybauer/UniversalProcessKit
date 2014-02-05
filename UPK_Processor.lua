@@ -43,6 +43,7 @@ function UPK_Processor:load(id, parent)
 	end
 	self.productsPerMinute = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerMinute")),0)
 	self.productsPerHour = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerHour")),0)
+	self.productsPerDay = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerDay")),0)
 	self.onlyWholeProducts = tobool(getUserAttribute(id, "onlyWholeProducts"))
 	self.bufferedProducts = 0
 	
