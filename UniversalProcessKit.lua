@@ -4,6 +4,8 @@ _g.UniversalProcessKit = {}
 local UniversalProcessKit_mt = Class(UniversalProcessKit, Object)
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit")
 
+UniversalProcessKit.modulesToSync={}
+
 function UniversalProcessKit:new(isServer, isClient, customMt)
 	local self = Object:new(isServer, isClient, customMt or UniversalProcessKit_mt)
 	registerObjectClassName(self, "UniversalProcessKit")
@@ -253,6 +255,54 @@ function UniversalProcessKit:load(id,parent)
 	return true
 end
 
+function UniversalProcessKit:readStream(streamId, connection)
+	UniversalProcessKit:superClass().readStream(self, streamId, connection)
+	if connection:getIsServer() then
+		local serverId=streamReadInt32(streamId)
+		g_client:finishRegisterObject(self, serverId)
+		local nrFillLevelsToSync=streamReadInt8(streamId)
+		for i=1,nrFillLevelsToSync do
+			fillType=streamReadInt8(streamId)
+			fillLevel=streamReadFloat32(streamId)
+			self.fillLevels[fillType]=fillLevel
+		end
+		local isEnabled=streamReadBool(streamId)
+		self:setEnable(isEnabled,true)
+		local showMapHostspot=streamReadBool(streamId)
+		self:showMapHotspot(showMapHostspot,true)
+		for k,v in pairs(self.kids) do
+			v:readStream(streamId, connection)
+		end
+	end
+end
+
+function UniversalProcessKit:writeStream(streamId, connection)
+	UniversalProcessKit:superClass().writeStream(self, streamId, connection)
+	if not connection:getIsServer() then
+		streamWriteInt32(streamId, self.id)
+		local nrFillLevelsToSync=0
+		local fillLevelsToSync={}
+		for k,v in pairs(UniversalProcessKit.fillTypeIntToName) do
+			fillLevel=rawget(self.fillLevels,k)
+			if fillLevel~=nil and fillLevel~=0 then
+				table.insert(fillLevelsToSync,k,fillLevel)
+				nrFillLevelsToSync=nrFillLevelsToSync+1
+			end
+		end
+		print(tostring(nrFillLevelsToSync)..' fillLevels to sync')
+		streamWriteInt8(streamId,nrFillLevelsToSync) -- max 256 fillTypes
+		for k,v in pairs(fillLevelsToSync) do
+			streamWriteInt8(streamId,k)
+			streamWriteFloat32(streamId,v)
+		end
+		streamWriteBool(streamId,self.isEnabled)
+		streamWriteBool(streamId,self.mapHotspot~=nil)
+		for k,v in pairs(self.kids) do
+			v:writeStream(streamId, connection)
+		end
+	end
+end
+
 function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	UniversalProcessKit:superClass().readUpdateStream(self, streamId, timestamp, connection)
 	if connection:getIsServer() then
@@ -270,7 +320,7 @@ function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 		
 		if bitAND(dirtyMask,self.enabledDirtyFlag)~=0 or syncall then
 			local isEnabled=streamReadBool(streamId)
-			self:setEnabled(isEnabled,true)
+			self:setEnable(isEnabled,true)
 		end
 		
 		if bitAND(dirtyMask,self.maphotspotDirtyFlag)~=0 or syncall then
@@ -317,14 +367,16 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 end
 
 function UniversalProcessKit:register()
+	print("UniversalProcessKit:register()")
 	if self.isServer then
 		g_server:addObject(self, self.id)
 		self.isManuallyReplicated = true
-		self.isRegistered = true	
+		self.isRegistered = true
 	else
 		g_client:addObject(self, self.id)
 		g_client:registerObject(self, true)
 		g_client:finishRegisterObject(self,self.id)
+		print("sendEvent(UniversalProcessKitSyncEvent:new(self.id))")
 		g_client:getServerConnection():sendEvent(UniversalProcessKitSyncEvent:new(self.id))
 	end
 end
@@ -358,20 +410,33 @@ function UniversalProcessKit:findChildren(id,numKids)
 end
 
 function UniversalProcessKit:delete()
-	for k,_ in pairs(self.kids) do
-		if self.kids[k].delete ~=nil then
-			self.kids[k].delete(self.kids[k])
-		end
+	for _,v in pairs(self.kids) do
+		v:delete(v)
 	end
-	for k,v in pairs(self.triggerIds) do
+	for _,v in pairs(self.triggerIds) do
 		removeTrigger(v)
 	end
 	if self.mapHotspot ~= nil then
 		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
 	end
-
-	self:unregister(true)
+	
+	if self.isRegistered then
+		print('try deleting module '..tostring(self.name))
+		if self.isServer then
+			g_server:unregisterObject(self,true)
+			--g_server:removeObject(self, self.id)
+		else
+			g_client:unregisterObject(self,true)
+			--g_client:removeObject(self, self.id)
+		end
+	end
+	
+	if self.nodeId ~= 0 then
+		g_currentMission:removeNodeObject(self.nodeId)
+	end
+	
 	unregisterObjectClassName(self)
+	
 	UniversalProcessKit:superClass().delete(self)
 end
 

@@ -34,6 +34,24 @@ function PlaceableUPK:delete()
 	PlaceableUPK:superClass().delete(self)
 end
 
+function PlaceableUPK:readStream(streamId, connection)
+	PlaceableUPK:superClass().readStream(self, streamId, connection)
+	if connection:getIsServer() then
+		if self.base~=nil then
+			self.base:readStream(streamId, connection)
+		end
+	end
+end
+
+function PlaceableUPK:writeStream(streamId, connection)
+	PlaceableUPK:superClass().writeStream(self, streamId, connection)
+	if not connection:getIsServer() then
+		if self.base~=nil then
+			self.base:writeStream(streamId, connection)
+		end
+	end
+end
+
 function PlaceableUPK:loadFromAttributesAndNodes(xmlFile, key)
 	if not PlaceableUPK:superClass().loadFromAttributesAndNodes(self, xmlFile, key, resetVehicles) then
 		return false

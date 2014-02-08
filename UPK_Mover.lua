@@ -88,7 +88,7 @@ function UPK_Mover:delete()
 end
 
 function UPK_Mover:update(dt)
-	--UPK_Mover:superClass().update(self,dt)
+	UPK_Mover:superClass().update(self,dt)
 	
 	if self.nodeId~=0 then
 		local newFillLevel

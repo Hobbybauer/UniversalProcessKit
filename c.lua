@@ -24,6 +24,32 @@
 -- keys left and right (same, only take matching keys into account) + - * /
 -- c({a=1,b=2,c=3}) + c({b=2,d=4}) = {b=4}
 
+_m=_G;_G=nil;_g=_G;_G=_m;
+
+function _m.print(string, debug)
+	if debug==nil then
+		debug=debugMode
+	end
+	if type(string)=="string" then
+		local msg=string
+		if debug then
+			msg='DEBUG '..msg
+		end
+		_g.print(' [UPK] '..msg)
+	end
+end
+
+function InitEventClass(classObject,className)
+	if _g[className]~=classObject then
+		print("Error: Can't assign eventId to "..tostring(className).." (object name conflict)",true)
+		return
+	end
+	_g.InitEventClass(classObject,className)
+	if classObject.eventId==nil then
+		EventIds.assignEventObjectId(classObject,className,EventIds.eventIdNext)
+	end
+end
+
 function _g.__c(arr)
 	if type(arr)~="table" then
 		arr={arr}

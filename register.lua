@@ -24,26 +24,13 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 	return str
 end
 
-_m=_G;_G=nil;_g=_G;_G=_m;
-
-function _m.print(string, debug)
-	if debug==nil then
-		debug=debugMode
-	end
-	if type(string)=="string" then
-		local msg=string
-		if debug then
-			msg='DEBUG '..msg
-		end
-		_g.print(' [UPK] '..msg)
-	end
-end
-
 source(g_currentModDirectory.."c.lua")
 source(g_currentModDirectory.."UniversalProcessKit.lua")
 source(g_currentModDirectory.."UniversalProcessKitSyncEvent.lua")
 source(g_currentModDirectory.."UniversalProcessKitModules.lua")
 source(g_currentModDirectory.."UniversalProcessKitFillTypes.lua")
+source(g_currentModDirectory.."UPK_Activator.lua")
+source(g_currentModDirectory.."UPK_Animator.lua")
 source(g_currentModDirectory.."UPK_Base.lua")
 source(g_currentModDirectory.."UPK_Conveyor.lua")
 source(g_currentModDirectory.."UPK_DisplayTrigger.lua")
@@ -51,19 +38,11 @@ source(g_currentModDirectory.."UPK_DumpTrigger.lua")
 source(g_currentModDirectory.."UPK_FillTrigger.lua")
 source(g_currentModDirectory.."UPK_Mover.lua")
 source(g_currentModDirectory.."UPK_Processor.lua")
+source(g_currentModDirectory.."UPK_Shower.lua")
+source(g_currentModDirectory.."UPK_Storage.lua")
+source(g_currentModDirectory.."UPK_Switcher.lua")
 source(g_currentModDirectory.."UPK_TipTrigger.lua")
 source(g_currentModDirectory.."PlaceableUPK.lua")
-
-function InitEventClass(classObject,className)
-	if _g[className]~=classObject then
-		print("Error: Can't assign eventId to "..tostring(className).." (object name conflict)",true)
-		return
-	end
-	_g.InitEventClass(classObject,className)
-	if classObject.eventId==nil then
-		EventIds.assignEventObjectId(classObject,className,EventIds.eventIdNext)
-	end
-end
 
 InitEventClass(UniversalProcessKitSyncEvent,"UniversalProcessKitSyncEvent")
 

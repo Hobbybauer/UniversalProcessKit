@@ -118,7 +118,6 @@ function UPK_TipTrigger:getNoAllowedText(trailer)
 end
 
 function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
-	print('UPK_TipTrigger:triggerCallback')
 	if self.isEnabled then
 		if onEnter then
 			local trailer = g_currentMission.objectToTrailer[otherShapeId]
@@ -157,7 +156,7 @@ end
 function UPK_TipTrigger:updateTick(dt)
 	if self.isServer then
 		if self.fillLevels[Fillable.FILLTYPE_WATER] ~= self.sentWaterTankFillLevel then
-			self:raiseDirtyFlags(self.myDirtyFlag)
+			self:raiseDirtyFlags(self.myDirtyFlag) -- needs update
 			self.sentWaterTankFillLevel = self.fillLevels[Fillable.FILLTYPE_WATER]
 		end
 		if self.isWaterTankFilling then

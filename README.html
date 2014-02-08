@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<h1>UniversalProcessKit</h1>
+
+<h2>Grundsätzliches</h2>
+
+<p>Dies ist die Entwickler-Seite des UniversalProcessKits. Es werden Features ausprobiert oder es kann auch mal eine kaputte Version online stehen. Hier ist nichts "fertig" und es kann täglich zu Änderungen der Skripte kommen. Wenn du eine gebrauchsfähige Version suchst, schau auf www.modhoster.de (da wirst du wegen der momentanen Alpha-Phase nichts finden).</p>
+
+<h2>Nutzen</h2>
+
+<p>Das UniversalProcessKit, kurz UPK, stellt Funktionen für Modder und Mapper bereit, damit diese so wenig wie möglich oder auch gar nicht mehr selber skripten müssen.</p>
+
+<h2>Funktionsweise</h2>
+
+<p>Dieses Kit besteht aus einer <strong>Basis</strong> sowie <strong>Triggern</strong>, deren Aktionen durch den Spieler ausgelöst werden, und <strong>Funktionen</strong>, die je nach Füllstand aktiv werden. Es kann zudem durch selbst programmierte <strong>Module</strong> erweitert werden.</p>
+
+<p>Die Steuerung des UPK wird allein über UserAttributes in der i3d geregelt.</p>
+
+<p>Die Anordnung der Trigger, Funktionen und Module ist hierarchisch. Die Trigger sind üblicherweise das letzte Glied und regeln die Ein- und Ausgabe. Alles zwischen Triggern und Base ist frei konfigurierbar. Es kann Module geben, die wie ein Zwischenlager fungieren und Früchte nur in einer bestimmten Geschwindikgeit "nach oben" an die Base weitergeben oder ganz stoppen. Ein processor kann auf diesen Füllstand zugreifen und in einen anderen umwandeln, der nach oben durchgelassen wird. Somit lassen sich kleine Mods, die nur etwas lagern, oder große mit komplexer Funktionalität wie Fabriken mit dem UPK erschaffen.</p>
+
+<h3>Basis</h3>
+
+<p>Die Basis verwaltet alle Füllstände. Alle Trigger und Funktionen greifen im einfachsten Fall auf die Füllstände der base zurück.</p>
+
+<p>Die base ist über PlaceableUPK platzierbar oder über modOnCreate.UPK verbaubar.</p>
+
+<h3>Trigger</h3>
+
+<p>Im Moment gibt es folgende Trigger:</p>
+
+<ol>
+<li>
+<p><strong>tiptrigger</strong>: entlädt alle Arten von Anhängern (Kipper, Wasser-, Gülle- und Benzinanhänger)</p>
+</li><li>
+<p><strong>dumptrigger</strong>: fängt das Entladen von Schaufeln und Erntemaschinen auf</p>
+</li><li>
+<p><strong>filltrigger</strong>: lädt alle Arten von Anhänger (siehe tiptrigger) sowie Schaufeln</p>
+</li><li>
+<p><strong>displaytrigger</strong>: veranlasst die Anzeige von Füllständen</p>
+</li>
+</ol>
+
+<h3>Funktionen</h3>
+
+<ol>
+<li>
+<p><strong>processor</strong>: Das Kernstück des UPK. Es erzeugt Güter bzw. Früchte, wenn gewünscht verbraucht es dafür andere.</p>
+</li><li>
+<p><strong>mover</strong>: verändert die Eigenschaften der Position, Sichtbarkeit und Rotation je nach Füllstand</p>
+</li>
+</ol>
+
+<h2>Verfügbare UserAttributes</h2>
+
+<h3>Allgemein (für alle UPK-Module)</h3>
+
+<ul>
+<li>
+<p>__*type__ (string): legt die Art des Moduls fest, zB. "tiptrigger", "processor" usw.</p>
+</li><li>
+<p><strong>capacity</strong> (float): Festlegung der Füllmenge</p>
+</li><li>
+<p><strong>isEnabled</strong> (string): Modul ist aktiviert oder deaktiviert, entweder "true" oder "false" (default: "true")</p>
+</li>
+</ul>
+
+<h3>base</h3>
+
+<p>Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch das Setzen des UserAttributes.</p>
+
+<ul>
+<li>
+<p><strong>scriptCallback</strong> (string): verwenden um Objekt auf der Karte fest zu verbauen, einzige Möglichkeit "modOnCreate.UPK" (default: ohne)</p>
+</li>
+</ul>
+
+<h3>tiptrigger</h3>
+
+<ul>
+<li>
+<p>__*fillTypes__ (string): Namen der akzeptierten Fruchtsorten, mit Leerzeichen getrennt, bspw. "wheat barley rape"</p>
+</li><li>
+<p><strong>fillLitersPerSecond</strong> (float): Geschwindigkeit der Ausschüttung (default: 1500)</p>
+</li><li>
+<p><strong>MapHotspot</strong> (string): Name des Icons zur Anzeige auf dem PDA. Keine Anzeige, falls leer</p>
+</li><li>
+<p><strong>showNoAllowedText</strong> (string): ob angezeigt werden soll, wenn eine Fruchtsorte nicht akzeptiert wird, entweder "true" oder "false" (default: "false")</p>
+</li><li>
+<p><strong>NotAcceptedText</strong> (string): Name des l10n-Textes bei Anzeige dass eine Fruchtsorte nicht akzeptiert wird (default: "notAcceptedHere")</p>
+</li><li>
+<p><strong>CapacityReachedText</strong> (string): Text der angezeigt wird wenn die Füllmenge erreicht ist (default: "capacityReached")</p>
+</li>
+</ul>
+
+<h3>dumptrigger</h3>
+
+<ul>
+<li>
+<p>__*fillTypes__ (string): Namen der akzeptierten Fruchtsorten, mit Leerzeichen getrennt, bspw. "wheat barley rape"</p>
+</li>
+</ul>
+
+<h3>filltrigger</h3>
+
+<ul>
+<li>
+<p>__*fillType__ (string): Name der auszuschüttenden Fruchtsorte, bspw. "wheat" (default: "unknown")</p>
+</li><li>
+<p><strong>fillLitersPerSecond</strong> (float): Geschwindigkeit der Ausschüttung (default: 1500)</p>
+</li><li>
+<p><strong>createFillType</strong> (string): greift auf den Füllstand zurück oder erzeugt fillType einfach so, entweder "true" oder "false" (default: "false")</p>
+</li><li>
+<p><strong>pricePerLiter</strong> (float): Kosten des fillTypes pro Liter (default: 0)</p>
+</li><li>
+<p><strong>allowTrailer</strong> (string): akzeptiert Kipper als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>allowShovel</strong> (string): akzeptiert Schaufeln als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>allowSowingMachine</strong> (string): akzeptiert Sämaschinen als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>allowWaterTrailer</strong> (string): akzeptiert Wasseranhänger als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>allowSprayer</strong> (string): akzeptiert Spritzen/ Düngestreuer als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>allowFuelTrailer</strong> (string): akzeptiert Tankanhänger als Füllobjekt, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>useParticleSystem</strong> (string): legt fest ob Partikel beim Laden angezeigt werden sollen, entweder "true" oder "false" (default: "false")</p>
+</li><li>
+<p><strong>particleSystem</strong> (string): Name des Partikelsystems (default: "wheatParticleSystemLong")</p>
+</li><li>
+<p><strong>particlePosition</strong> (string): Lage des Ursprungs der Partikel (default: "0 0 0")</p>
+</li>
+</ul>
+
+<h3>displaytrigger</h3>
+
+<ul>
+<li>
+<p><strong>fillTypes</strong> (string): Namen der anzuzeigenden Fruchtsorten, mit Leerzeichen getrennt, bspw. "wheat barley rape"</p>
+</li><li>
+<p><strong>i18nNameSpace</strong> (string): Name des Mods, um auf selbst festgelegte Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von Fruchtsorten, die der Mod neu einführt.</p>
+</li><li>
+<p><strong>onlyFilled</strong> (string): legt fest, ob nur Füllstände ungleich 0 angezeigt werden soll, entweder "true" oder "false" (default: "false")</p>
+</li><li>
+<p><strong>showFillLevel</strong> (string): legt fest, ob die Füllstände mit absoluten Zahlen angezeigt werden soll, entweder "true" oder "false" (default: "true")</p>
+</li><li>
+<p><strong>showPercentage</strong> (string): legt fest, ob die Füllstände relativ zur Füllmenge angezeigt werden soll, entweder "true" oder "false" (default: "false")</p>
+</li>
+</ul>
+
+<h3>processor</h3>
+
+<ul>
+<li>
+<p>__*product__ (string): legt fest, welche Fruchtsorte erzeugt werden soll - Geld ist "money" (kein default)</p>
+</li><li>
+<p><strong>aproductsPerMinute</strong> (float): welche Menge maximal pro Minute erzeugt wird (veranlasst die Produktion der Fruchtsorte im Minutentakt) (default: 0)</p>
+</li><li>
+<p><strong>bproductsPerHour</strong> (float): welche Menge maximal pro Stunde erzeugt wird (veranlasst die Produktion der Fruchtsorte im Stundentakt) (default: 0)</p>
+</li><li>
+<p><strong>cproductsPerDay</strong> (float): welche Menge maximal pro Tag erzeugt wird (veranlasst die Produktion der Fruchtsorte im Tagestakt) (default: 0)</p>
+</li><li>
+<p><strong>onlyWholeProducts</strong> (string): ob nur ganze Zahlen dem Füllstand hinzugefügt werden sollen, entweder "true" oder "false" (default: "false")</p>
+</li><li>
+<p><strong>recipe</strong> (string): wie ein Liter des Produkts hergestellt werden soll, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw "0.5 wheat 0.3 water 0.2 salt", zu lesen als "1 Liter des Produkts ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default: ohne)</p>
+</li><li>
+<p><strong>statName</strong> (string): (falls product="money") zu welcher Statistik der Betrag gebucht wird, entweder "newVehiclesCost", "newAnimalsCost", "constructionCost", "vehicleRunningCost", "propertyMaintenance", "wagePayment", "harvestIncome", "missionIncome", "other", "loanInterest" (default: "other")</p>
+</li>
+</ul>
+
+<h3>mover</h3>
+
+<ul>
+<li>
+<p><strong>fillTypes</strong> (string): Namen der Fruchtsorten auf die reagiert werden soll, mit Leerzeichen getrennt, bspw. "wheat barley rape"</p>
+</li><li>
+<p><strong>fillTypeChoice</strong> (string): Welcher Wert bei mehreren Fruchtsorten genommen wird, entweder "max" oder "min" (default: "max")</p>
+</li><li>
+<p><strong>startMovingAt</strong> (float): (default: 0)</p>
+</li><li>
+<p><strong>stopMovingAt</strong> (float): (default: Wert von capacity)</p>
+</li><li>
+<p><strong>lowPosition</strong> (string): (default: "0 0 0")</p>
+</li><li>
+<p><strong>highPosition</strong> (string): (default: Wert von lowPosition)</p>
+</li><li>
+<p><strong>lowerPosition</strong> (string): (default: Wert von lowPosition)</p>
+</li><li>
+<p><strong>higherPosition</strong> (string): (default: Wert von highPosition)</p>
+</li><li>
+<p><strong>moveType</strong> (string): (default: "linear")</p>
+</li><li>
+<p><strong>startRotatingAt</strong> (float): (default: 0)</p>
+</li><li>
+<p><strong>stopRotatingAt</strong> (float): (default: Wert von capacity)</p>
+</li><li>
+<p><strong>lowRotationsPerSecond</strong> (string): (default: "0 0 0")</p>
+</li><li>
+<p><strong>highRotationsPerSecond</strong> (string): (default: Wert von lowRotationsPerSecond)</p>
+</li><li>
+<p><strong>lowerRotationsPerSecond</strong> (string): (default: Wert von lowRotationsPerSecond)</p>
+</li><li>
+<p><strong>higherRotationsPerSecond</strong> (string): (default: Wert von highRotationsPerSecond)</p>
+</li><li>
+<p><strong>rotationType</strong> (string): (default: "linear")</p>
+</li><li>
+<p><strong>startVisibilityAt</strong> (float): (default: 0)</p>
+</li><li>
+<p><strong>stopVisibilityAt</strong> (float): (default: Wert von capacity)</p>
+</li><li>
+<p><strong>visibilityType</strong> (string): (default: "linear")</p>
+</li>
+</ul>
+
+<h2>Beispiele</h2>
+
+<ol>
+<li>
+<p><strong>Apfelmod</strong>: Der <strong>Apfelbaum</strong> besteht hauptsächlich aus einem processor und einem filltrigger. Der processor erzeugt die Äpfel (16l/h) und der filltrigger füllt Kipper und Schaufeln. Zusätzlich ist noch für jede der 5 Wachstumsstufen ein mover verbaut, das je nach Füllstand die entsprechende Textur anzeigt oder eben nicht). Der <strong>Straßenverkauf</strong> ist ein processor, ein tiptrigger und ein mover. Der processor wandelt pro Stunde max. 200 Äpfel in 100 "money", also Geld, um und der mover regelt die y-Höhe der Apfelplane.</p>
+</li>
+</ol>
+
+<h4>appleTree.i3d (ohne mover)</h4>
+
+<pre><code>&lt;UserAttributes&gt;
+ &lt;UserAttribute nodeId="59"&gt;
+  &lt;Attribute name="capacity" type="float" value="400"/&gt;
+  &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+ &lt;/UserAttribute&gt;
+ &lt;UserAttribute nodeId="68"&gt;
+  &lt;Attribute name="fillLitersPerSecond" type="float" value="100"/&gt;
+  &lt;Attribute name="fillType" type="string" value="apfel"/&gt;
+  &lt;Attribute name="type" type="string" value="filltrigger"/&gt;
+ &lt;/UserAttribute&gt;
+ &lt;UserAttribute nodeId="69"&gt;
+  &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+  &lt;Attribute name="type" type="string" value="displaytrigger"/&gt;
+  &lt;Attribute name="i18nNameSpace" type="string" value="Apfelmod"/&gt;
+ &lt;/UserAttribute&gt;
+ &lt;UserAttribute nodeId="70"&gt;
+  &lt;Attribute name="onlyWholeProducts" type="string" value="true"/&gt;
+  &lt;Attribute name="product" type="string" value="apfel"/&gt;
+  &lt;Attribute name="productsPerHour" type="float" value="16"/&gt;
+  &lt;Attribute name="type" type="string" value="processor"/&gt;
+  &lt;/UserAttribute&gt;
+ &lt;/UserAttributes&gt;
+</code></pre>
+
+<h4>appleKiosk.i3d (ohne mover)</h4>
+
+<pre><code>&lt;UserAttributes&gt;
+  &lt;UserAttribute nodeId="31"&gt;
+    &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+    &lt;Attribute name="showPercentage" type="string" value="true"/&gt;
+    &lt;Attribute name="type" type="string" value="displaytrigger"/&gt;
+      &lt;Attribute name="i18nNameSpace" type="string" value="Apfelmod"/&gt;
+  &lt;/UserAttribute&gt;
+  &lt;UserAttribute nodeId="34"&gt;
+    &lt;Attribute name="product" type="string" value="money"/&gt;
+    &lt;Attribute name="productsPerHour" type="float" value="100"/&gt;
+    &lt;Attribute name="recipe" type="string" value="2 apfel"/&gt;
+    &lt;Attribute name="statName" type="string" value="harvestIncome"/&gt;
+    &lt;Attribute name="type" type="string" value="processor"/&gt;
+  &lt;/UserAttribute&gt;
+  &lt;UserAttribute nodeId="26"&gt;
+    &lt;Attribute name="capacityApfel" type="float" value="2000"/&gt;
+    &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+  &lt;/UserAttribute&gt;
+  &lt;UserAttribute nodeId="29"&gt;
+    &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+    &lt;Attribute name="type" type="string" value="dumptrigger"/&gt;
+  &lt;/UserAttribute&gt;
+  &lt;UserAttribute nodeId="30"&gt;
+    &lt;Attribute name="fillTypes" type="string" value="apfel"/&gt;
+    &lt;Attribute name="type" type="string" value="tiptrigger"/&gt;
+  &lt;/UserAttribute&gt;
+&lt;/UserAttributes&gt;
+</code></pre>
+
+<h2>Ausblick</h2>
+
+<p>Mit der Zeit werden weitere Funktionen hinzukommen, so zB. Förderbänder oder switcher (zeigt verschiedene Objekte je nach Füllstand aus - fasst somit mehrere mover zusammen). Die base soll neben dem Standard "separate" 3 weitere Arten der Speicherarten bekommen: single, layered (FIFO) und layered (FILO).</p>
+
+<h2>Instalation</h2>
+
+<ol>
+<li>
+<p>Lade die zuerst die Skripte bzw. alle Dateien des Projekts hier herunter: https://github.com/mor2000/UniversalProcessKit/archive/master.zip .</p>
+</li><li>
+<p>Entpacke diese Zip und gehe in den Unterordner.</p>
+</li><li>
+<p>Packe dann die Skripte erneut und benenne das Archiv "UPK.zip", das du schließlich in den Modordner kopierst.</p>
+</li>
+</ol>
+
+<p>Dieses Vorgehen ist notwendig, da Github alle Art von Quellcode hostet und keine Rücksicht auf die Packart eines Mods von LS nimmt.</p>
+
+<h2>Hinweise zum Gebrauch</h2>
+
+<p>Es ist nicht gestattet diese Skripte in Maps oder Mods selbst einzubinden. Bitte verweist darauf, dass die Nutzer eurer Mods zusätzlich das UPK im Modordner haben müssen, damit eure Mods funktionieren.</p>
+
+<h1>English</h1>
+
+<p>Unpack the downloaded zip and zip the scripts to "UPK.zip" and place it in your mods folder.</p>
+
+<p>Interested in more? Let me know!</p>
+
+</body>
+</html>

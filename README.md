@@ -49,9 +49,15 @@ Verfügbare UserAttributes
 
 ### Allgemein (für alle UPK-Module)
 
-- __type__ (string): legt die Art des Moduls fest, zB. "tiptrigger", "processor" usw.
+- __*type__ (string): legt die Art des Moduls fest, zB. "tiptrigger", "processor" usw.
 - __capacity__ (float): Festlegung der Füllmenge
 - __isEnabled__ (string): Modul ist aktiviert oder deaktiviert, entweder "true" oder "false" (default: "true")
+
+### base
+
+Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch das Setzen des UserAttributes.
+
+- __scriptCallback__ (string): verwenden um Objekt auf der Karte fest zu verbauen, einzige Möglichkeit "modOnCreate.UPK" (default: ohne)
 
 ### tiptrigger
 - __*fillTypes__ (string): Namen der akzeptierten Fruchtsorten, mit Leerzeichen getrennt, bspw. "wheat barley rape"

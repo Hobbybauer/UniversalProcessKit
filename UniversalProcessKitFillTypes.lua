@@ -78,11 +78,11 @@ function UniversalProcessKit.addFillType(name,index)
 				UniversalProcessKit.addFillType(name,index+1)
 			else
 				if name~="money" then
-					print(" [UniversalProcessKit] Notice: Filltype labeled \""..tostring(name).."\" is not part of the game economy")
+					print("Notice: Filltype labeled \""..tostring(name).."\" is not part of the game economy")
 				else
 					UniversalProcessKit.FILLTYPE_MONEY=index
 				end
-				print(" [UniversalProcessKit] Notice: adding "..tostring(name).." ("..tostring(index)..") to fillTypes")
+				print("Notice: adding "..tostring(name).." ("..tostring(index)..") to fillTypes")
 				rawset(UniversalProcessKit.fillTypeIntToName,index,name)
 				rawset(UniversalProcessKit.fillTypeNameToInt,name,index)
 				UniversalProcessKit.NUM_FILLTYPES=UniversalProcessKit.NUM_FILLTYPES+1
