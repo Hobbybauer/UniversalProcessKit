@@ -332,7 +332,7 @@ Ein UPK-Mod lässt sich auf 2 Arten einbinden: als __Platzierbares Objekt__ oder
 Für jeden in eine Karte verbauten UPK-Mod muss folgendes UserAttribute zur jeweiligen _base_ hinzugefügt werden:
 
 ```
-    <Attribute name="scriptCallback" type="string" value="modOnCreate.UPK"/>
+    <Attribute name="onCreate" type="scriptCallback" value="modOnCreate.UPK"/>
 ```
 
 #### Als platzierbares Objekt

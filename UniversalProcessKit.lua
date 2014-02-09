@@ -386,7 +386,7 @@ function UniversalProcessKit:findChildren(id,numKids)
 	for i=1,numChildren do
 		local childId = getChildAt(id, i-1)
 		if childId~=nil or childId~=0 then
-			local scriptCallback = getUserAttribute(childId, "scriptCallback")
+			local scriptCallback = getUserAttribute(childId, "onCreate")
 			if scriptCallback==nil then
 				local type = getUserAttribute(childId, "type")
 				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
