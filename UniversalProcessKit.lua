@@ -1,10 +1,10 @@
 -- by mor2000
 
-_g.UniversalProcessKit = {}
-local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object)
-InitObjectClass(UniversalProcessKit, "UniversalProcessKit")
+_g.UniversalProcessKit = {};
+local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object);
+InitObjectClass(UniversalProcessKit, "UniversalProcessKit");
 
-UniversalProcessKit.modulesToSync={}
+UniversalProcessKit.modulesToSync={};
 
 function UniversalProcessKit:new(isServer, isClient, customMt)
 	local self = Object:new(isServer, isClient, customMt or UniversalProcessKit_mt)
@@ -56,7 +56,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 				local type=type(v)
 				if type=="number" then
 					if self.fillLevels[v]~=nil then
-						table.insert(t,self.fillLevels[v])
+						table.insert(t,v,self.fillLevels[v])
 					end
 				end
 			end
@@ -103,16 +103,10 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 	self.acceptedFillTypes={}
 	setmetatable(self.acceptedFillTypes, {
 		__index = function(t,k)
-			local acceptedFillType=rawget(t,k)
-			if acceptedFillType==nil then
-				if type(rawget(self,"parent"))=="table" then
-					acceptedFillType=self.parent.acceptedFillTypes[k]
-				end
-			end
-			return acceptedFillType
+			return ((rawget(self,'parent') or {}).acceptedFillTypes or {})[k]
 		end,
 		__newindex=function(t,k,v)
-			if rawget(t,k)==nil and type(rawget(self,"parent"))=="table" then
+			if type(rawget(self,"parent"))=="table" then
 				self.parent.acceptedFillTypes[k]=v
 			else
 				rawset(t,k,v)
@@ -161,7 +155,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 
 	--registerObjectClassName(self, "UniversalProcessKit")
 	return self
-end
+end;
 
 function UniversalProcessKit:load(id,parent)
 	self.rootNode = id
@@ -181,8 +175,11 @@ function UniversalProcessKit:load(id,parent)
 	
 	-- accepted fillTypes or fillTypes to store
 	local acceptedFillTypesString = getUserAttribute(self.nodeId, "fillTypes")
-	for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
-		rawset(self.acceptedFillTypes,v,true)
+	if acceptedFillTypesString~=nil then
+		for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
+			rawset(self.acceptedFillTypes,v,true)
+			print('accepted fillType: '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..') '..tostring(self.acceptedFillTypes[v]))
+		end
 	end
 	
 	-- capacity
@@ -207,6 +204,22 @@ function UniversalProcessKit:load(id,parent)
 	end
 	]]--
 
+
+	-- storageType
+	
+	local storageTypeStr=getUserAttribute(self.nodeId, "storageType")
+	if storageTypeStr~=nil then
+		if storageTypeStr=="single" then
+			print('storageType is single')
+			self.storageType=UPK_Storage.SINGLE
+		elseif storageTypeStr=="fifo" then
+			self.storageType=UPK_Storage.FIFO
+		elseif storageTypeStr=="filo" then
+			self.storageType=UPK_Storage.FILO
+		end
+	end
+			
+	
 	-- loading kids (according to known types of modules)
 	-- kids are loading their kids and so on..
 	
@@ -237,14 +250,11 @@ function UniversalProcessKit:load(id,parent)
 	-- i18nNameSpace
 	
 	self.i18nNameSpace=getUserAttribute(self.nodeId, "i18nNameSpace")
-	if self.i18nNameSpace==nil and self.parent~=nil then
-		self.i18nNameSpace=self.parent.i18nNameSpace
-	end
 	
 	g_currentMission:addNodeObject(self.nodeId, self)
 
 	return true
-end
+end;
 
 function UniversalProcessKit:readStream(streamId, connection)
 	UniversalProcessKit:superClass().readStream(self, streamId, connection)
@@ -265,7 +275,7 @@ function UniversalProcessKit:readStream(streamId, connection)
 			v:readStream(streamId, connection)
 		end
 	end
-end
+end;
 
 function UniversalProcessKit:writeStream(streamId, connection)
 	UniversalProcessKit:superClass().writeStream(self, streamId, connection)
@@ -291,7 +301,7 @@ function UniversalProcessKit:writeStream(streamId, connection)
 			v:writeStream(streamId, connection)
 		end
 	end
-end
+end;
 
 function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	UniversalProcessKit:superClass().readUpdateStream(self, streamId, timestamp, connection)
@@ -319,7 +329,7 @@ function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 		end
 
 	end
-end
+end;
 
 function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 	UniversalProcessKit:superClass().writeUpdateStream(self, streamId, connection, dirtyMask)
@@ -354,7 +364,7 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 		
 		-- you know how to sync your modules by now, right?
 	end
-end
+end;
 
 function UniversalProcessKit:register()
 	if self.isServer then
@@ -367,7 +377,7 @@ function UniversalProcessKit:register()
 		g_client:finishRegisterObject(self,self.id)
 		g_client:getServerConnection():sendEvent(UniversalProcessKitSyncEvent:new(self.id))
 	end
-end
+end;
 
 function UniversalProcessKit:findChildren(id,numKids)
 	local numChildren = getNumOfChildren(id)
@@ -393,7 +403,7 @@ function UniversalProcessKit:findChildren(id,numKids)
 			end
 		end
 	end
-end
+end;
 
 function UniversalProcessKit:delete()
 	for _,v in pairs(self.kids) do
@@ -423,15 +433,15 @@ function UniversalProcessKit:delete()
 	unregisterObjectClassName(self)
 	
 	UniversalProcessKit:superClass().delete(self)
-end
+end;
 
 function UniversalProcessKit:update(dt)
 	-- do sth with time (ms)
-end
+end;
 
 function UniversalProcessKit:getFillType()
 	return self.fillType
-end
+end;
 
 function UniversalProcessKit:setFillType(fillType)
 	if fillType~=nil then
@@ -441,11 +451,11 @@ function UniversalProcessKit:setFillType(fillType)
 		self.fillType = Fillable.FILLTYPE_UNKNOWN
 		--self.capacity=self.capacities.FILLTYPE_UNKNOWN
 	end	
-end
+end;
 
 function UniversalProcessKit:getFillLevel(fillType)
 	return self.fillLevels[fillType]
-end
+end;
 
 function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 	local currentFillType=self.fillType
@@ -463,7 +473,7 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 		end
 	end
 	return nil
-end
+end;
 
 function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 	if deltaFillLevel~=nil and deltaFillLevel~=0 then
@@ -480,7 +490,28 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 		return deltaFillLevel-self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
 	end
 	return 0
-end
+end;
+
+function UniversalProcessKit:getUniqueFillType()
+	local currentFillType=Fillable.FILLTYPE_UNKNOWN
+	for k,v in pairs(self.fillLevels(self:getAcceptedFillTypes())) do
+		if type(v)=="number" and v>0 and currentFillType==Fillable.FILLTYPE_UNKNOWN then
+			currentFillType=k
+			break
+		end
+	end
+	return currentFillType
+end;
+
+function UniversalProcessKit:getAcceptedFillTypes()
+	local r={}
+	for k in pairs(UniversalProcessKit.fillTypeIntToName) do
+		if self.acceptedFillTypes[k] then
+			table.insert(r,k)
+		end
+	end
+	return r
+end;
 
 -- show or hide an icon on the pda map
 function UniversalProcessKit:showMapHotspot(on,alreadySent)
@@ -498,7 +529,7 @@ function UniversalProcessKit:showMapHotspot(on,alreadySent)
 	for _,v in pairs(self.kids) do
 		v:showMapHotspot(on,alreadySent)
 	end
-end
+end;
 
 function UniversalProcessKit:setEnable(isEnabled,alreadySent)
 	self.isEnabled=isEnabled
@@ -508,7 +539,7 @@ function UniversalProcessKit:setEnable(isEnabled,alreadySent)
 	for _,v in pairs(self.kids) do
 		v:setEnable(isEnabled,alreadySent)
 	end
-end
+end;
 
 function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)
 	key=key.."."..self.name
@@ -536,7 +567,7 @@ function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)
 	end
 
 	return self:loadExtraNodes(xmlFile, key)
-end
+end;
 
 function UniversalProcessKit:getSaveAttributesAndNodes(nodeIdent)
 	local attributes=""
@@ -581,17 +612,17 @@ function UniversalProcessKit:getSaveAttributesAndNodes(nodeIdent)
 	end
 	
 	return attributes, nodes
-end
+end;
 
 -- use this function to load your extra Nodes (YourClass:loadExtraNodes)
 function UniversalProcessKit:loadExtraNodes(xmlFile, key)
 	return true
-end
+end;
 
 -- use this function to save your own values (YourClass:getSaveExtraNodes)
 function UniversalProcessKit:getSaveExtraNodes(nodeIdent)
 	return ""
-end
+end;
 
 -- to communicate orders between modules
 -- possible receivers

@@ -31,7 +31,6 @@ function UPK_Base:load(id)
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end
-	table.insert(UniversalProcessKit.modulesToSync,self)
 	print('loaded Base successfully')
 	return true
 end

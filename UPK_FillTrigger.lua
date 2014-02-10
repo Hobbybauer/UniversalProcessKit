@@ -56,14 +56,15 @@ function UPK_FillTrigger:load(id,parent)
 	self.sprayers={}
 	self.fuelTrailers={}
 
-	self.fillType = Fillable.FILLTYPE_UNKNOWN
-    local fillTypeString = Utils.getNoNil(getUserAttribute(id, "fillType"), "unknown")
-	local fillType=unpack(UniversalProcessKit.fillTypeNameToInt(fillTypeString))
-	if type(fillType)=="number" then
-		self.fillType=fillType
+	local fillTypeStr = Utils.getNoNil(getUserAttribute(id, "fillType"))
+	if fillTypeStr~=nil then
+		local fillType=unpack(UniversalProcessKit.fillTypeNameToInt(fillTypeString))
+		if type(fillType)=="number" then
+			self.fillType=fillType
+		else
+			print('Error: unknown fillType \"'..tostring(fillTypeStr)..'\" in filltrigger '..tostring(self.name))
+		end
 	end
-
-	
 	
     self.fillLitersPerSecond = Utils.getNoNil(getUserAttribute(id, "fillLitersPerSecond"), 1500)
 	self.createFillType = tobool(getUserAttribute(id, "createFillType"))
@@ -164,11 +165,12 @@ function UPK_FillTrigger:update(dt)
 				local trailer = g_currentMission.objectToTrailer[v]
 				--print("trailer: "..tostring(type(self.parentTrailer))..", fill: "..tostring(self.fill)..", fillDone: "..tostring(self.fillDone))
 				if trailer~=nil then
-					if trailer.currentFillType==self.fillType or trailer.currentFillType==Fillable.FILLTYPE_UNKNOWN then
+					fillType=self.fillType
+					if trailer.currentFillType==fillType or trailer.currentFillType==Fillable.FILLTYPE_UNKNOWN then
 						if self.fill[v] and not self.fillDone[v] then
-							trailer:resetFillLevelIfNeeded(self.fillType)
-							local fillLevel = trailer:getFillLevel(self.fillType)
-							if trailer:allowFillType(self.fillType, false) then
+							trailer:resetFillLevelIfNeeded(fillType)
+							local fillLevel = trailer:getFillLevel(fillType)
+							if trailer:allowFillType(fillType, false) then
 								if trailer.capacity~=nil and fillLevel==trailer.capacity then
 									self.fill[v]=nil
 									self.fillDone[v]=nil
@@ -177,16 +179,16 @@ function UPK_FillTrigger:update(dt)
 								else
 			    					local deltaFillLevel = self.fillLitersPerSecond * 0.001 * dt
 			    					if not self.createFillType then
-			    						deltaFillLevel=math.min(deltaFillLevel, self:getFillLevel(self.fillType))
+			    						deltaFillLevel=math.min(deltaFillLevel, self:getFillLevel(fillType))
 			    					end
-			    					trailer:setFillLevel(fillLevel + deltaFillLevel, self.fillType)
-			    					local newFillLevel = trailer:getFillLevel(self.fillType)
+			    					trailer:setFillLevel(fillLevel + deltaFillLevel, fillType)
+			    					local newFillLevel = trailer:getFillLevel(fillType)
 			    					deltaFillLevel = newFillLevel-fillLevel
 			    					if(deltaFillLevel>0 and self.pricePerLiter~=0)then
 			    						g_currentMission:addSharedMoney(-deltaFillLevel*self.pricePerLiter, "other")
 			    					end
 			    					if not self.createFillType then
-			    						self:addFillLevel(-deltaFillLevel,self.fillType)
+			    						self:addFillLevel(-deltaFillLevel,fillType)
 			    					end
 			    					if fillLevel ~= newFillLevel then
 			    						self:startFill()
@@ -283,7 +285,8 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 end
 
 function UPK_FillTrigger:setFillType(fillType)
-	local oldFillLevel=self.fillLevel
+	print('anybody?')
+	local oldFillType=self.fillType
 	if fillType~=nil then
 		if self.fillTypeShapes[oldFillType]~=nil then
 			setVisibility(oldFillLevel,false)
@@ -328,14 +331,15 @@ end
 -- Shovels
 
 function UPK_FillTrigger:fillShovel(shovel, dt)
-	if not shovel:allowFillType(self.fillType, false) then
+	fillType=self.fillType
+	if not shovel:allowFillType(fillType, false) then
 		return 0
 	end
-	if shovel~=nil and shovel.fillShovelFromTrigger~=nil and self.fillType~=Fillable.FILLTYPE_UNKNOWN then
-		local oldFillLevel=shovel:getFillLevel(self.fillType)
+	if shovel~=nil and shovel.fillShovelFromTrigger~=nil and fillType~=Fillable.FILLTYPE_UNKNOWN then
+		local oldFillLevel=shovel:getFillLevel(fillType)
 		local delta = self.fillLitersPerSecond * 0.001 * dt
-		local newFillLevel=shovel:fillShovelFromTrigger(self, delta, self.fillType, dt)
-		delta=shovel:getFillLevel(self.fillType) - oldFillLevel
+		local newFillLevel=shovel:fillShovelFromTrigger(self, delta, fillType, dt)
+		delta=shovel:getFillLevel(fillType) - oldFillLevel
 		if delta>0 then
 			if self.pricePerLiter ~= 0 then
 				local price = delta * self.pricePerLiter
@@ -344,7 +348,7 @@ function UPK_FillTrigger:fillShovel(shovel, dt)
 				g_currentMission:addSharedMoney(-price, "other")
 			end
 			if not self.createFillType then
-				delta=-self:addFillLevel(-delta,self.fillType)
+				delta=-self:addFillLevel(-delta,fillType)
 			end
 		end
 	end
@@ -354,12 +358,13 @@ end
 -- for sowingMachines, waterTrailers and sprayers
 
 function UPK_FillTrigger:fillVehicle(vehicle, delta)
-	if not vehicle:allowFillType(self.fillType, false) then
+	fillType=self.fillType
+	if not vehicle:allowFillType(fillType, false) then
 		return 0
 	end
-	local oldFillLevel = vehicle:getFillLevel(self.fillType)
-	vehicle:setFillLevel(oldFillLevel + delta, self.fillType, true)
-	delta=vehicle:getFillLevel(self.fillType) - oldFillLevel
+	local oldFillLevel = vehicle:getFillLevel(fillType)
+	vehicle:setFillLevel(oldFillLevel + delta, fillType, true)
+	delta=vehicle:getFillLevel(fillType) - oldFillLevel
 	if delta>0 then
 		if self.pricePerLiter ~= 0 then
 			local price = delta * self.pricePerLiter
@@ -368,7 +373,7 @@ function UPK_FillTrigger:fillVehicle(vehicle, delta)
 			g_currentMission:addSharedMoney(-price, "other")
 		end
 		if not self.createFillType then
-			delta=-self:addFillLevel(-delta,self.fillType)
+			delta=-self:addFillLevel(-delta,fillType)
 		end
 	end
 	return delta

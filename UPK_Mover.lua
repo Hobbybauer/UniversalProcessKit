@@ -44,8 +44,12 @@ function UPK_Mover:load(id,parent)
 		return false
 	end
 	
-    local fillTypeString = Utils.getNoNil(getUserAttribute(id, "fillTypes"), "unknown")
-	self.fillTypes = UniversalProcessKit.fillTypeNameToInt(gmatch(fillTypeString,"%S+"))
+    local fillTypeString = Utils.getNoNil(getUserAttribute(id, "fillTypes"))
+	if fillTypeString==nil then
+		self.fillTypes=self.acceptedFillTypes
+	else
+		self.fillTypes = UniversalProcessKit.fillTypeNameToInt(gmatch(fillTypeString,"%S+"))
+	end
 	self.fillTypeChoiceMax = Utils.getNoNil(getUserAttribute(id, "fillTypeChoice"), "max")=="max"
 	
 	-- move

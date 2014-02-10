@@ -31,10 +31,6 @@ function UPK_DisplayTrigger:load(id, parent)
 	self.onlyFilled = tobool(getUserAttribute(id, "onlyFilled"))
 	self.showFillLevel = tobool(Utils.getNoNil(getUserAttribute(id, "showFillLevel"),true))
 	self.showPercentage = tobool(getUserAttribute(id, "showPercentage"))
-	
-	for k,v in pairs(self.acceptedFillTypes) do
-		print(tostring(self.id).." nodeId: "..tostring(self.nodeId)..", k: "..tostring(k)..", v: "..tostring(v))
-	end
 
 	print('loaded DisplayTrigger successfully')
 	return true
@@ -48,34 +44,10 @@ function UPK_DisplayTrigger:update(dt)
 	if self.isClient then
 		if self:getShowInfo() then
 			local fluid_unit_short=g_i18n:getText("fluid_unit_short")
-			for k,v in pairs(self.acceptedFillTypes) do
-				if v then
-					local fillLevel=self.fillLevels[k]
-					if fillLevel>0 or not self.onlyFilled then
-						local i18n_key=UniversalProcessKit.fillTypeIntToName[k]
-						local text=""
-						if g_i18n:hasText(i18n_key) then
-							text=g_i18n:getText(i18n_key)
-						elseif self.i18nNameSpace~=nil and _g[self.i18nNameSpace]~=nil then
-							setfenv(1,_g[self.i18nNameSpace]); text=g_i18n:getText(i18n_key);
-						end
-						if text~="" then
-							text=text..": "
-						end
-						if self.showFillLevel then
-							text=text..math.max(0,math.floor(fillLevel+0.5)) .. "[" .. fluid_unit_short .. "]"
-						end
-						if self.showPercentage then
-							text=text.." "..math.max(0,math.ceil(fillLevel/self.capacity*100)) .. "%"
-						end
-		    			g_currentMission:addExtraPrintText(text)
-					end
-				end
-			end
-			--[[
-			for k,fillLevel in pairs(self.fillLevels(__c(self.acceptedFillTypes):getKeysAreTrue())) do
-				if type(fillLevel)=="number" and fillLevel>0 or not self.onlyFilled then
-					local i18n_key=UniversalProcessKit.fillTypeIntToName[k]
+			for _,v in pairs(self:getAcceptedFillTypes()) do
+				local fillLevel=self.fillLevels[v]
+				if fillLevel>0 or not self.onlyFilled then
+					local i18n_key=UniversalProcessKit.fillTypeIntToName[v]
 					local text=""
 					if g_i18n:hasText(i18n_key) then
 						text=g_i18n:getText(i18n_key)
@@ -88,13 +60,12 @@ function UPK_DisplayTrigger:update(dt)
 					if self.showFillLevel then
 						text=text..math.max(0,math.floor(fillLevel+0.5)) .. "[" .. fluid_unit_short .. "]"
 					end
-					if self.showPercentage and self.capacity~=math.huge then
+					if self.showPercentage then
 						text=text.." "..math.max(0,math.ceil(fillLevel/self.capacity*100)) .. "%"
 					end
 	    			g_currentMission:addExtraPrintText(text)
 				end
 			end
-			--]]
 		end
 	end
 end
