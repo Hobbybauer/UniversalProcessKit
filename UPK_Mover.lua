@@ -4,7 +4,7 @@
 -- Mover (changes translation, rotation and visibility of objects)
 
 UPK_Mover={}
-local UPK_Mover_mt = Class(UPK_Mover, UniversalProcessKit)
+local UPK_Mover_mt = ClassUPK(UPK_Mover,UniversalProcessKit)
 InitObjectClass(UPK_Mover, "UPK_Mover")
 UniversalProcessKit.addModule("mover",UPK_Mover)
 

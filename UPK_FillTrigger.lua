@@ -4,7 +4,7 @@
 -- UPK_FillTrigger (fills trailors and/or shovels with specific fillType)
 
 UPK_FillTrigger={}
-local UPK_FillTrigger_mt = Class(UPK_FillTrigger, UniversalProcessKit)
+local UPK_FillTrigger_mt = ClassUPK(UPK_FillTrigger,UniversalProcessKit)
 InitObjectClass(UPK_FillTrigger, "UPK_FillTrigger")
 UniversalProcessKit.addModule("filltrigger",UPK_FillTrigger)
 

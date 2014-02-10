@@ -316,5 +316,95 @@ function _g.__c(arr)
 		end
 		return values
 	end
+	function arr:getKeysAreTrue()
+		local r={}
+		for k,v in pairs(self) do
+			if type(v)~="function" and v then
+				table.insert(r,k)
+			end
+		end
+		return r
+	end
 	return arr
+end
+
+function ClassUPK(members, baseClass)
+	members = members or {}
+	baseClass = baseClass or UniversalProcessKit
+	
+	setmetatable(members, {__index = baseClass})
+
+	local orphan={}
+	orphan.storageType=UPK_Storage.SEPARATE
+	orphan.capacity=math.huge
+
+	local mt = { __metatable = members,
+		__index=function(t,k)
+			if k=='storageType' then
+				return (rawget(t,'parent') or orphan).storageType
+			elseif k=='capacity' then
+				return (rawget(t,'parent') or orphan).capacity
+			elseif k=='fillType' then
+				local fillType=(rawget(t,'parent') or orphan).fillType
+				if fillType==nil then
+					local storageType=t.storageType
+					if storageType==UPK_Storage.FIFO then
+						return 30
+					elseif storageType==UPK_Storage.FILO then
+						return 40
+					else
+						return Fillable.FILLTYPE_UNKNOWN
+					end
+				else
+					return fillType
+				end
+			elseif k=='fillLevel' then
+				local fillType=t.fillType
+				if fillType==Fillable.FILLTYPE_UNKNOWN then
+					return 0
+				elseif fillType~=nil then
+					return t.fillLevels[fillType]
+				else
+					return nil
+				end		
+			else
+				return members[k]
+			end
+		end
+	}
+
+	do -- contains GIANTS code only
+		local function new(_, init)
+			return setmetatable(init or {}, mt)
+		end
+		local copy = function(obj, ...)
+			local newobj = obj:new(unpack(arg))
+			for n, v in pairs(obj) do
+				newobj[n] = v
+			end
+			return newobj
+		end
+		function members:class()
+			return members
+		end
+		function members:superClass()
+			return baseClass
+		end
+		function members:isa(other)
+			local ret = false
+			local curClass = members
+			while curClass ~= nil and ret == false do
+				if curClass == other then
+					ret = true
+				else
+					curClass = curClass:superClass()
+				end
+			end
+			return ret
+		end
+		members.new = members.new or new
+		members.copy = members.copy or copy
+	end
+	
+	return mt
 end

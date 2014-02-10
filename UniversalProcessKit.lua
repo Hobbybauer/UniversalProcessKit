@@ -1,7 +1,7 @@
 -- by mor2000
 
 _g.UniversalProcessKit = {}
-local UniversalProcessKit_mt = Class(UniversalProcessKit, Object)
+local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object)
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit")
 
 UniversalProcessKit.modulesToSync={}
@@ -9,15 +9,15 @@ UniversalProcessKit.modulesToSync={}
 function UniversalProcessKit:new(isServer, isClient, customMt)
 	local self = Object:new(isServer, isClient, customMt or UniversalProcessKit_mt)
 	registerObjectClassName(self, "UniversalProcessKit")
-	
+
 	self.rootNode = 0
 	self.triggerId = 0
 	self.nodeId = 0
-	
+
 	self.parent=nil
 	self.kids={}
 	self.type=nil
-	
+
 	self.i18nNameSpace=nil
 
 	self.syncDirtyFlag = self:getNextDirtyFlag()
@@ -26,15 +26,16 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 	self.maphotspotDirtyFlag = self:getNextDirtyFlag()
 
 	-- lets make things easy dealing with fillLevels, parents and stuff
+
 	self.fillLevels={}
 	setmetatable(self.fillLevels, {
 		__index = function(t,k)
 			if k==UniversalProcessKit.FILLTYPE_MONEY then
 				return g_currentMission:getTotalMoney()
 			end
-			local fillLevel=rawget(t,k)
+			local fillLevel=rawget(self.fillLevels,k)
 			if fillLevel==nil and type(rawget(self,"parent"))=="table" then
-				fillLevel=self.parent:getFillLevel(k)
+				fillLevel=self.parent.fillLevels[k]
 			end
 			return fillLevel or 0
 		end,
@@ -42,7 +43,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 			if type(rawget(self,"parent"))=="table" then
 				self.parent.fillLevels[k]=v
 			else
-				rawset(t,k,v) -- if not initialized yet
+				rawset(self.fillLevels,k,v) -- if not initialized yet
 			end
 		end,
 		__call=function(func,...)
@@ -98,8 +99,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 	})
 	self.capacities.FILLTYPE_UNKNOWN=math.huge
 	--]]
-	
-	
+
 	self.acceptedFillTypes={}
 	setmetatable(self.acceptedFillTypes, {
 		__index = function(t,k)
@@ -146,22 +146,19 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 		end	
 	})
 
-	self.fillType=Fillable.FILLTYPE_UNKNOWN
-	self.capacity=math.huge
-
 	self.pos=__c({0,0,0})
 	self.wpos=__c({0,0,0})
 	self.rot=__c({0,0,0})
-	
+
 	self.triggerIds={}
-	
+
 	self.kids={}
-	
+
 	self.name=""
 	self.type=""
-	
+
 	self.isEnabled=true
-	
+
 	--registerObjectClassName(self, "UniversalProcessKit")
 	return self
 end
@@ -191,13 +188,7 @@ function UniversalProcessKit:load(id,parent)
 	-- capacity
 	
 	self.capacity=getUserAttribute(self.nodeId, "capacity")
-	if self.capacity==nil and self.parent~=nil then
-		self.capacity=self.parent.capacity
-	end
-	if self.capacity==nil then
-		self.capacity=math.huge
-	end
-	
+
 	-- self.capacity = tonumber(Utils.getNoNil(getUserAttribute(self.nodeId, "capacity"),math.huge))
 	-- self.capacities not quite implemented yet
 	--[[
@@ -289,7 +280,6 @@ function UniversalProcessKit:writeStream(streamId, connection)
 				nrFillLevelsToSync=nrFillLevelsToSync+1
 			end
 		end
-		print(tostring(nrFillLevelsToSync)..' fillLevels to sync')
 		streamWriteInt8(streamId,nrFillLevelsToSync) -- max 256 fillTypes
 		for k,v in pairs(fillLevelsToSync) do
 			streamWriteInt8(streamId,k)
@@ -367,7 +357,6 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 end
 
 function UniversalProcessKit:register()
-	print("UniversalProcessKit:register()")
 	if self.isServer then
 		g_server:addObject(self, self.id)
 		self.isManuallyReplicated = true
@@ -376,7 +365,6 @@ function UniversalProcessKit:register()
 		g_client:addObject(self, self.id)
 		g_client:registerObject(self, true)
 		g_client:finishRegisterObject(self,self.id)
-		print("sendEvent(UniversalProcessKitSyncEvent:new(self.id))")
 		g_client:getServerConnection():sendEvent(UniversalProcessKitSyncEvent:new(self.id))
 	end
 end
@@ -386,19 +374,17 @@ function UniversalProcessKit:findChildren(id,numKids)
 	for i=1,numChildren do
 		local childId = getChildAt(id, i-1)
 		if childId~=nil or childId~=0 then
-			local scriptCallback = getUserAttribute(childId, "onCreate")
+			local scriptCallback = getUserAttribute(childId, "scriptCallback")
 			if scriptCallback==nil then
 				local type = getUserAttribute(childId, "type")
 				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
 					childName=Utils.getNoNil(getName(childId),"")
-					if childName~="" then
-						childName="\""..childName.."\" "
-					end
-					print('found module '..childName..'of type '..tostring(type)..' and id '..tostring(childId))
+					print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
 					self.kids[numKids]=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
 					if self.kids[numKids]~=nil then
 						self.kids[numKids]:load(childId,self)
 						self.kids[numKids]:register(true)
+						self.kids[numKids].name=childName
 						numKids=numKids+1
 					end
 				else
@@ -421,7 +407,6 @@ function UniversalProcessKit:delete()
 	end
 	
 	if self.isRegistered then
-		print('try deleting module '..tostring(self.name))
 		if self.isServer then
 			g_server:unregisterObject(self,true)
 			--g_server:removeObject(self, self.id)
@@ -459,24 +444,23 @@ function UniversalProcessKit:setFillType(fillType)
 end
 
 function UniversalProcessKit:getFillLevel(fillType)
-	fillType=fillType or self.fillType
-	if fillType~=nil then
-		return self.fillLevels[fillType] or 0
-	end
-	return nil
+	return self.fillLevels[fillType]
 end
 
 function UniversalProcessKit:setFillLevel(fillLevel, fillType)
-	fillType=fillType or self.fillType
-	if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
-		local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
-		self.fillLevels[fillType]=fillLevel
-		self.fillTypesToSync[fillType]=true
-		self:raiseDirtyFlags(self.fillLevelDirtyFlag)
-		return newFillLevel-fillLevel
-	elseif fillType==UniversalProcessKit.FILLTYPE_MONEY then
-		-- can't set money
-		return 0
+	local currentFillType=self.fillType
+	fillType=fillType or currentFillType
+	if fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN then
+		if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
+			local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
+			self.fillLevels[fillType]=fillLevel
+			self.fillTypesToSync[fillType]=true
+			self:raiseDirtyFlags(self.fillLevelDirtyFlag)
+			return newFillLevel-fillLevel
+		elseif fillType==UniversalProcessKit.FILLTYPE_MONEY then
+			-- can't set money
+			return 0
+		end
 	end
 	return nil
 end
@@ -493,7 +477,7 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 			return deltaFillLevel
 		end
 		-- how much of deltaFillLevel was added to the fillLevel?
-		return deltaFillLevel-self:setFillLevel(self:getFillLevel(fillType)+deltaFillLevel, fillType)
+		return deltaFillLevel-self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
 	end
 	return 0
 end

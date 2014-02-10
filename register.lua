@@ -24,6 +24,12 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 	return str
 end
 
+UPK_Storage={}
+UPK_Storage.SEPARATE=1
+UPK_Storage.SINGLE=2
+UPK_Storage.FIFO=3
+UPK_Storage.FILO=4
+
 source(g_currentModDirectory.."c.lua")
 source(g_currentModDirectory.."UniversalProcessKit.lua")
 source(g_currentModDirectory.."UniversalProcessKitSyncEvent.lua")

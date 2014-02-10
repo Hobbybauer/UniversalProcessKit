@@ -4,7 +4,7 @@
 -- TipTrigger (that trailors can tip specific fillTypes)
 
 UPK_TipTrigger={}
-local UPK_TipTrigger_mt = Class(UPK_TipTrigger, UniversalProcessKit)
+local UPK_TipTrigger_mt = ClassUPK(UPK_TipTrigger,UniversalProcessKit)
 InitObjectClass(UPK_TipTrigger, "UPK_TipTrigger")
 UniversalProcessKit.addModule("tiptrigger",UPK_TipTrigger)
 
@@ -154,6 +154,7 @@ end
 -- waterTrailor
 
 function UPK_TipTrigger:updateTick(dt)
+	--[[
 	if self.isServer then
 		if self.fillLevels[Fillable.FILLTYPE_WATER] ~= self.sentWaterTankFillLevel then
 			self:raiseDirtyFlags(self.myDirtyFlag) -- needs update
@@ -178,6 +179,7 @@ function UPK_TipTrigger:updateTick(dt)
 			end
 		end
 	end
+	]]--
 end
 
 UPK_WaterTankActivatable = {}

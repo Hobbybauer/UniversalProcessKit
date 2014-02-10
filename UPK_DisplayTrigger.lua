@@ -4,7 +4,7 @@
 -- DisplayTrigger (shows sth in the top left hud)
 
 UPK_DisplayTrigger={}
-local UPK_DisplayTrigger_mt = Class(UPK_DisplayTrigger, UniversalProcessKit)
+local UPK_DisplayTrigger_mt = ClassUPK(UPK_DisplayTrigger,UniversalProcessKit)
 InitObjectClass(UPK_DisplayTrigger, "UPK_DisplayTrigger")
 UniversalProcessKit.addModule("displaytrigger",UPK_DisplayTrigger)
 
@@ -50,7 +50,7 @@ function UPK_DisplayTrigger:update(dt)
 			local fluid_unit_short=g_i18n:getText("fluid_unit_short")
 			for k,v in pairs(self.acceptedFillTypes) do
 				if v then
-					local fillLevel=self:getFillLevel(k)
+					local fillLevel=self.fillLevels[k]
 					if fillLevel>0 or not self.onlyFilled then
 						local i18n_key=UniversalProcessKit.fillTypeIntToName[k]
 						local text=""
@@ -72,6 +72,29 @@ function UPK_DisplayTrigger:update(dt)
 					end
 				end
 			end
+			--[[
+			for k,fillLevel in pairs(self.fillLevels(__c(self.acceptedFillTypes):getKeysAreTrue())) do
+				if type(fillLevel)=="number" and fillLevel>0 or not self.onlyFilled then
+					local i18n_key=UniversalProcessKit.fillTypeIntToName[k]
+					local text=""
+					if g_i18n:hasText(i18n_key) then
+						text=g_i18n:getText(i18n_key)
+					elseif self.i18nNameSpace~=nil and _g[self.i18nNameSpace]~=nil then
+						setfenv(1,_g[self.i18nNameSpace]); text=g_i18n:getText(i18n_key);
+					end
+					if text~="" then
+						text=text..": "
+					end
+					if self.showFillLevel then
+						text=text..math.max(0,math.floor(fillLevel+0.5)) .. "[" .. fluid_unit_short .. "]"
+					end
+					if self.showPercentage and self.capacity~=math.huge then
+						text=text.." "..math.max(0,math.ceil(fillLevel/self.capacity*100)) .. "%"
+					end
+	    			g_currentMission:addExtraPrintText(text)
+				end
+			end
+			--]]
 		end
 	end
 end

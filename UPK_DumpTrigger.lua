@@ -3,7 +3,7 @@
 -- DumpTrigger (for dumping stuff out of shovels and combines)
 
 UPK_DumpTrigger={}
-local UPK_DumpTrigger_mt = Class(UPK_DumpTrigger, UniversalProcessKit)
+local UPK_DumpTrigger_mt = ClassUPK(UPK_DumpTrigger,UniversalProcessKit)
 InitObjectClass(UPK_DumpTrigger, "UPK_DumpTrigger")
 UniversalProcessKit.addModule("dumptrigger",UPK_DumpTrigger)
 
