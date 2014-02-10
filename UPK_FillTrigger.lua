@@ -28,7 +28,6 @@ function UPK_FillTrigger:load(id,parent)
  
 	table.insert(self.triggerIds,id)
 	addTrigger(id, "triggerCallback", self)
-	--self:register(true)
 
 	self.fill = {}
 	self.siloTrailer = nil
@@ -75,10 +74,10 @@ function UPK_FillTrigger:load(id,parent)
 
     self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowTrailer"), "true"))
     self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(id, "allowShovel"), "true"))
-	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(id, "allowSowingMachine"), "true"))
-	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowWaterTrailer"), "true"))
-	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(id, "allowSprayer"), "true"))
-	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowFuelTrailer"), "true"))
+	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(id, "allowSowingMachine"), "false"))
+	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowWaterTrailer"), "false"))
+	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(id, "allowSprayer"), "false"))
+	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowFuelTrailer"), "false"))
 	
 	self.useParticleSystem = tobool(getUserAttribute(id, "useParticleSystem"))
 	
@@ -200,12 +199,14 @@ function UPK_FillTrigger:update(dt)
 				end
 			end
 		elseif self.allowShovel then
-			for _,v in pairs(self.shovels) do
-				local shovel = g_currentMission.objectToTrailer[v]
-				if shovel ~= nil then
-					self:fillShovel(shovel, dt)
-				else
-					table.remove(self.shovels,v)
+			for k,v in pairs(self.shovels) do
+				if v then
+					local shovel = g_currentMission.nodeToVehicle[k]
+					if shovel ~= nil then
+						self:fillShovel(shovel, dt)
+					else
+						self.shovels[k]=nil
+					end
 				end
 			end
 		end
@@ -214,7 +215,7 @@ end
 
 function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
 	if self.isServer and self.isEnabled then
-		local vehicle = g_currentMission.objectToTrailer[otherShapeId]
+		local vehicle=g_currentMission.objectToTrailer[otherShapeId] or g_currentMission.nodeToVehicle[otherShapeId]
 		if vehicle~=nil then
 			--[[
 			print("decide what")
@@ -229,7 +230,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 			print("self.allowShovel: "..tostring(self.allowShovel))
 			print("vehicle.getAllowFillShovel: "..tostring(vehicle.getAllowFillShovel~=nil))
 			print("self.allowTrailer: "..tostring(self.allowTrailer))
-			]]--
+			--]]
 			if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
 				if onEnter then
 					vehicle:addSowingMachineFillTrigger(self)
@@ -265,9 +266,9 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 			end
 			if self.allowShovel and vehicle.getAllowFillShovel ~= nil then
 				if onEnter then
-					table.insert(self.shovels,otherShapeId)
+					self.shovels[otherShapeId]=true
 				else
-					table.remove(self.shovels,otherShapeId)
+					self.shovels[otherShapeId]=nil
 				end
 			elseif self.allowTrailer then
 				if onEnter then
@@ -337,7 +338,7 @@ function UPK_FillTrigger:fillShovel(shovel, dt)
 	end
 	if shovel~=nil and shovel.fillShovelFromTrigger~=nil and fillType~=Fillable.FILLTYPE_UNKNOWN then
 		local oldFillLevel=shovel:getFillLevel(fillType)
-		local delta = self.fillLitersPerSecond * 0.001 * dt
+		local delta = math.min(self.fillLitersPerSecond * 0.001 * dt, self.fillLevels[fillType])
 		local newFillLevel=shovel:fillShovelFromTrigger(self, delta, fillType, dt)
 		delta=shovel:getFillLevel(fillType) - oldFillLevel
 		if delta>0 then

@@ -24,7 +24,6 @@ function UPK_DumpTrigger:load(id, parent)
 	self.fillRootNode=id
 	self.exactFillRootNode=id
 	self.fillAutoAimTargetNode=id
-	self.fillType=Fillable.FILLTYPE_UNKNOWN
 	self.fillLevel=0
 	self.resetFillLevelIfNeeded=self.setFillType
 	self.addFillLevel=self.setFillLevel
@@ -38,8 +37,10 @@ function UPK_DumpTrigger:delete()
 end
 
 function UPK_DumpTrigger:setFillLevel(fillLevel,fillType)
-	self:setFillType(Fillable.FILLTYPE_UNKNOWN)
-	-- problem with self.capacity at parents
+	if self.parent==nil then
+		print('Error: dumptrigger \"'..tostring(self.name)..'\" needs a parent')
+		return 0
+	end
 	return self.parent:addFillLevel(fillLevel,fillType)
 end
 

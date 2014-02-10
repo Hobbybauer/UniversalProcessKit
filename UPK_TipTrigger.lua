@@ -17,7 +17,6 @@ function UPK_TipTrigger:new(isServer, isClient, customMt)
 	self.setIsWaterTankFilling=GreenhousePlaceable.setIsWaterTankFilling
 	self.addWaterTrailer=GreenhousePlaceable.addWaterTrailer
 	self.removeWaterTrailer=GreenhousePlaceable.removeWaterTrailer
-	self.myDirtyFlag=self:getNextDirtyFlag()
 	return self
 end
 
@@ -73,7 +72,11 @@ end
 
 function UPK_TipTrigger:getTipInfoForTrailer(trailer, tipReferencePointIndex)
 	local _, bestPoint = self:getTipDistanceFromTrailer(trailer, tipReferencePointIndex)
-	local isAllowed = (self.acceptedFillTypes[trailer.currentFillType]==true and self.fillLevels[trailer.currentFillType]<self.capacity)==true
+	fillType=self.fillType
+	trailerFillType=trailer.currentFillType
+	local isAllowed = (self.acceptedFillTypes[trailerFillType] and
+		self.fillLevels[trailerFillType]<self.capacity) and
+		(fillType==Fillable.FILLTYPE_UNKNOWN or ((fillType or trailerFillType)==trailerFillType))
 	return isAllowed, 0, bestPoint
 end
 

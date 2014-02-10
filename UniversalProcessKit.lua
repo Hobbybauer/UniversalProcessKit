@@ -444,6 +444,7 @@ function UniversalProcessKit:getFillType()
 end;
 
 function UniversalProcessKit:setFillType(fillType)
+	print('who?')
 	if fillType~=nil then
 		self.fillType = fillType
 		--self.capacity=self.capacities[self.fillType]
@@ -463,7 +464,7 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 	if fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN then
 		if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
 			local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
-			self.fillLevels[fillType]=fillLevel
+			self.fillLevels[fillType]=newFillLevel
 			self.fillTypesToSync[fillType]=true
 			self:raiseDirtyFlags(self.fillLevelDirtyFlag)
 			return newFillLevel-fillLevel
@@ -476,7 +477,8 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 end;
 
 function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
-	if deltaFillLevel~=nil and deltaFillLevel~=0 then
+	local currentFillType=self.fillType or Fillable.FILLTYPE_UNKNOWN
+	if (fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN) and deltaFillLevel~=nil and deltaFillLevel~=0 then
 		if fillType==UniversalProcessKit.FILLTYPE_MONEY then
 			if deltaFillLevel<0 then
 				deltaFillLevel=-math.min(g_currentMission:getTotalMoney(),-deltaFillLevel)
@@ -487,17 +489,20 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 			return deltaFillLevel
 		end
 		-- how much of deltaFillLevel was added to the fillLevel?
-		return deltaFillLevel-self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
+		print('deltaFillLevel='..tostring(deltaFillLevel))
+		local added=self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
+		print('added='..tostring(added))
+		return added+deltaFillLevel
 	end
 	return 0
 end;
 
 function UniversalProcessKit:getUniqueFillType()
 	local currentFillType=Fillable.FILLTYPE_UNKNOWN
-	for k,v in pairs(self.fillLevels(self:getAcceptedFillTypes())) do
-		if type(v)=="number" and v>0 and currentFillType==Fillable.FILLTYPE_UNKNOWN then
-			currentFillType=k
-			break
+	for _,v in pairs(self:getAcceptedFillTypes()) do
+		fillLevel=self.fillLevels[v]
+		if fillLevel~=nil and fillLevel>0 then
+			return v
 		end
 	end
 	return currentFillType
@@ -505,7 +510,7 @@ end;
 
 function UniversalProcessKit:getAcceptedFillTypes()
 	local r={}
-	for k in pairs(UniversalProcessKit.fillTypeIntToName) do
+	for k,v in pairs(UniversalProcessKit.fillTypeIntToName) do
 		if self.acceptedFillTypes[k] then
 			table.insert(r,k)
 		end
@@ -544,10 +549,10 @@ end;
 function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)
 	key=key.."."..self.name
 	
-	local fillType=getXMLFloat(xmlFile, key .. "#fillType")
-	if fillType~=nil then
-		self:setFillType(unpack(UniversalProcessKit.fillTypeNameToInt(fillType)))
-	end
+	--local fillType=getXMLFloat(xmlFile, key .. "#fillType")
+	--if fillType~=nil then
+	--	self:setFillType(unpack(UniversalProcessKit.fillTypeNameToInt(fillType)))
+	--end
 	if getXMLFloat(xmlFile, key .. "#isEnabled")=="false" then
 		self:setEnable(false)
 	end
@@ -574,7 +579,7 @@ function UniversalProcessKit:getSaveAttributesAndNodes(nodeIdent)
 	
 	local nodes = "\t<"..tostring(self.name)
 
-	nodes=nodes.." fillType=\""..tostring(UniversalProcessKit.fillTypeIntToName[self.fillType]).."\""
+	--nodes=nodes.." fillType=\""..tostring(UniversalProcessKit.fillTypeIntToName[self.fillType]).."\""
 	if not self.isEnabled then
 		nodes=nodes.." isEnabled=\"false\""
 	end
