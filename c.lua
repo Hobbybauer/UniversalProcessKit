@@ -127,6 +127,40 @@ function InitEventClass(classObject,className)
 	end
 end
 
+function max(...)
+	tmpmax=-math.huge
+	arr=...
+	if type(arr)~="table" then
+		arr={...}
+	end
+	if #arr>0 then
+		for _,v in pairs(arr) do
+			if v>tmpmax then
+				tmpmax=v
+			end
+		end
+		return tmpmax
+	end
+	return nil
+end
+
+function min(...)
+	tmpmin=math.huge
+	arr=...
+	if type(arr)~="table" then
+		arr={...}
+	end
+	if #arr>0 then
+		for _,v in pairs(arr) do
+			if v<tmpmin then
+				tmpmin=v
+			end
+		end
+		return tmpmin
+	end
+	return nil
+end
+
 function _g.__c(arr)
 	if type(arr)~="table" then
 		arr={arr}
@@ -359,7 +393,7 @@ function _g.__c(arr)
 			end
 		elseif #self==0 then
 			for k,v in pairs(self) do
-				if type(self[k])=="number" then -- exclude functions
+				if type(v)=="number" then -- exclude functions
 					nr=math.max(nr,v)
 					key=k
 				end

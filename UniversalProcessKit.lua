@@ -60,7 +60,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 					end
 				end
 			end
-			return __c(t)
+			return t
 		end	
 	})
 	
@@ -136,7 +136,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 					end
 				end
 			end
-			return __c(t)
+			return t
 		end	
 	})
 
@@ -432,6 +432,12 @@ function UniversalProcessKit:delete()
 	
 	unregisterObjectClassName(self)
 	
+	if self.isServer then
+		g_server:unregisterObject(self,true)
+	else
+		g_client:unregisterObject(self,true)
+	end
+	
 	UniversalProcessKit:superClass().delete(self)
 end;
 
@@ -489,9 +495,7 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 			return deltaFillLevel
 		end
 		-- how much of deltaFillLevel was added to the fillLevel?
-		print('deltaFillLevel='..tostring(deltaFillLevel))
 		local added=self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
-		print('added='..tostring(added))
 		return added+deltaFillLevel
 	end
 	return 0

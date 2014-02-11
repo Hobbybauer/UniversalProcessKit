@@ -48,7 +48,8 @@ function UPK_Mover:load(id,parent)
 	if fillTypeString==nil then
 		self.fillTypes=self.acceptedFillTypes
 	else
-		self.fillTypes = UniversalProcessKit.fillTypeNameToInt(gmatch(fillTypeString,"%S+"))
+		self.fillTypes = UniversalProcessKit.fillTypeNameToInt(Utils.splitString(" ",fillTypeString))
+		print(tableShow(self.fillTypes))
 	end
 	self.fillTypeChoiceMax = Utils.getNoNil(getUserAttribute(id, "fillTypeChoice"), "max")=="max"
 	
@@ -95,38 +96,40 @@ function UPK_Mover:update(dt)
 	UPK_Mover:superClass().update(self,dt)
 	
 	if self.nodeId~=0 then
-		local newFillLevel
-		if self.fillTypeChoiceMax then
-			newFillLevel= self.fillLevels(self.fillTypes):max()
-		else
-			newFillLevel= self.fillLevels(self.fillTypes):min()
-		end
-		newFillLevel=math.min(math.max(newFillLevel,0),self.capacity)
-
-		-- move only if sth changed
-		if newFillLevel~=nil and newFillLevel~=self.oldFillLevel then
-			if newFillLevel<=(self.startMovingAt) then -- startMovingAt included in posLower
-				self.pos=self.posLower
-			elseif newFillLevel>(self.stopMovingAt) then
-				self.pos=self.posHigher
+		local newFillLevel=nil
+		local fillTypes=self:getAcceptedFillTypes()
+		if #fillTypes>0 then
+			if self.fillTypeChoiceMax then
+				newFillLevel= max(self.fillLevels(fillTypes))
 			else
-				local ratio=self:getRatio("pos",self.moveType,newFillLevel,self.startMovingAt,self.stopMovingAt)
-				self.pos=self.posMin+(self.posMax-self.posMin)*ratio
+				newFillLevel= min(self.fillLevels(fillTypes))
 			end
-			setTranslation(self.nodeId,unpack(self.pos))
+			newFillLevel=min(max(newFillLevel,0),self.capacity)
+			-- move only if sth changed
+			if newFillLevel~=nil and newFillLevel~=self.oldFillLevel then
+				if newFillLevel<=(self.startMovingAt) then -- startMovingAt included in posLower
+					self.pos=self.posLower
+				elseif newFillLevel>(self.stopMovingAt) then
+					self.pos=self.posHigher
+				else
+					local ratio=self:getRatio("pos",self.moveType,newFillLevel,self.startMovingAt,self.stopMovingAt)
+					self.pos=self.posMin+(self.posMax-self.posMin)*ratio
+				end
+				setTranslation(self.nodeId,unpack(self.pos))
 		
-			-- rotation
-			if newFillLevel<=self.startRotatingAt then -- startRotatingAt included in rpsLower
-				self.rotStep=self.rpsLower
-			elseif newFillLevel>self.stopRotatingAt then
-				self.rotStep=self.rpsHigher
-			else
-				local rotRatio=self:getRatio("rot",self.rotationType,newFillLevel,self.startRotatingAt,self.stopRotatingAt)
-				self.rotStep=self.rpsMin+(self.rpsMax-self.rpsMin)*rotRatio
+				-- rotation
+				if newFillLevel<=self.startRotatingAt then -- startRotatingAt included in rpsLower
+					self.rotStep=self.rpsLower
+				elseif newFillLevel>self.stopRotatingAt then
+					self.rotStep=self.rpsHigher
+				else
+					local rotRatio=self:getRatio("rot",self.rotationType,newFillLevel,self.startRotatingAt,self.stopRotatingAt)
+					self.rotStep=self.rpsMin+(self.rpsMax-self.rpsMin)*rotRatio
+				end
+		
+				-- visibility
+				setVisibility(self.nodeId,self.visibilityType==(newFillLevel>self.startVisibilityAt and newFillLevel<=self.stopVisibilityAt))
 			end
-		
-			-- visibility
-			setVisibility(self.nodeId,self.visibilityType==(newFillLevel>self.startVisibilityAt and newFillLevel<=self.stopVisibilityAt))
 		end
 
 		-- rotate all the time
