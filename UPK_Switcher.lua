@@ -95,7 +95,7 @@ function UPK_Switcher:update(dt)
 			print('use shape '..tostring(shapeToShow))
 		end
 	elseif self.useFillLevels then
-		fillLevel=math.max(unpack(self.fillLevels(self:getAcceptedFillTypes())))
+		fillLevel=self.maxFillLevel
 		if fillLevel~=self.oldFillLevel then
 			for k,v in pairs(self.maxfillLevelPerShape) do
 				if fillLevel<v then

@@ -51,7 +51,7 @@ function UPK_DisplayTrigger:update(dt)
 					local text=""
 					if g_i18n:hasText(i18n_key) then
 						text=g_i18n:getText(i18n_key)
-					elseif self.i18nNameSpace~=nil and _g[self.i18nNameSpace]~=nil then
+					elseif self.i18nNameSpace~=nil and (_g or {})[self.i18nNameSpace]~=nil then
 						setfenv(1,_g[self.i18nNameSpace]); text=g_i18n:getText(i18n_key);
 					end
 					if text~="" then

@@ -316,6 +316,7 @@ function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 				fillLevel=streamReadFloat32(streamId)
 				self.fillLevels[fillType]=fillLevel
 			end
+			self.maxFillLevel=streamReadFloat32(streamId)
 		end
 		
 		if bitAND(dirtyMask,self.enabledDirtyFlag)~=0 or syncall then
@@ -351,6 +352,7 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 					streamWriteFloat32(streamId,self.fillLevels[k])
 				end
 			end
+			streamWriteFloat32(streamId,self.maxFillLevel)
 			self.fillTypesToSync={}
 		end
 		
@@ -472,6 +474,9 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 			local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
 			self.fillLevels[fillType]=newFillLevel
 			self.fillTypesToSync[fillType]=true
+			if self.isServer then
+				self.maxFillLevel=max(unpack(self.fillLevels(self:getAcceptedFillTypes())))
+			end
 			self:raiseDirtyFlags(self.fillLevelDirtyFlag)
 			return newFillLevel-fillLevel
 		elseif fillType==UniversalProcessKit.FILLTYPE_MONEY then

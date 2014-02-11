@@ -100,7 +100,7 @@ function UPK_Mover:update(dt)
 		local fillTypes=self:getAcceptedFillTypes()
 		if #fillTypes>0 then
 			if self.fillTypeChoiceMax then
-				newFillLevel= max(self.fillLevels(fillTypes))
+				newFillLevel= self.maxFillLevel
 			else
 				newFillLevel= min(self.fillLevels(fillTypes))
 			end

@@ -450,6 +450,7 @@ function ClassUPK(members, baseClass)
 	orphan.capacity=math.huge
 	orphan.fillType=nil
 	orphan.i18nNameSpace=nil
+	orphan.maxFillLevel=0
 
 	local mt = { __metatable = members,
 		__index=function(t,k)
@@ -483,10 +484,20 @@ function ClassUPK(members, baseClass)
 				end
 			elseif k=='i18nNameSpace' then
 				return (rawget(t,'parent') or orphan).i18nNameSpace
+			elseif k=='maxFillLevel' then
+				return (rawget(t,'parent') or orphan).maxFillLevel
 			else
 				return members[k]
 			end
-		end
+		end,
+		__newindex=function(t,k,v)
+			print('try to set '..tostring(k)..' to '..tostring(t.name))
+			if k=='maxFillLevel' and type(rawget(t,"parent"))=="table" then
+				t.parent.maxFillLevel=v
+			else
+				rawset(t,k,v)
+			end
+		end,
 	}
 
 	do -- contains GIANTS code only
