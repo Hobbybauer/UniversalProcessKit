@@ -302,7 +302,7 @@ nicht durch das Setzen des UserAttributes.
         <Attribute name="type" type="string" value="processor"/>
       </UserAttribute>
       <UserAttribute nodeId="26">
-        <Attribute name="capacityApfel" type="float" value="2000"/>
+        <Attribute name="capacity" type="float" value="2000"/>
         <Attribute name="fillTypes" type="string" value="apfel"/>
       </UserAttribute>
       <UserAttribute nodeId="29">
@@ -322,6 +322,59 @@ nicht durch das Setzen des UserAttributes.
       </UserAttribute>
 	</UserAttributes>
 ```
+
+2. __Weitere Hofsilos__: Das ist eine kleine i3d, die die Funktionalität des normalen Hofsilos hat (mit eigenen Füllständen versteht sich). Einfach in die Karte importieren und Form und Größe der Trigger anpassen. Es besteht aus einer _base_ (nodeId 1), einem _tiptrigger_ (nodeId 101), einem _dumptrigger_ (nodeId 108), einem _displaytrigger_ (nodeId 107) und 4 _filltrigger_ (nodeIds 103-106). Der _tiptrigger_ ist zum Entladen von Kippern, der _dumptrigger_ zum Entladen von Schaufeln und Erntemaschinen (ist eigentlich kein Trigger, nur ein flaches Objekt am Boden was Schaufeln glauben lässt, sie entlädt in einen Kipper), die _filltrigger_ zum Füllen von Kippern und der _displaytrigger_ zum Anzeigen der Füllstände. 
+
+	Die einfügbare Datei gibt es unter https://raw.github.com/mor2000/UniversalProcessKit/master/examples/hofsilos.i3d und hat folgende UserAttributes:
+
+```
+<UserAttributes>
+
+  <UserAttribute nodeId="1">
+    <Attribute name="fillTypes" type="string" value="wheat barley rape maize"/>
+    <Attribute name="onCreate" type="scriptCallback" value="modOnCreate.UPK"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="101">
+	<Attribute name="type" type="string" value="tiptrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="108">
+	<Attribute name="type" type="string" value="dumptrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="107">
+	<Attribute name="type" type="string" value="displaytrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="103">
+    <Attribute name="fillType" type="string" value="wheat"/>
+    <Attribute name="particlePosition" type="string" value="0 7.7 0"/>
+    <Attribute name="type" type="string" value="filltrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="104">
+    <Attribute name="fillType" type="string" value="barley"/>
+    <Attribute name="particlePosition" type="string" value="0 7.7 0"/>
+    <Attribute name="type" type="string" value="filltrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="105">
+    <Attribute name="fillType" type="string" value="rape"/>
+    <Attribute name="particlePosition" type="string" value="0 7.7 0"/>
+    <Attribute name="type" type="string" value="filltrigger"/>
+  </UserAttribute>
+
+  <UserAttribute nodeId="106">
+    <Attribute name="fillType" type="string" value="maize"/>
+    <Attribute name="particlePosition" type="string" value="0 7.7 0"/>
+    <Attribute name="type" type="string" value="filltrigger"/>
+  </UserAttribute>
+
+
+</UserAttributes>
+```
+
 
 ## Anwendung
 
