@@ -3,7 +3,7 @@
 --------------------
 -- TipTrigger (that trailors can tip specific fillTypes)
 
-UPK_TipTrigger={}
+
 local UPK_TipTrigger_mt = ClassUPK(UPK_TipTrigger,UniversalProcessKit)
 InitObjectClass(UPK_TipTrigger, "UPK_TipTrigger")
 UniversalProcessKit.addModule("tiptrigger",UPK_TipTrigger)

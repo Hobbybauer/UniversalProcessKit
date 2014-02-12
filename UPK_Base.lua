@@ -3,7 +3,7 @@
 --------------------
 -- Base (root of every building, has no parent, main storage in simple buildings)
 
-UPK_Base={}
+
 local UPK_Base_mt = ClassUPK(UPK_Base,UniversalProcessKit)
 InitObjectClass(UPK_Base, "UPK_Base")
 UniversalProcessKit.addModule("base",UPK_Base)

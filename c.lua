@@ -185,7 +185,22 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 	return str
 end;
 
-UPK_Storage={}
+_g.UniversalProcessKit = {};
+_g.UPK_Activator={}
+_g.UPK_Animator={}
+_g.UPK_Base={}
+_g.UPK_Conveyor={}
+_g.UPK_DisplayTrigger={}
+_g.UPK_DumpTrigger={}
+_g.UPK_FillTrigger={}
+_g.UPK_Mover={}
+_g.UPK_Processor={}
+_g.UPK_Scaler={}
+_g.UPK_Shower={}
+_g.UPK_Storage={}
+_g.UPK_Switcher={}
+_g.UPK_TipTrigger={}
+
 UPK_Storage.SEPARATE=1
 UPK_Storage.SINGLE=2
 UPK_Storage.FIFO=3

@@ -3,7 +3,6 @@
 --------------------
 -- DisplayTrigger (shows sth in the top left hud)
 
-UPK_DisplayTrigger={}
 local UPK_DisplayTrigger_mt = ClassUPK(UPK_DisplayTrigger,UniversalProcessKit)
 InitObjectClass(UPK_DisplayTrigger, "UPK_DisplayTrigger")
 UniversalProcessKit.addModule("displaytrigger",UPK_DisplayTrigger)

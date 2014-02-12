@@ -3,8 +3,8 @@
 --------------------
 -- Switcher
 
-UPK_Switcher={}
-local UPK_Switcher_mt = ClassUPK(UPK_Switcher,UniversalProcessKit)
+
+local UPK_Switcher_mt = ClassUPK(UPK_Switcher)
 InitObjectClass(UPK_Switcher, "UPK_Switcher")
 UniversalProcessKit.addModule("switcher",UPK_Switcher)
 
@@ -90,7 +90,7 @@ function UPK_Switcher:update(dt)
 
 	if self.useFillTypes then
 		fillType=self.fillType
-		if fillType~=self.oldFillType then
+		if fillType~=nil and fillType~=self.oldFillType then
 			shapeToShow=self.switchFillTypes[fillType]
 			self:print('use shape '..tostring(shapeToShow))
 		end

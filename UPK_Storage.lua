@@ -4,7 +4,7 @@
 -- Storage
 
 
-local UPK_Storage_mt = ClassUPK(UPK_Storage,UniversalProcessKit)
+local UPK_Storage_mt = ClassUPK(UPK_Storage)
 InitObjectClass(UPK_Storage, "UPK_Storage")
 UniversalProcessKit.addModule("storage",UPK_Storage)
 
@@ -23,8 +23,10 @@ function UPK_Storage:load(id)
 		rawset(self.fillLevels,k,0)
 	end
 	
+	self:print("self.storageType="..tostring(self.storageType))
 	if self.storageType==UPK_Storage.SINGLE then
-		self.fillType=Utils.getNoNil(getUserAttribute(self.nodeId, "fillType"),Fillable.FILLTYPE_UNKNOWN)
+		self.fillType=unpack(UniversalProcessKit.fillTypeNameToInt(Utils.getNoNil(getUserAttribute(self.nodeId, "fillType"),"unknown")))
+		self:print('self.fillType='..tostring(self.fillType))
 	end
 
 	table.insert(UniversalProcessKit.modulesToSync,self)

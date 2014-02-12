@@ -1,6 +1,6 @@
 -- by mor2000
 
-_g.UniversalProcessKit = {};
+
 UniversalProcessKit=_g.UniversalProcessKit
 local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object);
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit");

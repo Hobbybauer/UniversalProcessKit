@@ -16,7 +16,7 @@
 -- processing: water 0, barley 0, beer 5
 -- read it like: pass water to parent with 0 liter per second (=store), barley too and beer with 5 liters per second
 
-UPK_Processor={}
+
 local UPK_Processor_mt = ClassUPK(UPK_Processor,UniversalProcessKit)
 InitObjectClass(UPK_Processor, "UPK_Processor")
 UniversalProcessKit.addModule("processor",UPK_Processor)
