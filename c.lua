@@ -107,14 +107,16 @@ function _m.print(string, debug)
 	if debug==nil then
 		debug=debugMode
 	end
-	if type(string)=="string" then
-		local msg=string
-		if debug then
-			msg='DEBUG '..msg
+	if debug then
+		if type(string)=="string" then
+			local msg=string
+			if debug then
+				msg='DEBUG '..msg
+			end
+			_g.print(' [UPK] '..msg)
 		end
-		_g.print(' [UPK] '..msg)
 	end
-end
+end;
 
 function InitEventClass(classObject,className)
 	if _g[className]~=classObject then
@@ -125,7 +127,7 @@ function InitEventClass(classObject,className)
 	if classObject.eventId==nil then
 		EventIds.assignEventObjectId(classObject,className,EventIds.eventIdNext)
 	end
-end
+end;
 
 function max(...)
 	tmpmax=-math.huge
@@ -142,7 +144,7 @@ function max(...)
 		return tmpmax
 	end
 	return nil
-end
+end;
 
 function min(...)
 	tmpmin=math.huge
@@ -159,7 +161,35 @@ function min(...)
 		return tmpmin
 	end
 	return nil
-end
+end;
+
+function gmatch(str, pattern)
+	local arr={}
+	if type(str)=="string" then
+		for v in string.gmatch(str,pattern) do
+			table.insert(arr,v)
+		end
+	end
+	return arr
+end;
+
+function tobool(val)
+	return not (val == nil or val == false or val == 0 or val == "0" or val == "false" )
+end;
+
+function getVectorFromUserAttribute(nodeId, attribute, default)
+	local str=Utils.getNoNil(getUserAttribute(nodeId, attribute), default)
+	if type(str)=="string" then
+		return __c({Utils.getVectorFromString(str)})
+	end
+	return str
+end;
+
+UPK_Storage={}
+UPK_Storage.SEPARATE=1
+UPK_Storage.SINGLE=2
+UPK_Storage.FIFO=3
+UPK_Storage.FILO=4
 
 function _g.__c(arr)
 	if type(arr)~="table" then
@@ -437,11 +467,15 @@ function _g.__c(arr)
 		return r
 	end
 	return arr
-end
+end;
 
-function ClassUPK(members, baseClass)
+function _g.ClassUPK(members, baseClass)
 	members = members or {}
 	baseClass = baseClass or UniversalProcessKit
+	if baseClass==nil then
+		print('Error: can\'t init class - UniversalProcessKit required')
+		return nil
+	end
 	
 	setmetatable(members, {__index = baseClass})
 
@@ -491,7 +525,6 @@ function ClassUPK(members, baseClass)
 			end
 		end,
 		__newindex=function(t,k,v)
-			print('try to set '..tostring(k)..' to '..tostring(t.name))
 			if k=='maxFillLevel' and type(rawget(t,"parent"))=="table" then
 				t.parent.maxFillLevel=v
 			else
@@ -499,6 +532,22 @@ function ClassUPK(members, baseClass)
 			end
 		end,
 	}
+	
+	function members:print(string, debug)
+		if debug==nil then
+			debug=debugMode
+		end
+		if debug then
+			if type(string)=="string" then
+				local msg=string
+				if debug then
+					msg='DEBUG '..msg
+				end
+				local signature=self.className or "unknown"
+				_g.print(' ['..tostring(signature)..'] '..msg)
+			end
+		end
+	end	
 
 	do -- contains GIANTS code only
 		local function new(_, init)
@@ -534,4 +583,4 @@ function ClassUPK(members, baseClass)
 	end
 	
 	return mt
-end
+end;

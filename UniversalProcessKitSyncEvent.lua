@@ -36,3 +36,5 @@ end
 function UniversalProcessKitSyncEvent:writeStream(streamId, connection)
 	streamWriteInt32(streamId, self.objectId)
 end
+
+InitEventClass(UniversalProcessKitSyncEvent,"UniversalProcessKitSyncEvent")

@@ -17,7 +17,26 @@
 	<iconFilename>UniversalProcessKit.dds</iconFilename>
     <multiplayer supported="true"/>
 	<extraSourceFiles>
-		<sourceFile filename="register.lua" />
+		<sourceFile filename="DEBUG.lua" />
+		<sourceFile filename="c.lua" />
+		<sourceFile filename="UniversalProcessKit.lua"/>
+		<sourceFile filename="UniversalProcessKitSyncEvent.lua"/>
+		<sourceFile filename="UniversalProcessKitModules.lua"/>
+		<sourceFile filename="UniversalProcessKitFillTypes.lua"/>
+		<sourceFile filename="UPK_Activator.lua"/>
+		<sourceFile filename="UPK_Animator.lua"/>
+		<sourceFile filename="UPK_Base.lua"/>
+		<sourceFile filename="UPK_Conveyor.lua"/>
+		<sourceFile filename="UPK_DisplayTrigger.lua"/>
+		<sourceFile filename="UPK_DumpTrigger.lua"/>
+		<sourceFile filename="UPK_FillTrigger.lua"/>
+		<sourceFile filename="UPK_Mover.lua"/>
+		<sourceFile filename="UPK_Processor.lua"/>
+		<sourceFile filename="UPK_Shower.lua"/>
+		<sourceFile filename="UPK_Storage.lua"/>
+		<sourceFile filename="UPK_Switcher.lua"/>
+		<sourceFile filename="UPK_TipTrigger.lua"/>
+		<sourceFile filename="PlaceableUPK.lua"/>
     </extraSourceFiles>
 	<storeItems/>
 		

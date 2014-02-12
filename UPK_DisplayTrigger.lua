@@ -16,7 +16,7 @@ end
 
 function UPK_DisplayTrigger:load(id, parent)
 	if not UPK_DisplayTrigger:superClass().load(self, id, parent) then
-		print('Error: loading DisplayTrigger failed',true)
+		self:print('Error: loading DisplayTrigger failed',true)
 		return false
 	end
 	
@@ -32,7 +32,7 @@ function UPK_DisplayTrigger:load(id, parent)
 	self.showFillLevel = tobool(Utils.getNoNil(getUserAttribute(id, "showFillLevel"),true))
 	self.showPercentage = tobool(getUserAttribute(id, "showPercentage"))
 
-	print('loaded DisplayTrigger successfully')
+	self:print('loaded DisplayTrigger successfully')
 	return true
 end
 

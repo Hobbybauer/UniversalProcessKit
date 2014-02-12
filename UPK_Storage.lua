@@ -16,14 +16,19 @@ end
 
 function UPK_Storage:load(id)
 	if not UPK_Storage:superClass().load(self, id, nil) then
-		print('Error: loading Storage failed',true)
+		self:print('Error: loading Storage failed',true)
 		return false
 	end
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end
+	
+	if self.storageType==UPK_Storage.SINGLE then
+		self.fillType=Utils.getNoNil(getUserAttribute(self.nodeId, "fillType"),Fillable.FILLTYPE_UNKNOWN)
+	end
+
 	table.insert(UniversalProcessKit.modulesToSync,self)
-	print('loaded Base successfully')
+	self:print('loaded Storage successfully')
 	return true
 end
 

@@ -1,6 +1,7 @@
 -- by mor2000
 
 _g.UniversalProcessKit = {};
+UniversalProcessKit=_g.UniversalProcessKit
 local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object);
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit");
 
@@ -178,7 +179,7 @@ function UniversalProcessKit:load(id,parent)
 	if acceptedFillTypesString~=nil then
 		for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
 			rawset(self.acceptedFillTypes,v,true)
-			print('accepted fillType: '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..') '..tostring(self.acceptedFillTypes[v]))
+			self:print('accepted fillType: '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..') '..tostring(self.acceptedFillTypes[v]))
 		end
 	end
 	
@@ -194,7 +195,7 @@ function UniversalProcessKit:load(id,parent)
 			local fillType=UniversalProcessKit.fillTypeIntToName[k]
 			if type(fillType)=="string" and #fillType>0 then
 				local attributeStr="capacity"..fillType:sub(1,1):upper()..fillType:sub(2)
-				print("setting capacity for "..tostring(attributeStr))
+				self:print("setting capacity for "..tostring(attributeStr))
 				local capacity = tonumber(getUserAttribute(self.nodeId, attributeStr))
 				if capacity~=nil then
 					rawset(self.capacities,k,capacity)
@@ -210,7 +211,7 @@ function UniversalProcessKit:load(id,parent)
 	local storageTypeStr=getUserAttribute(self.nodeId, "storageType")
 	if storageTypeStr~=nil then
 		if storageTypeStr=="single" then
-			print('storageType is single')
+			self:print('storageType is single')
 			self.storageType=UPK_Storage.SINGLE
 		elseif storageTypeStr=="fifo" then
 			self.storageType=UPK_Storage.FIFO
@@ -391,7 +392,7 @@ function UniversalProcessKit:findChildren(id,numKids)
 				local type = getUserAttribute(childId, "type")
 				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
 					childName=Utils.getNoNil(getName(childId),"")
-					print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
+					self:print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
 					self.kids[numKids]=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
 					if self.kids[numKids]~=nil then
 						self.kids[numKids]:load(childId,self)
@@ -452,7 +453,7 @@ function UniversalProcessKit:getFillType()
 end;
 
 function UniversalProcessKit:setFillType(fillType)
-	print('who?')
+	self:print('who?')
 	if fillType~=nil then
 		self.fillType = fillType
 		--self.capacity=self.capacities[self.fillType]

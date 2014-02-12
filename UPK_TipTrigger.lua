@@ -22,7 +22,7 @@ end
 
 function UPK_TipTrigger:load(id, parent)
 	if not UPK_TipTrigger:superClass().load(self, id, parent) then
-		print('Error: loading TipTrigger failed',true)
+		self:print('Error: loading TipTrigger failed',true)
 		return false
 	end
 	
@@ -47,7 +47,7 @@ function UPK_TipTrigger:load(id, parent)
 	self.capacityReachedText = g_i18n:getText(Utils.getNoNil(getUserAttribute(self.nodeId, "CapacityReachedText"), "capacityReached"))
 	self.playerInRange = false
 
-	print('loaded TipTrigger successfully')
+	self:print('loaded TipTrigger successfully')
 	return true
 end
 

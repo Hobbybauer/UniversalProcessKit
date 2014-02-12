@@ -22,7 +22,7 @@ end
 
 function UPK_FillTrigger:load(id,parent)
 	if not UPK_FillTrigger:superClass().load(self, id, parent) then
-		print('Error: loading FillTrigger failed',true)
+		self:print('Error: loading FillTrigger failed',true)
 		return false
 	end
  
@@ -61,7 +61,7 @@ function UPK_FillTrigger:load(id,parent)
 		if type(fillType)=="number" then
 			self.fillType=fillType
 		else
-			print('Error: unknown fillType \"'..tostring(fillTypeStr)..'\" in filltrigger '..tostring(self.name))
+			self:print('Error: unknown fillType \"'..tostring(fillTypeStr)..'\" in filltrigger '..tostring(self.name))
 		end
 	end
 	
@@ -114,14 +114,14 @@ function UPK_FillTrigger:load(id,parent)
     
 	
       local fillSoundFilename = Utils.getFilename("$data/maps/sounds/siloFillSound.wav", g_currentMission.baseDirectory)
-  	--print('Set fillSoundFilename to '..tostring(fillSoundFilename))
+  	--self:print('Set fillSoundFilename to '..tostring(fillSoundFilename))
       self.siloFillSound = createAudioSource("siloFillSound", fillSoundFilename, 30, 10, 1, 0)
-  	--print('self.siloFillSound is '..tostring(self.siloFillSound))
+  	--self:print('self.siloFillSound is '..tostring(self.siloFillSound))
       link(id, self.siloFillSound)
       setVisibility(self.siloFillSound, false)
   end
   
-  print('loaded FillTrigger successfully')
+  self:print('loaded FillTrigger successfully')
   return true
 end
 
@@ -158,11 +158,11 @@ end
 
 function UPK_FillTrigger:update(dt)
 	if self.isServer then
-		--print("isServer")
+		--self:print("isServer")
 		if self.allowTrailer then
 			for _,v in pairs(self.trailers) do
 				local trailer = g_currentMission.objectToTrailer[v]
-				--print("trailer: "..tostring(type(self.parentTrailer))..", fill: "..tostring(self.fill)..", fillDone: "..tostring(self.fillDone))
+				--self:print("trailer: "..tostring(type(self.parentTrailer))..", fill: "..tostring(self.fill)..", fillDone: "..tostring(self.fillDone))
 				if trailer~=nil then
 					fillType=self.fillType
 					if trailer.currentFillType==fillType or trailer.currentFillType==Fillable.FILLTYPE_UNKNOWN then
@@ -218,18 +218,18 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 		local vehicle=g_currentMission.objectToTrailer[otherShapeId] or g_currentMission.nodeToVehicle[otherShapeId]
 		if vehicle~=nil then
 			--[[
-			print("decide what")
-			print("self.allowSowingMachine: "..tostring(self.allowSowingMachine))
-			print("vehicle.addSowingMachineFillTrigger: "..tostring(vehicle.addSowingMachineFillTrigger~=nil))
-			print("self.allowWaterTrailer: "..tostring(self.allowWaterTrailer))
-			print("vehicle.addWaterTrailerFillTrigger: "..tostring(vehicle.addWaterTrailerFillTrigger~=nil))
-			print("self.allowSprayer: "..tostring(self.allowSprayer))
-			print("vehicle.addSprayerFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
-			print("self.allowFuelTrailer: "..tostring(self.allowFuelTrailer))
-			print("vehicle.addFuelFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
-			print("self.allowShovel: "..tostring(self.allowShovel))
-			print("vehicle.getAllowFillShovel: "..tostring(vehicle.getAllowFillShovel~=nil))
-			print("self.allowTrailer: "..tostring(self.allowTrailer))
+			self:print("decide what")
+			self:print("self.allowSowingMachine: "..tostring(self.allowSowingMachine))
+			self:print("vehicle.addSowingMachineFillTrigger: "..tostring(vehicle.addSowingMachineFillTrigger~=nil))
+			self:print("self.allowWaterTrailer: "..tostring(self.allowWaterTrailer))
+			self:print("vehicle.addWaterTrailerFillTrigger: "..tostring(vehicle.addWaterTrailerFillTrigger~=nil))
+			self:print("self.allowSprayer: "..tostring(self.allowSprayer))
+			self:print("vehicle.addSprayerFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
+			self:print("self.allowFuelTrailer: "..tostring(self.allowFuelTrailer))
+			self:print("vehicle.addFuelFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
+			self:print("self.allowShovel: "..tostring(self.allowShovel))
+			self:print("vehicle.getAllowFillShovel: "..tostring(vehicle.getAllowFillShovel~=nil))
+			self:print("self.allowTrailer: "..tostring(self.allowTrailer))
 			--]]
 			if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
 				if onEnter then
@@ -286,7 +286,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 end
 
 function UPK_FillTrigger:setFillType(fillType)
-	print('anybody?')
+	self:print('anybody?')
 	local oldFillType=self.fillType
 	if fillType~=nil then
 		if self.fillTypeShapes[oldFillType]~=nil then
@@ -302,7 +302,7 @@ function UPK_FillTrigger:setFillType(fillType)
 end
 
 function UPK_FillTrigger:getIsActivatable(vehicle)
-	--print("UPK_FillTrigger:getIsActivatable")
+	--self:print("UPK_FillTrigger:getIsActivatable")
 	if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_SEEDS, false) and (self.fillLevels[Fillable.FILLTYPE_SEEDS] > 0 or self.createFillType) then
 		return true
 	elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_WATER, false) and (self.fillLevels[Fillable.FILLTYPE_WATER] > 0 or self.createFillType) then

@@ -16,7 +16,7 @@ end
 
 function UPK_Switcher:load(id,parent)
 	if not UPK_Switcher:superClass().load(self, id, parent) then
-		print('Error: loading Switcher failed',true)
+		self:print('Error: loading Switcher failed',true)
 		return false
 	end
 	
@@ -31,7 +31,7 @@ function UPK_Switcher:load(id,parent)
 			setVisibility(childId,false)
 			local fillTypesInShape=gmatch(fillTypesPerShape[i], "%S+")
 			for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(fillTypesInShape)) do
-				print("assigning "..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..") to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
+				self:print("assigning "..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..") to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
 				table.insert(self.switchFillTypes,v,childId)
 				self.useFillTypes=true
 			end
@@ -48,7 +48,7 @@ function UPK_Switcher:load(id,parent)
 			if maxFillLevel~=nil then
 				table.insert(self.maxfillLevelPerShape,maxFillLevel)
 			else
-				print('Warning: couldn\'t convert \"'..tostring(v)..'\" to number')
+				self:print('Warning: couldn\'t convert \"'..tostring(v)..'\" to number')
 			end
 		end
 		table.insert(self.maxfillLevelPerShape,math.huge)
@@ -57,13 +57,13 @@ function UPK_Switcher:load(id,parent)
 			local childId = getChildAt(self.nodeId, i-1)
 			setVisibility(childId,false)
 			table.insert(self.switchFillLevels,childId)
-			print("assigning max fillLevel of "..tostring(self.maxfillLevelPerShape[i]).." to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
+			self:print("assigning max fillLevel of "..tostring(self.maxfillLevelPerShape[i]).." to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
 			self.useFillLevels=true
 		end
 	end
 	
 	if (self.useFillTypes and self.useFillLevels) or (not self.useFillTypes and not self.useFillLevels) then
-		print('Error: switcher requires to set either switchFillTypes or switchFillLevels')
+		self:print('Error: switcher requires to set either switchFillTypes or switchFillLevels')
 		return false
 	end
 	
@@ -73,7 +73,7 @@ function UPK_Switcher:load(id,parent)
 	self.oldFillLevel=nil
 	self.oldShapeToShow=nil
 
-	print('loaded Switcher successfully')
+	self:print('loaded Switcher successfully')
     return true
 end
 
@@ -92,7 +92,7 @@ function UPK_Switcher:update(dt)
 		fillType=self.fillType
 		if fillType~=self.oldFillType then
 			shapeToShow=self.switchFillTypes[fillType]
-			print('use shape '..tostring(shapeToShow))
+			self:print('use shape '..tostring(shapeToShow))
 		end
 	elseif self.useFillLevels then
 		fillLevel=self.maxFillLevel
@@ -111,7 +111,7 @@ function UPK_Switcher:update(dt)
 			setVisibility(self.oldShapeToShow,false)
 			setTranslation(self.oldShapeToShow,unpack(self.pos+self.hidingPosition))
 		end
-		print('show shape '..tostring(shapeToShow))
+		self:print('show shape '..tostring(shapeToShow))
 		setVisibility(shapeToShow,true)
 		setTranslation(shapeToShow,unpack(self.pos))
 		self.oldShapeToShow=shapeToShow

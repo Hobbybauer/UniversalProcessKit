@@ -15,7 +15,7 @@ end
 
 function UPK_DumpTrigger:load(id, parent)
 	if not UPK_DumpTrigger:superClass().load(self, id, parent) then
-		print('Error: loading DumpTrigger failed',true)
+		self:print('Error: loading DumpTrigger failed',true)
 		return false
 	end
 
@@ -28,7 +28,7 @@ function UPK_DumpTrigger:load(id, parent)
 	self.resetFillLevelIfNeeded=self.setFillType
 	self.addFillLevel=self.setFillLevel
 	
-	print('loaded DumpTrigger successfully')
+	self:print('loaded DumpTrigger successfully')
 	return true
 end
 
@@ -38,7 +38,7 @@ end
 
 function UPK_DumpTrigger:setFillLevel(fillLevel,fillType)
 	if self.parent==nil then
-		print('Error: dumptrigger \"'..tostring(self.name)..'\" needs a parent')
+		self:print('Error: dumptrigger \"'..tostring(self.name)..'\" needs a parent')
 		return 0
 	end
 	return self.parent:addFillLevel(fillLevel,fillType)

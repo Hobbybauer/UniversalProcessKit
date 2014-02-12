@@ -40,7 +40,7 @@ end
 
 function UPK_Mover:load(id,parent)
 	if not UPK_Mover:superClass().load(self, id, parent) then
-		print('Error: loading Mover failed',true)
+		self:print('Error: loading Mover failed',true)
 		return false
 	end
 	
@@ -49,7 +49,6 @@ function UPK_Mover:load(id,parent)
 		self.fillTypes=self.acceptedFillTypes
 	else
 		self.fillTypes = UniversalProcessKit.fillTypeNameToInt(Utils.splitString(" ",fillTypeString))
-		print(tableShow(self.fillTypes))
 	end
 	self.fillTypeChoiceMax = Utils.getNoNil(getUserAttribute(id, "fillTypeChoice"), "max")=="max"
 	
@@ -84,7 +83,7 @@ function UPK_Mover:load(id,parent)
 	self.stopVisibilityAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopVisibilityAt")), self.capacity)
 	self.visibilityType=Utils.getNoNil(getUserAttribute(id, "visibilityType"), "show")=="show"
 	
-	print('loaded Mover successfully')
+	self:print('loaded Mover successfully')
     return true
 end
 

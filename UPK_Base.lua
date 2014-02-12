@@ -25,14 +25,14 @@ end
 
 function UPK_Base:load(id)
 	if not UPK_Base:superClass().load(self, id, nil) then
-		print('Error: loading Base failed',true)
+		self:print('Error: loading Base failed',true)
 		return false
 	end
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end
 	rawset(self,'maxFillLevel',0)
-	print('loaded Base successfully')
+	self:print('loaded Base successfully')
 	return true
 end
 
@@ -45,3 +45,4 @@ function UPK_Base:executeAction(sender, action, value)
 	-- extend functionality down here (in your own modules)
 end
 
+g_onCreateUtil.addOnCreateFunction("UPK", UPK_Base.onCreate)

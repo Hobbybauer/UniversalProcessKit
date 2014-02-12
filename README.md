@@ -390,32 +390,10 @@ Für jeden in eine Karte verbauten UPK-Mod muss folgendes UserAttribute zur jewe
 
 #### Als platzierbares Objekt
 
-Folgender Code muss in der register.lua des Mods stehen, die in der
-modDesc.xml aufgerufen wird. Dabei muss
-„NAME\_DES\_PLATZIERBAREN\_OBJEKTS“ (Zeile 9) durch den Namen des
-platzierbaren Objekts, wie er in der modDesc.xml unter storeItems
-verwendet wird, ersetzt werden:
+Folgender Code muss in der register.lua des Mods stehen, die in der modDesc.xml aufgerufen wird. Dabei muss „NAME\_DES\_PLATZIERBAREN\_OBJEKTS“ durch den Namen des platzierbaren Objekts, wie er in der modDesc.xml unter storeItems verwendet wird, ersetzt werden:
 
 ```
-    local modName=g_currentModName
-    UPKregisterListener = {}
-    function UPKregisterListener:loadMap(name)
-        if UPK==nil then
-            print(' ['..modName..'] Error: UniversalProcessKit requiered')
-        else
-            -- HIER DIE PLATZIERBAREN UPK-MODS REGISTRIEREN 	
-            --=================================--
-           	registerPlaceableType("NAME_DES_PLATZIERBAREN_OBJEKTS", PlaceableUPK)
-    		--=================================--
-     	end
-    end
-    local emptyFunc=function() end
-    UPKregisterListener.deleteMap=emptyFunc
-    UPKregisterListener.mouseEvent=emptyFunc
-    UPKregisterListener.keyEvent=emptyFunc
-    UPKregisterListener.update=emptyFunc
-    UPKregisterListener.draw=emptyFunc
-    addModEventListener(UPKregisterListener)
+    registerPlaceableType("NAME_DES_PLATZIERBAREN_OBJEKTS", PlaceableUPK)
 ```
 
 ## Ausblick

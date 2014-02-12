@@ -2,7 +2,6 @@
 
 _g.PlaceableUPK = {}
 PlaceableUPK_mt = Class(PlaceableUPK, Placeable)
-
 InitObjectClass(PlaceableUPK, "PlaceableUPK")
 
 function PlaceableUPK:new(isServer, isClient, customMt)
