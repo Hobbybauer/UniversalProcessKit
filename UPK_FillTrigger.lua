@@ -24,8 +24,7 @@ function UPK_FillTrigger:load(id,parent)
 		self:print('Error: loading FillTrigger failed',true)
 		return false
 	end
- 
-	table.insert(self.triggerIds,id)
+
 	addTrigger(id, "triggerCallback", self)
 
 	self.fill = {}

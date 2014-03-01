@@ -29,7 +29,6 @@ function UPK_Storage:load(id)
 		self:print('self.fillType='..tostring(self.fillType))
 	end
 
-	table.insert(UniversalProcessKit.modulesToSync,self)
 	self:print('loaded Storage successfully')
 	return true
 end

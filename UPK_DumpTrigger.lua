@@ -10,6 +10,7 @@ UniversalProcessKit.addModule("dumptrigger",UPK_DumpTrigger)
 function UPK_DumpTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_DumpTrigger_mt)
 	registerObjectClassName(self, "UPK_DumpTrigger")
+	self.addNodeObject=true
 	return self
 end
 
@@ -28,6 +29,12 @@ function UPK_DumpTrigger:load(id, parent)
 	self.resetFillLevelIfNeeded=self.setFillType
 	self.addFillLevel=self.setFillLevel
 	
+	for k,v in pairs(self.acceptedFillTypes) do
+		self:print('accepting '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..')')
+	end
+	
+	self:print('accepting sugarBeet? '..tostring(self.acceptedFillTypes[UniversalProcessKit.fillTypeNameToInt["sugarBeet"]]))
+	
 	self:print('loaded DumpTrigger successfully')
 	return true
 end
@@ -45,10 +52,13 @@ function UPK_DumpTrigger:setFillLevel(fillLevel,fillType)
 end
 
 function UPK_DumpTrigger:allowFillType(fillType)
-	return self.isEnabled and fillType ~= Fillable.FILLTYPE_UNKNOWN and self.acceptedFillTypes[fillType]
+	local r=self.isEnabled and fillType ~= Fillable.FILLTYPE_UNKNOWN and self.acceptedFillTypes[fillType]
+	--self:print('UPK_DumpTrigger:allowFillType('..tostring(filltype)..') = '..tostring(r))
+	return r
 end
 
 function UPK_DumpTrigger:getAllowFillFromAir()
+	--self:print('UPK_DumpTrigger:getAllowFillFromAir')
 	return self.isEnabled
 end
 
@@ -57,9 +67,13 @@ function UPK_DumpTrigger:getIsAttachedTo(combine)
 end
 
 function UPK_DumpTrigger:addShovelFillLevel(shovel, delta, fillType)
-	return self.parent:addFillLevel(delta,fillType)
+	local r=self.parent:addFillLevel(delta,fillType)
+	--self:print('UPK_DumpTrigger:addShovelFillLevel('..tostring(shovel)..', '..tostring(delta)..', '..tostring(fillType)..') = '..tostring(r))
+	return r
 end
 
 function UPK_DumpTrigger:getAllowShovelFillType(fillType)
-	return self.isEnabled and self:allowFillType(fillType) and self.fillLevels[fillType]<self.capacity
+	local r=self.isEnabled and self:allowFillType(fillType) and self.fillLevels[fillType]<self.capacity
+	--self:print('UPK_DumpTrigger:getAllowShovelFillType('..tostring(filltype)..') = '..tostring(r))
+	return r
 end

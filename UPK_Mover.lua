@@ -4,7 +4,7 @@
 -- Mover (changes translation, rotation and visibility of objects)
 
 
-local UPK_Mover_mt = ClassUPK(UPK_Mover,UniversalProcessKit)
+local UPK_Mover_mt = ClassUPK(UPK_Mover)
 InitObjectClass(UPK_Mover, "UPK_Mover")
 UniversalProcessKit.addModule("mover",UPK_Mover)
 
@@ -94,12 +94,12 @@ end
 function UPK_Mover:update(dt)
 	UPK_Mover:superClass().update(self,dt)
 	
-	if self.nodeId~=0 then
+	if self.isClient and self.nodeId~=0 then
 		local newFillLevel=nil
 		local fillTypes=self:getAcceptedFillTypes()
 		if #fillTypes>0 then
 			if self.fillTypeChoiceMax then
-				newFillLevel= self.maxFillLevel
+				newFillLevel= self.fillLevel
 			else
 				newFillLevel= min(self.fillLevels(fillTypes))
 			end

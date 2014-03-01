@@ -1,6 +1,5 @@
 -- by mor2000
 
-_g.PlaceableUPK = {}
 PlaceableUPK_mt = Class(PlaceableUPK, Placeable)
 InitObjectClass(PlaceableUPK, "PlaceableUPK")
 
@@ -19,7 +18,7 @@ function PlaceableUPK:load(xmlFilename, x, y, z, rx, ry, rz, moveMode, initRando
 
 	if not moveMode and self.nodeId~=nil then
 		self.base=UPK_Base:new(self.isServer, self.isClient)
-		self.base:load(self.nodeId)
+		self.base:load(self.nodeId,self)
 		self.base:register(true)
 	end -- not moveMode
 
@@ -28,7 +27,8 @@ end
 
 function PlaceableUPK:delete()
 	if self.base~=nil then
-		self.base:delete(self.base)
+		self.base:delete()
+		self.base=nil
 	end
 	PlaceableUPK:superClass().delete(self)
 end
@@ -51,7 +51,7 @@ function PlaceableUPK:writeStream(streamId, connection)
 	end
 end
 
-function PlaceableUPK:loadFromAttributesAndNodes(xmlFile, key)
+function PlaceableUPK:loadFromAttributesAndNodes(xmlFile, key, resetVehicles)
 	if not PlaceableUPK:superClass().loadFromAttributesAndNodes(self, xmlFile, key, resetVehicles) then
 		return false
 	end

@@ -1,7 +1,7 @@
 -- by mor2000
 
 --------------------
--- TipTrigger (that trailors can tip specific fillTypes)
+-- TipTrigger (that trailers can tip specific fillTypes)
 
 
 local UPK_TipTrigger_mt = ClassUPK(UPK_TipTrigger,UniversalProcessKit)
@@ -14,6 +14,7 @@ function UPK_TipTrigger:new(isServer, isClient, customMt)
 	end
 	local self = UniversalProcessKit:new(isServer, isClient, customMt)
 	registerObjectClassName(self, "UPK_TipTrigger")
+	self.addNodeObject=true
 	self.setIsWaterTankFilling=GreenhousePlaceable.setIsWaterTankFilling
 	self.addWaterTrailer=GreenhousePlaceable.addWaterTrailer
 	self.removeWaterTrailer=GreenhousePlaceable.removeWaterTrailer
@@ -25,17 +26,18 @@ function UPK_TipTrigger:load(id, parent)
 		self:print('Error: loading TipTrigger failed',true)
 		return false
 	end
-	
-	table.insert(self.triggerIds,id)
+
 	addTrigger(id, "triggerCallback", self)
+	
+	self:addUpkTipTrigger()
 	
 	self.waterTrailers = {}
 	self.isWaterTankFilling = false
 	self.waterTankFillTrailer = nil
-	self.allowWaterTrailor=false
+	self.allowWaterTrailer=false
 	
 	if self.acceptedFillTypes[Fillable.FILLTYPE_WATER] then
-		self.allowWaterTrailor=true
+		self.allowWaterTrailer=true
 		self.waterTrailerActivatable = UPK_WaterTankActivatable:new(self)
 	end
 	
@@ -52,11 +54,26 @@ function UPK_TipTrigger:load(id, parent)
 end
 
 function UPK_TipTrigger:delete()
+	self:removeUpkTipTrigger()
+	
 	if self.waterTrailerActivatable~=nil then
 		g_currentMission:removeActivatableObject(self.waterTrailerActivatable)
 		self.waterTrailers={}
 	end
 	UPK_TipTrigger:superClass().delete(self)
+end
+
+function UPK_TipTrigger:addUpkTipTrigger()
+	table.insert(g_upkTipTrigger,self)
+end
+
+function UPK_TipTrigger:removeUpkTipTrigger()
+	for k,v in pairs(g_upkTipTrigger) do
+		if(v==self)then
+			table.remove(g_upkTipTrigger,k)
+			break
+		end
+	end
 end
 
 function UPK_TipTrigger:updateTrailerTipping(trailer, fillDelta, fillType)
@@ -100,8 +117,7 @@ end
 function UPK_TipTrigger:getTipDistance(trailerId)
 	local trailerX, _, trailerZ = getWorldTranslation(trailerId)
 	local x,_,z = unpack(self.pos)
-	local distance=Utils.vector2Length(trailerX - x, trailerZ - z)
-	if(distance<0)then distance=0 end
+	local distance=math.max(Utils.vector2Length(trailerX - x, trailerZ - z),0)
 	return distance
 end
 
@@ -121,29 +137,54 @@ function UPK_TipTrigger:getNoAllowedText(trailer)
 end
 
 function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
-	if self.isEnabled then
-		if onEnter then
-			local trailer = g_currentMission.objectToTrailer[otherShapeId]
-			if self.allowWaterTrailor and trailer ~= nil and trailer.addWaterTrailerFillTrigger ~= nil then -- waterTrailer
-				self:addWaterTrailer(trailer)
-			elseif trailer ~= nil and trailer.allowTipDischarge then
-				if g_currentMission.trailerTipTriggers[trailer] == nil then
-					g_currentMission.trailerTipTriggers[trailer] = {}
+	if self.isClient and self.isEnabled then
+		local vehicle=g_currentMission.objectToTrailer[otherShapeId]
+		if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
+			if onEnter then
+				vehicle.currentUpkFillTrigger=self
+			else
+				if vehicle.currentUpkFillTrigger==self then
+					vehicle.currentUpkFillTrigger=nil
 				end
-				table.insert(g_currentMission.trailerTipTriggers[trailer], self)
 			end
-		else
-			local trailer = g_currentMission.objectToTrailer[otherShapeId]
-			if self.allowWaterTrailor and trailer ~= nil and trailer.addWaterTrailerFillTrigger ~= nil then -- waterTrailer
-				self:removeWaterTrailer(trailer)
-			elseif trailer ~= nil and trailer.allowTipDischarge then
-				local triggers = g_currentMission.trailerTipTriggers[trailer]
+		elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle.removeWaterTrailerFillTrigger ~= nil then
+			if onEnter then
+				vehicle.currentUpkFillTrigger=self
+			else
+				if vehicle.currentUpkFillTrigger==self then
+					vehicle.currentUpkFillTrigger=nil
+				end
+			end
+		elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
+			if onEnter then
+				vehicle.currentUpkFillTrigger=self
+			else
+				if vehicle.currentUpkFillTrigger==self then
+					vehicle.currentUpkFillTrigger=nil
+				end
+			end
+		elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil then
+			if onEnter then
+				vehicle.currentUpkFillTrigger=self
+			else
+				if vehicle.currentUpkFillTrigger==self then
+					vehicle.currentUpkFillTrigger=nil
+				end
+			end
+		elseif vehicle ~= nil and vehicle.allowTipDischarge then
+			if onEnter then
+				if g_currentMission.trailerTipTriggers[vehicle] == nil then
+					g_currentMission.trailerTipTriggers[vehicle] = {}
+				end
+				table.insert(g_currentMission.trailerTipTriggers[vehicle], self)
+			else
+				local triggers = g_currentMission.trailerTipTriggers[vehicle]
 				if triggers ~= nil then
 					for i = 1, table.getn(triggers) do
 						if triggers[i] == self then
 							table.remove(triggers, i)
 							if table.getn(triggers) == 0 then
-								g_currentMission.trailerTipTriggers[trailer] = nil
+								g_currentMission.trailerTipTriggers[vehicle] = nil
 							end
 							break
 						end
@@ -154,7 +195,7 @@ function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeav
 	end
 end
 
--- waterTrailor
+-- waterTrailer
 
 function UPK_TipTrigger:updateTick(dt)
 	--[[

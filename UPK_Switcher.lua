@@ -32,7 +32,7 @@ function UPK_Switcher:load(id,parent)
 			local fillTypesInShape=gmatch(fillTypesPerShape[i], "%S+")
 			for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(fillTypesInShape)) do
 				self:print("assigning "..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..") to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
-				table.insert(self.switchFillTypes,v,childId)
+				self.switchFillTypes[v]=childId
 				self.useFillTypes=true
 			end
 		end
@@ -84,42 +84,44 @@ end
 function UPK_Switcher:update(dt)
 	UPK_Switcher:superClass().update(self,dt)
 	
-	local shapeToShow=nil
-	local fillType=nil
-	local fillLevel=nil
+	if self.isClient and self.isEnabled then
+		local shapeToShow=nil
+		local fillType=nil
+		local fillLevel=nil
 
-	if self.useFillTypes then
-		fillType=self.fillType
-		if fillType~=nil and fillType~=self.oldFillType then
-			shapeToShow=self.switchFillTypes[fillType]
-			self:print('use shape '..tostring(shapeToShow))
-		end
-	elseif self.useFillLevels then
-		fillLevel=self.maxFillLevel
-		if fillLevel~=self.oldFillLevel then
-			for k,v in pairs(self.maxfillLevelPerShape) do
-				if fillLevel<v then
-					shapeToShow=self.switchFillLevels[k]
-					break
+		if self.useFillTypes then
+			fillType=self.fillType
+			if fillType~=nil and fillType~=self.oldFillType then
+				shapeToShow=self.switchFillTypes[fillType]
+				self:print('use shape '..tostring(shapeToShow))
+			end
+		elseif self.useFillLevels then
+			fillLevel=self.fillLevel
+			if fillLevel~=self.oldFillLevel then
+				for k,v in pairs(self.maxfillLevelPerShape) do
+					if fillLevel<v then
+						shapeToShow=self.switchFillLevels[k]
+						break
+					end
 				end
 			end
 		end
-	end
 	
-	if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
-		if self.oldShapeToShow~=nil then
-			setVisibility(self.oldShapeToShow,false)
-			setTranslation(self.oldShapeToShow,unpack(self.pos+self.hidingPosition))
+		if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
+			if self.oldShapeToShow~=nil then
+				setVisibility(self.oldShapeToShow,false)
+				setTranslation(self.oldShapeToShow,unpack(self.pos+self.hidingPosition))
+			end
+			self:print('show shape '..tostring(shapeToShow))
+			setVisibility(shapeToShow,true)
+			setTranslation(shapeToShow,unpack(self.pos))
+			self.oldShapeToShow=shapeToShow
 		end
-		self:print('show shape '..tostring(shapeToShow))
-		setVisibility(shapeToShow,true)
-		setTranslation(shapeToShow,unpack(self.pos))
-		self.oldShapeToShow=shapeToShow
-	end
 	
-	if self.useFillTypes then
-		self.oldFillType=fillType
-	elseif self.useFillLevels then
-		self.oldFillLevel=fillLevel
+		if self.useFillTypes then
+			self.oldFillType=fillType
+		elseif self.useFillLevels then
+			self.oldFillLevel=fillLevel
+		end
 	end
 end

@@ -1,11 +1,8 @@
 -- by mor2000
 
-
 UniversalProcessKit=_g.UniversalProcessKit
 local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object);
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit");
-
-UniversalProcessKit.modulesToSync={};
 
 function UniversalProcessKit:new(isServer, isClient, customMt)
 	local self = Object:new(isServer, isClient, customMt or UniversalProcessKit_mt)
@@ -144,8 +141,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 	self.pos=__c({0,0,0})
 	self.wpos=__c({0,0,0})
 	self.rot=__c({0,0,0})
-
-	self.triggerIds={}
+	self.scale=__c({1,1,1})
 
 	self.kids={}
 
@@ -171,6 +167,7 @@ function UniversalProcessKit:load(id,parent)
 	self.pos = __c({self.x,self.y,self.z})
 	self.wpos = __c({getWorldTranslation(self.nodeId)})
 	self.rot = __c({getRotation(self.nodeId)})
+	self.scale = __c({getScale(self.nodeId)})
 	
 	self.fillTypesToSync={}
 	
@@ -219,14 +216,15 @@ function UniversalProcessKit:load(id,parent)
 			self.storageType=UPK_Storage.FILO
 		end
 	end
-			
 	
-	-- loading kids (according to known types of modules)
-	-- kids are loading their kids and so on..
+	-- addNodeObject
+	if self.addNodeObject and getRigidBodyType(self.nodeId) ~= "NoRigidBody" then
+		g_currentMission:addNodeObject(self.nodeId, self)
+	end
 	
+	-- i18nNameSpace
 	
-	self:findChildren(id,1)
-
+	self.i18nNameSpace=getUserAttribute(self.nodeId, "i18nNameSpace")
 	
 	-- enable processing of stuff
 	
@@ -236,24 +234,51 @@ function UniversalProcessKit:load(id,parent)
 
 	-- MapHotspot
 	
+	self.appearsOnPDA = tobool(getUserAttribute(self.nodeId, "appearsOnPDA"))
 	self.MapHotspotName = getUserAttribute(self.nodeId, "MapHotspot")
-	local mapHotspotIcons = { TipPlace = "dataS2/missions/hud_pda_spot_tipPlaceGold.png" }
-	if self.MapHotspotName~=nil and mapHotspotIcons[self.MapHotspotName]~=nil then
-		self.MapHotspotIcon = mapHotspotIcons[self.MapHotspotName]
-	else
-		self.MapHotspotIcon = mapHotspotIcons["TipPlace"]
+	local mapHotspotIcons={
+		Bank="$dataS2/missions/hud_pda_spot_bank.png",
+		Shop="$dataS2/missions/hud_pda_spot_shop.png",
+		Phone="$dataS2/missions/hud_pda_spot_phone.png",
+		Eggs="$dataS/missions/hud_pda_spot_eggs.png",
+		TipPlace="$dataS2/missions/hud_pda_spot_tipPlace.png",
+		Cows="$dataS2/missions/hud_pda_spot_cows.png",
+		Sheep="$dataS2/missions/hud_pda_spot_sheep.png",
+		Chickens="$dataS2/missions/hud_pda_spot_chickens.png"}
+	
+	if self.MapHotspotName~=nil then
+		if mapHotspotIcons[self.MapHotspotName]~=nil then
+			self.MapHotspotIcon = Utils.getFilename(mapHotspotIcons[self.MapHotspotName], getAppBasePath())
+		else
+			local iconStr = getUserAttribute(self.nodeId, "MapHotspotIcon")
+			if iconStr~=nil then
+				if self.i18nNameSpace==nil then
+					self:print('you need to set the i18nNameSpace to use MapHotspotIcon')
+				else
+					self.MapHotspotIcon = g_modNameToDirectory[self.i18nNameSpace]..iconStr
+					self:print('using \"'..tostring(self.MapHotspotIcon)..'\" as MapHotspotIcon')
+				end
+			end
+		end
 	end
 
 	if self.MapHotspotName~=nil then
 		self:showMapHotspot(self.appearsOnPDA)
 	end
 	
-	-- i18nNameSpace
+	-- placeable object
 	
-	self.i18nNameSpace=getUserAttribute(self.nodeId, "i18nNameSpace")
+	if self.type~="base" and self.parent~=nil then
+		self.placeable=self.parent.placeable
+	end
 	
-	g_currentMission:addNodeObject(self.nodeId, self)
+	self:print('self.placeable '..tostring(self.placeable))
 
+	-- loading kids (according to known types of modules)
+	-- kids are loading their kids and so on..
+	
+	self:findChildren(id,1)
+	
 	return true
 end;
 
@@ -306,10 +331,11 @@ end;
 
 function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	UniversalProcessKit:superClass().readUpdateStream(self, streamId, timestamp, connection)
+	
+	local dirtyMask=streamReadInt8(streamId)
+	local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
+	
 	if connection:getIsServer() then
-		local dirtyMask=streamReadInt8(streamId)
-		local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
-		
 		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
 			nrFillTypesToSync=streamReadInt8(streamId)
 			for i=1,nrFillTypesToSync do
@@ -326,19 +352,19 @@ function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 		end
 		
 		if bitAND(dirtyMask,self.maphotspotDirtyFlag)~=0 or syncall then
-			local showMapHostspot=streamReadBool(streamId)
-			self:showMapHotspot(showMapHostspot,true)
+			self.appearsOnPDA=streamReadBool(streamId)
+			self:showMapHotspot(self.appearsOnPDA,true)
 		end
-
 	end
 end;
 
 function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 	UniversalProcessKit:superClass().writeUpdateStream(self, streamId, connection, dirtyMask)
+	
+	streamWriteInt8(streamId,dirtyMask) -- max 8 dirtyFlags, 4 already used by default
+	local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
+	
 	if not connection:getIsServer() then
-		streamWriteInt8(streamId,dirtyMask) -- max 8 dirtyFlags, 4 already used by default
-		local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
-		
 		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
 			local nrFillTypesToSync=0
 			for k,v in pairs(self.fillTypesToSync) do
@@ -362,11 +388,11 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 		end
 		
 		if bitAND(dirtyMask,self.maphotspotDirtyFlag)~=0 or syncall then
-			streamWriteBool(streamId,self.mapHotspot~=nil)
+			streamWriteBool(streamId,self.appearsOnPDA)
 		end
-		
-		-- you know how to sync your modules by now, right?
 	end
+	
+	-- you know how to sync your modules by now, right?
 end;
 
 function UniversalProcessKit:register()
@@ -409,39 +435,32 @@ function UniversalProcessKit:findChildren(id,numKids)
 end;
 
 function UniversalProcessKit:delete()
-	for _,v in pairs(self.kids) do
-		v:delete(v)
+	for i=#self.kids,1,-1 do
+		self.kids[i]:delete()
+		self.kids[i]=nil
 	end
-	for _,v in pairs(self.triggerIds) do
-		removeTrigger(v)
+	
+	if self.triggerId~=nil then
+		removeTrigger(self.triggerId)
 	end
-	if self.mapHotspot ~= nil then
+
+	--[[
+	if type(self.mapHotspot)=="table" and self.mapHotspot.delete~=nil then
 		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
 	end
-	
-	if self.isRegistered then
-		if self.isServer then
-			g_server:unregisterObject(self,true)
-			--g_server:removeObject(self, self.id)
-		else
-			g_client:unregisterObject(self,true)
-			--g_client:removeObject(self, self.id)
-		end
+	]]--
+
+	if self.isServer then
+		g_server:registerObject(self, true)
+	else
+		g_client:registerObject(self, true)
 	end
 	
-	if self.nodeId ~= 0 then
+	if self.addNodeObject and self.nodeId ~= 0 then
 		g_currentMission:removeNodeObject(self.nodeId)
 	end
 	
 	unregisterObjectClassName(self)
-	
-	if self.isServer then
-		g_server:unregisterObject(self,true)
-	else
-		g_client:unregisterObject(self,true)
-	end
-	
-	UniversalProcessKit:superClass().delete(self)
 end;
 
 function UniversalProcessKit:update(dt)
@@ -464,7 +483,7 @@ function UniversalProcessKit:setFillType(fillType)
 end;
 
 function UniversalProcessKit:getFillLevel(fillType)
-	return self.fillLevels[fillType]
+	return self.fillLevels[fillType or self.fillType]
 end;
 
 function UniversalProcessKit:setFillLevel(fillLevel, fillType)
@@ -489,17 +508,18 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 end;
 
 function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
+	self:print('UniversalProcessKit:addFillLevel('..tostring(deltaFillLevel)..', '..tostring(fillType)..')')
+	if fillType==UniversalProcessKit.FILLTYPE_MONEY then
+		if deltaFillLevel<0 then
+			deltaFillLevel=-math.min(g_currentMission:getTotalMoney(),-deltaFillLevel)
+		end
+		if self.isServer then
+			g_currentMission:addMoney(deltaFillLevel, 1, self.statName or "other")
+		end
+		return deltaFillLevel
+	end
 	local currentFillType=self.fillType or Fillable.FILLTYPE_UNKNOWN
 	if (fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN) and deltaFillLevel~=nil and deltaFillLevel~=0 then
-		if fillType==UniversalProcessKit.FILLTYPE_MONEY then
-			if deltaFillLevel<0 then
-				deltaFillLevel=-math.min(g_currentMission:getTotalMoney(),-deltaFillLevel)
-			end
-			if self.isServer then
-				g_currentMission:addMoney(deltaFillLevel, 1, self.statName or "other")
-			end
-			return deltaFillLevel
-		end
 		-- how much of deltaFillLevel was added to the fillLevel?
 		local added=self:setFillLevel(self.fillLevels[fillType]+deltaFillLevel, fillType)
 		return added+deltaFillLevel
@@ -530,19 +550,17 @@ end;
 
 -- show or hide an icon on the pda map
 function UniversalProcessKit:showMapHotspot(on,alreadySent)
-	if alreadySent==nil or not alreadySent then
-		self:raiseDirtyFlags(self.maphotspotDirtyFlag)
-	end
+	self.appearsOnPDA=on
 	if on==true and self.mapHotspot == nil then
 		local iconSize = g_currentMission.missionPDA.pdaMapWidth / 15
-		local x,_,z = unpack(self.pos)
-		self.mapHotspot = g_currentMission.missionPDA:createMapHotspot(self.MapHotspotName, self.MapHotspotIcon, x, z, iconSize, iconSize * 1.3333333333333333, false, false, false, 0, true)
+		local x,_,z = unpack(self.wpos)
+		self.mapHotspot = g_currentMission.missionPDA:createMapHotspot(self.MapHotspotName, self.MapHotspotIcon, x, z, iconSize, iconSize * 4 / 3, false, false, false, 0, true)
 	end
-	if on==false and self.mapHotspot ~= nil then
+	if on==false and type(self.mapHotspot)=="table" and self.mapHotspot.delete~=nil then
 		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
 	end
-	for _,v in pairs(self.kids) do
-		v:showMapHotspot(on,alreadySent)
+	if not alreadySent then
+		self:raiseDirtyFlags(self.maphotspotDirtyFlag)
 	end
 end;
 

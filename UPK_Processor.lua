@@ -170,6 +170,7 @@ function UPK_Processor:produce(processed)
 			finalProducts=self.bufferedProducts
 			self.bufferedProducts=0
 		end
+		self:print('wanne add '..tostring(finalProducts)..' of '..tostring(self.product))
 		self:addFillLevel(finalProducts,self.product)
 	end
 end

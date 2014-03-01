@@ -3,8 +3,8 @@
     <author>mor2000</author>
     <version>1.2</version>
     <title>
-        <en>UniversalProcessKit</en>
-        <de>UniversalProcessKit</de>
+        <en>AAA UniversalProcessKit</en>
+        <de>AAA UniversalProcessKit</de>
     </title>
     <description>
         <en>
@@ -32,6 +32,7 @@
 		<sourceFile filename="UPK_FillTrigger.lua"/>
 		<sourceFile filename="UPK_Mover.lua"/>
 		<sourceFile filename="UPK_Processor.lua"/>
+		<sourceFile filename="UPK_Scaler.lua"/>
 		<sourceFile filename="UPK_Shower.lua"/>
 		<sourceFile filename="UPK_Storage.lua"/>
 		<sourceFile filename="UPK_Switcher.lua"/>

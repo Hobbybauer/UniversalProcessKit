@@ -20,14 +20,21 @@ end
 function UPK_Base:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_Base_mt)
 	registerObjectClassName(self, "UPK_Base")
+	self.placeable=nil
 	return self
 end
 
-function UPK_Base:load(id)
+function UPK_Base:load(id, placeable)
+	self:print('placeable '..tostring(placeable))
+	if placeable~=nil then
+		self.placeable=placeable
+	end
+	
 	if not UPK_Base:superClass().load(self, id, nil) then
 		self:print('Error: loading Base failed',true)
 		return false
 	end
+
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end

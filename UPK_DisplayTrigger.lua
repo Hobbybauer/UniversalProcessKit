@@ -10,6 +10,7 @@ UniversalProcessKit.addModule("displaytrigger",UPK_DisplayTrigger)
 function UPK_DisplayTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_DisplayTrigger_mt)
 	registerObjectClassName(self, "UPK_DisplayTrigger")
+	self.addNodeObject=true
 	return self
 end
 
@@ -19,10 +20,7 @@ function UPK_DisplayTrigger:load(id, parent)
 		return false
 	end
 	
-	if self.isClient and self.nodeId~=0 then
-		table.insert(self.triggerIds,id)
-		addTrigger(id, "triggerCallback", self)
-	end
+	addTrigger(id, "triggerCallback", self)
 	
 	self.playerInRange=false
 	self.vehiclesInRange={}
@@ -70,16 +68,19 @@ function UPK_DisplayTrigger:update(dt)
 end
 
 function UPK_DisplayTrigger:getShowInfo()
+	local r=false
 	if self.playerInRange then
-		return g_currentMission.controlPlayer or false
+		r=g_currentMission.controlPlayer or false
 	else
 		for v in pairs(self.vehiclesInRange or {}) do
 			if v:getIsActiveForInput() then
-				return true
+				r=true
+				break
 			end
 		end
 	end
-	return false
+	--print('UPK_DisplayTrigger:getShowInfo() = '..tostring(r))
+	return r
 end
 
 function UPK_DisplayTrigger:triggerCallback(triggerId, otherId, onEnter, onLeave, onStay, otherShapeId)
@@ -94,7 +95,7 @@ function UPK_DisplayTrigger:triggerCallback(triggerId, otherId, onEnter, onLeave
 		if g_currentMission.player ~= nil and otherId == g_currentMission.player.rootNode then
 			self.playerInRange = onEnter==true
 		else
-			local vehicle = g_currentMission.nodeToVehicle[otherId]
+			local vehicle = g_currentMission.objectToTrailer[otherShapeId] or g_currentMission.nodeToVehicle[otherShapeId]
 			if vehicle ~= nil then
 				if onEnter then
 					self.vehiclesInRange[vehicle] = true
