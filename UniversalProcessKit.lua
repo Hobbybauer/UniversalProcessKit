@@ -156,7 +156,6 @@ end;
 
 function UniversalProcessKit:load(id,parent)
 	self.rootNode = id
-	self.triggerId = id
 	self.nodeId = id
 	
 	self.sumdt=0
@@ -277,7 +276,7 @@ function UniversalProcessKit:load(id,parent)
 	-- loading kids (according to known types of modules)
 	-- kids are loading their kids and so on..
 	
-	self:findChildren(id,1)
+	self:findChildren(id)
 	
 	return true
 end;
@@ -291,7 +290,9 @@ function UniversalProcessKit:readStream(streamId, connection)
 		for i=1,nrFillLevelsToSync do
 			fillType=streamReadInt8(streamId)
 			fillLevel=streamReadFloat32(streamId)
-			self.fillLevels[fillType]=fillLevel
+			if fillType~=nil then
+				self.fillLevels[fillType]=fillLevel
+			end
 		end
 		local isEnabled=streamReadBool(streamId)
 		self:setEnable(isEnabled,true)
@@ -408,53 +409,48 @@ function UniversalProcessKit:register()
 	end
 end;
 
-function UniversalProcessKit:findChildren(id,numKids)
+function UniversalProcessKit:unregister(alreadySent)
+	if self.isServer then
+		g_server:unregisterObject(self,alreadySent)
+	else
+		g_client:unregisterObject(self,alreadySent)
+	end
+end
+
+function UniversalProcessKit:findChildren(id)
 	local numChildren = getNumOfChildren(id)
 	for i=1,numChildren do
 		local childId = getChildAt(id, i-1)
 		if childId~=nil or childId~=0 then
-			local scriptCallback = getUserAttribute(childId, "scriptCallback")
-			if scriptCallback==nil then
-				local type = getUserAttribute(childId, "type")
-				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
-					childName=Utils.getNoNil(getName(childId),"")
-					self:print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
-					self.kids[numKids]=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
-					if self.kids[numKids]~=nil then
-						self.kids[numKids]:load(childId,self)
-						self.kids[numKids]:register(true)
-						self.kids[numKids].name=childName
-						numKids=numKids+1
-					end
-				else
-					self:findChildren(childId,numKids)
+			local type = getUserAttribute(childId, "type")
+			if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
+				childName=Utils.getNoNil(getName(childId),"")
+				self:print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
+				local module=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
+				if module~=nil then
+					module:load(childId,self)
+					module:register(true)
+					table.insert(self.kids,module)
 				end
+			else
+				self:findChildren(childId)
 			end
 		end
 	end
 end;
 
 function UniversalProcessKit:delete()
+
+	print('deleting '..tostring(#self.kids)..' kids')
 	for i=#self.kids,1,-1 do
+		
+		self.kids[i]:removeTrigger()
+		print('deleting kid '..tostring(i))
 		self.kids[i]:delete()
 		self.kids[i]=nil
 	end
 	
-	if self.triggerId~=nil then
-		removeTrigger(self.triggerId)
-	end
-
-	--[[
-	if type(self.mapHotspot)=="table" and self.mapHotspot.delete~=nil then
-		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
-	end
-	]]--
-
-	if self.isServer then
-		g_server:registerObject(self, true)
-	else
-		g_client:registerObject(self, true)
-	end
+	self:unregister(true)
 	
 	if self.addNodeObject and self.nodeId ~= 0 then
 		g_currentMission:removeNodeObject(self.nodeId)
@@ -462,6 +458,20 @@ function UniversalProcessKit:delete()
 	
 	unregisterObjectClassName(self)
 end;
+
+function UniversalProcessKit:addTrigger()
+	self.triggerId=self.nodeId
+	addTrigger(self.triggerId, "triggerCallback", self)
+end
+
+function UniversalProcessKit:removeTrigger()
+	print('deleting Trigger '..tostring(self.name))
+	if self.triggerId~=nil and self.triggerId~=0 then
+		print('removing triggerId '..tostring(self.triggerId))
+		removeTrigger(self.triggerId)
+		self.triggerId = nil
+	end
+end
 
 function UniversalProcessKit:update(dt)
 	-- do sth with time (ms)

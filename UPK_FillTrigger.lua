@@ -25,7 +25,7 @@ function UPK_FillTrigger:load(id,parent)
 		return false
 	end
 
-	addTrigger(id, "triggerCallback", self)
+	self:addTrigger()
 
 	self.fill = {}
 	self.siloTrailer = nil

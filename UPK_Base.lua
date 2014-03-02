@@ -4,7 +4,7 @@
 -- Base (root of every building, has no parent, main storage in simple buildings)
 
 
-local UPK_Base_mt = ClassUPK(UPK_Base,UniversalProcessKit)
+local UPK_Base_mt = ClassUPK(UPK_Base)
 InitObjectClass(UPK_Base, "UPK_Base")
 UniversalProcessKit.addModule("base",UPK_Base)
 
@@ -12,6 +12,8 @@ function UPK_Base.onCreate(id)
 	local object = UPK_Base:new(g_server ~= nil, g_client ~= nil)
 	if object:load(id) then
 		g_currentMission:addOnCreateLoadedObject(object)
+		object:register(true)
+		object.builtIn=true
 	else
 		object:delete()
 	end
@@ -45,11 +47,12 @@ end
 
 function UPK_Base:delete()
 	UPK_Base:superClass().delete(self)
-end
-
-function UPK_Base:executeAction(sender, action, value)
-	UPK_Base:superClass().executeAction(sender, action, value)
-	-- extend functionality down here (in your own modules)
+	if self.builtIn then
+		g_currentMission:removeOnCreateLoadedObjectToSave(self)
+		if self.nodeId ~= 0 then
+	        g_currentMission:removeNodeObject(self.nodeId)
+	    end
+	end
 end
 
 g_onCreateUtil.addOnCreateFunction("UPK", UPK_Base.onCreate)

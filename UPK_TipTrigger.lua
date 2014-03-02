@@ -27,9 +27,8 @@ function UPK_TipTrigger:load(id, parent)
 		return false
 	end
 
-	addTrigger(id, "triggerCallback", self)
-	
-	self:addUpkTipTrigger()
+	self:addTrigger()
+	self:registerUpkTipTrigger()
 	
 	self.waterTrailers = {}
 	self.isWaterTankFilling = false
@@ -54,20 +53,21 @@ function UPK_TipTrigger:load(id, parent)
 end
 
 function UPK_TipTrigger:delete()
-	self:removeUpkTipTrigger()
+	self:unregisterUpkTipTrigger()
 	
 	if self.waterTrailerActivatable~=nil then
 		g_currentMission:removeActivatableObject(self.waterTrailerActivatable)
 		self.waterTrailers={}
 	end
+	
 	UPK_TipTrigger:superClass().delete(self)
 end
 
-function UPK_TipTrigger:addUpkTipTrigger()
+function UPK_TipTrigger:registerUpkTipTrigger()
 	table.insert(g_upkTipTrigger,self)
 end
 
-function UPK_TipTrigger:removeUpkTipTrigger()
+function UPK_TipTrigger:unregisterUpkTipTrigger()
 	for k,v in pairs(g_upkTipTrigger) do
 		if(v==self)then
 			table.remove(g_upkTipTrigger,k)

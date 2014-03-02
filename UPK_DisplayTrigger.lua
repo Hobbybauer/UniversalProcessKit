@@ -20,7 +20,7 @@ function UPK_DisplayTrigger:load(id, parent)
 		return false
 	end
 	
-	addTrigger(id, "triggerCallback", self)
+	self:addTrigger()
 	
 	self.playerInRange=false
 	self.vehiclesInRange={}
