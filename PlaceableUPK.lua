@@ -28,7 +28,6 @@ end
 function PlaceableUPK:delete()
 	if self.base~=nil then
 		self.base:delete()
-		self.base=nil
 	end
 	PlaceableUPK:superClass().delete(self)
 end

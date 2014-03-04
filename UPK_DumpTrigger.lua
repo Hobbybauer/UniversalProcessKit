@@ -25,6 +25,10 @@ function UPK_DumpTrigger:load(id, parent)
 	self.fillRootNode=id
 	self.exactFillRootNode=id
 	self.fillAutoAimTargetNode=id
+	self.exactFillRootNode=id
+	self.allowFillFromAir=true
+	g_currentMission.nodeToVehicle[self.nodeId]=self
+
 	self.fillLevel=0
 	self.resetFillLevelIfNeeded=self.setFillType
 	self.addFillLevel=self.setFillLevel
@@ -40,6 +44,7 @@ function UPK_DumpTrigger:load(id, parent)
 end
 
 function UPK_DumpTrigger:delete()
+	g_currentMission.nodeToVehicle[self.nodeId]=nil
 	UPK_DumpTrigger:superClass().delete(self)
 end
 

@@ -55,4 +55,10 @@ function UPK_Base:delete()
 	end
 end
 
+function UPK_Base:update(dt)
+	if self.placeable==nil and not self.builtIn then
+		self:delete()
+	end
+end
+
 g_onCreateUtil.addOnCreateFunction("UPK", UPK_Base.onCreate)

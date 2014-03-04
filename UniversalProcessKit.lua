@@ -166,6 +166,7 @@ function UniversalProcessKit:load(id,parent)
 	self.pos = __c({self.x,self.y,self.z})
 	self.wpos = __c({getWorldTranslation(self.nodeId)})
 	self.rot = __c({getRotation(self.nodeId)})
+	self.wrot = __c({getWorldRotation(self.nodeId)})
 	self.scale = __c({getScale(self.nodeId)})
 	
 	self.fillTypesToSync={}
@@ -338,7 +339,7 @@ function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	
 	if connection:getIsServer() then
 		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
-			nrFillTypesToSync=streamReadInt8(streamId)
+			nrFillTypesToSync=streamReadInt8(streamId) or 0
 			for i=1,nrFillTypesToSync do
 				fillType=streamReadInt8(streamId)
 				fillLevel=streamReadFloat32(streamId)
@@ -411,9 +412,13 @@ end;
 
 function UniversalProcessKit:unregister(alreadySent)
 	if self.isServer then
-		g_server:unregisterObject(self,alreadySent)
+		g_server:removeObject(self, self.id)
+		self.isRegistered = false
+		--g_server:unregisterObject(self,alreadySent)
 	else
-		g_client:unregisterObject(self,alreadySent)
+		g_client:removeObject(self, self.id)
+		self.isRegistered = false
+		--g_client:unregisterObject(self,alreadySent)
 	end
 end
 
@@ -440,18 +445,17 @@ function UniversalProcessKit:findChildren(id)
 end;
 
 function UniversalProcessKit:delete()
-
-	print('deleting '..tostring(#self.kids)..' kids')
+	print('deleting '..tostring(self.id)..' of '..tostring(self.name))
+	print('registered? '..tostring(self.isRegistered==true))
+	self:unregister(true)
+	print('successful? '..tostring(self.isRegistered==false))
+	
 	for i=#self.kids,1,-1 do
-		
 		self.kids[i]:removeTrigger()
-		print('deleting kid '..tostring(i))
 		self.kids[i]:delete()
 		self.kids[i]=nil
 	end
-	
-	self:unregister(true)
-	
+
 	if self.addNodeObject and self.nodeId ~= 0 then
 		g_currentMission:removeNodeObject(self.nodeId)
 	end
@@ -465,11 +469,9 @@ function UniversalProcessKit:addTrigger()
 end
 
 function UniversalProcessKit:removeTrigger()
-	print('deleting Trigger '..tostring(self.name))
 	if self.triggerId~=nil and self.triggerId~=0 then
-		print('removing triggerId '..tostring(self.triggerId))
 		removeTrigger(self.triggerId)
-		self.triggerId = nil
+		self.triggerId = 0
 	end
 end
 

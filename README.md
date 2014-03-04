@@ -406,17 +406,7 @@ somit mehrere mover zusammen). Die _base_ soll neben dem Standard
 
 ## Instalation
 
-1.  Lade die zuerst die Skripte bzw. alle Dateien des Projekts hier
-    herunter:
-    https://github.com/mor2000/UniversalProcessKit/archive/master.zip .
-
-2.  Entpacke diese Zip und gehe in den Unterordner.
-
-3.  Packe dann die Skripte erneut und benenne das Archiv "UPK.zip", das
-    du schließlich in den Modordner kopierst.
-
-Dieses Vorgehen ist notwendig, da Github alle Art von Quellcode hostet
-und keine Rücksicht auf die Packart eines Mods von LS nimmt.
+Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in dein Mod-Ordner.
 
 ## Hinweise zum Gebrauch
 
