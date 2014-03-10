@@ -51,11 +51,8 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 				args={...}
 			end
 			for k,v in pairs(args) do
-				local type=type(v)
-				if type=="number" then
-					if self.fillLevels[v]~=nil then
-						table.insert(t,v,self.fillLevels[v])
-					end
+				if type(v)=="number" then
+					t[v]=self.fillLevels[v]
 				end
 			end
 			return t
@@ -176,7 +173,7 @@ function UniversalProcessKit:load(id,parent)
 	if acceptedFillTypesString~=nil then
 		for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
 			rawset(self.acceptedFillTypes,v,true)
-			self:print('accepted fillType: '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..') '..tostring(self.acceptedFillTypes[v]))
+			--self:print('accepted fillType: '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..') '..tostring(self.acceptedFillTypes[v]))
 		end
 	end
 	
@@ -256,7 +253,7 @@ function UniversalProcessKit:load(id,parent)
 					self:print('you need to set the i18nNameSpace to use MapHotspotIcon')
 				else
 					self.MapHotspotIcon = g_modNameToDirectory[self.i18nNameSpace]..iconStr
-					self:print('using \"'..tostring(self.MapHotspotIcon)..'\" as MapHotspotIcon')
+					--self:print('using \"'..tostring(self.MapHotspotIcon)..'\" as MapHotspotIcon')
 				end
 			end
 		end
@@ -276,6 +273,8 @@ function UniversalProcessKit:load(id,parent)
 
 	-- loading kids (according to known types of modules)
 	-- kids are loading their kids and so on..
+	
+	print('loading module '..tostring(self.name)..' with id '..tostring(self.id))
 	
 	self:findChildren(id)
 	
@@ -398,6 +397,7 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 end;
 
 function UniversalProcessKit:register()
+	print('register module '..tostring(self.name)..' with id '..tostring(self.id))
 	if self.isServer then
 		g_server:addObject(self, self.id)
 		self.isManuallyReplicated = true
@@ -411,6 +411,7 @@ function UniversalProcessKit:register()
 end;
 
 function UniversalProcessKit:unregister(alreadySent)
+	print('unregister module '..tostring(self.name)..' with id '..tostring(self.id))
 	if self.isServer then
 		g_server:removeObject(self, self.id)
 		self.isRegistered = false
@@ -445,7 +446,7 @@ function UniversalProcessKit:findChildren(id)
 end;
 
 function UniversalProcessKit:delete()
-	print('deleting '..tostring(self.id)..' of '..tostring(self.name))
+	print('delete module '..tostring(self.name)..' with id '..tostring(self.id))
 	print('registered? '..tostring(self.isRegistered==true))
 	self:unregister(true)
 	print('successful? '..tostring(self.isRegistered==false))
@@ -499,7 +500,8 @@ function UniversalProcessKit:getFillLevel(fillType)
 end;
 
 function UniversalProcessKit:setFillLevel(fillLevel, fillType)
-	local currentFillType=self.fillType
+	self:print('UniversalProcessKit:setFillLevel('..tostring(fillLevel)..', '..tostring(fillType)..')')
+	local currentFillType=self.fillType or Fillable.FILLTYPE_UNKNOWN
 	fillType=fillType or currentFillType
 	if fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN then
 		if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
@@ -516,7 +518,7 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 			return 0
 		end
 	end
-	return nil
+	return 0
 end;
 
 function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)

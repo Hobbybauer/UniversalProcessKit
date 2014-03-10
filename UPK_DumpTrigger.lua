@@ -34,10 +34,8 @@ function UPK_DumpTrigger:load(id, parent)
 	self.addFillLevel=self.setFillLevel
 	
 	for k,v in pairs(self.acceptedFillTypes) do
-		self:print('accepting '..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..')')
+		self:print('accepting '..tostring(UniversalProcessKit.fillTypeIntToName[k])..' ('..tostring(v)..')')
 	end
-	
-	self:print('accepting sugarBeet? '..tostring(self.acceptedFillTypes[UniversalProcessKit.fillTypeNameToInt["sugarBeet"]]))
 	
 	self:print('loaded DumpTrigger successfully')
 	return true

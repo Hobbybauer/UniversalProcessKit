@@ -55,13 +55,21 @@ function UniversalProcessKit.InitEventClass(classObject,className)
 	end
 end;
 
+function length(t)
+	local length=0
+	for k,v in pairs(t or {}) do
+		length=length+1
+	end
+	return length
+end;
+	
 function max(...)
 	tmpmax=-math.huge
 	arr=...
 	if type(arr)~="table" then
 		arr={...}
 	end
-	if #arr>0 then
+	if length(arr)>0 then
 		for _,v in pairs(arr) do
 			if v>tmpmax then
 				tmpmax=v
@@ -78,7 +86,7 @@ function min(...)
 	if type(arr)~="table" then
 		arr={...}
 	end
-	if #arr>0 then
+	if length(arr)>0 then
 		for _,v in pairs(arr) do
 			if v<tmpmin then
 				tmpmin=v

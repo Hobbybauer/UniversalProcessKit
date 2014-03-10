@@ -52,6 +52,15 @@ function UPK_Mover:load(id,parent)
 	end
 	self.fillTypeChoiceMax = Utils.getNoNil(getUserAttribute(id, "fillTypeChoice"), "max")=="max"
 	
+	-- accepted fillTypes or fillTypes to store
+	self.moveAtFillTypes={}
+	local acceptedFillTypesString = getUserAttribute(self.nodeId, "fillTypes")
+	if acceptedFillTypesString~=nil then
+		for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
+			table.insert(self.moveAtFillTypes,v)
+		end
+	end
+
 	-- move
 	self.startMovingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "startMovingAt")), 0)
 	self.stopMovingAt=Utils.getNoNil(tonumber(getUserAttribute(id, "stopMovingAt")), self.capacity)
@@ -96,10 +105,10 @@ function UPK_Mover:update(dt)
 	
 	if self.isClient and self.nodeId~=0 then
 		local newFillLevel=nil
-		local fillTypes=self:getAcceptedFillTypes()
-		if #fillTypes>0 then
+		local fillTypes=self.moveAtFillTypes
+		if length(fillTypes)>0 then
 			if self.fillTypeChoiceMax then
-				newFillLevel= self.fillLevel
+				newFillLevel=self.fillLevel or max(self.fillLevels(fillTypes))
 			else
 				newFillLevel= min(self.fillLevels(fillTypes))
 			end
