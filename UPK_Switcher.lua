@@ -20,6 +20,20 @@ function UPK_Switcher:load(id,parent)
 		return false
 	end
 	
+	self.shapePositions={}
+	self.hidingPosition = getVectorFromUserAttribute(self.nodeId, "hidingPosition", "0 0 0")
+	
+	-- accepted fillTypes or fillTypes to store
+	self.switchAtFillTypes={}
+	local acceptedFillTypesString = getUserAttribute(self.nodeId, "fillTypes")
+	if acceptedFillTypesString~=nil then
+		for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(gmatch(acceptedFillTypesString, "%S+"))) do
+			table.insert(self.switchAtFillTypes,v)
+		end
+	end
+	
+	self.fillTypeChoiceMax = Utils.getNoNil(getUserAttribute(id, "fillTypeChoice"), "max")=="max"
+	
 	self.switchFillTypes={}
 	self.useFillTypes=false
     local fillTypeString = Utils.getNoNil(getUserAttribute(id, "switchFillTypes"))
@@ -29,6 +43,8 @@ function UPK_Switcher:load(id,parent)
 		for i=1,math.min(numChildren,#fillTypesPerShape) do
 			local childId = getChildAt(self.nodeId, i-1)
 			setVisibility(childId,false)
+			self.shapePositions[childId]=__c({getTranslation(childId)})
+			setTranslation(childId,unpack(self.shapePositions[childId]+self.hidingPosition))
 			local fillTypesInShape=gmatch(fillTypesPerShape[i], "%S+")
 			for _,v in pairs(UniversalProcessKit.fillTypeNameToInt(fillTypesInShape)) do
 				self:print("assigning "..tostring(UniversalProcessKit.fillTypeIntToName[v])..' ('..tostring(v)..") to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
@@ -56,6 +72,8 @@ function UPK_Switcher:load(id,parent)
 		for i=1,math.min(numChildren,#self.maxfillLevelPerShape) do
 			local childId = getChildAt(self.nodeId, i-1)
 			setVisibility(childId,false)
+			self.shapePositions[childId]=__c({getTranslation(childId)})
+			setTranslation(childId,unpack(self.shapePositions[childId]+self.hidingPosition))
 			table.insert(self.switchFillLevels,childId)
 			self:print("assigning max fillLevel of "..tostring(self.maxfillLevelPerShape[i]).." to ".."\""..tostring(getName(childId)).."\" ("..tostring(childId)..")")
 			self.useFillLevels=true
@@ -67,7 +85,12 @@ function UPK_Switcher:load(id,parent)
 		return false
 	end
 	
-	self.hidingPosition = getVectorFromUserAttribute(self.nodeId, "hidingPosition", "0 0 0")
+	local modeStr = getUserAttribute(self.nodeId, "mode")
+	if modeStr=="stack" then
+		self.mode=modeStr
+	else
+		self.mode="switch"
+	end
 	
 	self.oldFillType=nil
 	self.oldFillLevel=nil
@@ -85,43 +108,75 @@ function UPK_Switcher:update(dt)
 	UPK_Switcher:superClass().update(self,dt)
 	
 	if self.isClient and self.isEnabled then
-		local shapeToShow=nil
-		local fillType=nil
-		local fillLevel=nil
-
 		if self.useFillTypes then
-			fillType=self.fillType
+			local fillType=self.fillType
 			if fillType~=nil and fillType~=self.oldFillType then
 				shapeToShow=self.switchFillTypes[fillType]
-				self:print('use shape '..tostring(shapeToShow))
 			end
+			if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
+				if self.oldShapeToShow~=nil then
+					setVisibility(self.oldShapeToShow,false)
+					setTranslation(self.oldShapeToShow,unpack(self.shapePositions[self.oldShapeToShow]+self.hidingPosition))
+				end
+				setVisibility(shapeToShow,true)
+				setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow]))
+				self.oldShapeToShow=shapeToShow
+			end
+			self.oldFillType=fillType
 		elseif self.useFillLevels then
-			fillLevel=self.fillLevel
+			local shapeToShow=nil
+			local fillLevel=nil
+			local shapeToShowIndex=nil
+			local fillTypes=self.switchAtFillTypes
+			if self.fillTypeChoiceMax then
+				fillLevel=self.fillLevel or max(self.fillLevels(fillTypes)) or 0
+			else
+				fillLevel= min(self.fillLevels(fillTypes))
+			end
+			fillLevel=min(max(fillLevel,0),self.capacity)
 			if fillLevel~=self.oldFillLevel then
 				for k,v in pairs(self.maxfillLevelPerShape) do
 					if fillLevel<v then
 						shapeToShow=self.switchFillLevels[k]
+						shapeToShowIndex=k
 						break
 					end
 				end
 			end
-		end
-	
-		if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
-			if self.oldShapeToShow~=nil then
-				setVisibility(self.oldShapeToShow,false)
-				setTranslation(self.oldShapeToShow,unpack(self.pos+self.hidingPosition))
+			if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
+				local oldShapeToShowIndex=nil
+				for k,v in pairs(self.switchFillLevels) do
+					if v==self.oldShapeToShow then
+						oldShapeToShowIndex=k
+						break
+					end
+				end
+				if self.mode=="stack" then
+					if oldShapeToShowIndex~=nil then
+						if oldShapeToShowIndex>shapeToShowIndex then
+							for i=(shapeToShowIndex+1),oldShapeToShowIndex do
+								setVisibility(self.switchFillLevels[i],false)
+								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]]+self.hidingPosition))
+							end
+						else
+							for i=(oldShapeToShowIndex+1),shapeToShowIndex do
+								setVisibility(self.switchFillLevels[i],true)
+								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]]))
+							end
+						end
+					end
+				else
+					if self.oldShapeToShow~=nil then
+						setVisibility(self.oldShapeToShow,false)
+						setTranslation(self.oldShapeToShow,unpack(self.shapePositions[self.oldShapeToShow]+self.hidingPosition))
+					end
+					setVisibility(shapeToShow,true)
+					setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow]))
+				end
+				
+				self.oldShapeToShow=shapeToShow
+				self.oldFillLevel=fillLevel
 			end
-			self:print('show shape '..tostring(shapeToShow))
-			setVisibility(shapeToShow,true)
-			setTranslation(shapeToShow,unpack(self.pos))
-			self.oldShapeToShow=shapeToShow
-		end
-	
-		if self.useFillTypes then
-			self.oldFillType=fillType
-		elseif self.useFillLevels then
-			self.oldFillLevel=fillLevel
 		end
 	end
 end
