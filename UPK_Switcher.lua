@@ -116,10 +116,10 @@ function UPK_Switcher:update(dt)
 			if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
 				if self.oldShapeToShow~=nil then
 					setVisibility(self.oldShapeToShow,false)
-					setTranslation(self.oldShapeToShow,unpack(self.shapePositions[self.oldShapeToShow]+self.hidingPosition))
+					setTranslation(self.oldShapeToShow,unpack((self.shapePositions[self.oldShapeToShow]+self.hidingPosition) or {}))
 				end
 				setVisibility(shapeToShow,true)
-				setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow]))
+				setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow] or {}))
 				self.oldShapeToShow=shapeToShow
 			end
 			self.oldFillType=fillType
@@ -156,22 +156,22 @@ function UPK_Switcher:update(dt)
 						if oldShapeToShowIndex>shapeToShowIndex then
 							for i=(shapeToShowIndex+1),oldShapeToShowIndex do
 								setVisibility(self.switchFillLevels[i],false)
-								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]]+self.hidingPosition))
+								setTranslation(self.switchFillLevels[i],unpack((self.shapePositions[self.switchFillLevels[i]]+self.hidingPosition) or {}))
 							end
 						else
 							for i=(oldShapeToShowIndex+1),shapeToShowIndex do
 								setVisibility(self.switchFillLevels[i],true)
-								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]]))
+								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]] or {}))
 							end
 						end
 					end
 				else
 					if self.oldShapeToShow~=nil then
 						setVisibility(self.oldShapeToShow,false)
-						setTranslation(self.oldShapeToShow,unpack(self.shapePositions[self.oldShapeToShow]+self.hidingPosition))
+						setTranslation(self.oldShapeToShow,unpack((self.shapePositions[self.oldShapeToShow]+self.hidingPosition) or {}))
 					end
 					setVisibility(shapeToShow,true)
-					setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow]))
+					setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow] or {}))
 				end
 				
 				self.oldShapeToShow=shapeToShow

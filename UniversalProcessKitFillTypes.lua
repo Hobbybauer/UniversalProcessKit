@@ -5,14 +5,14 @@
 
 UniversalProcessKit.fillTypeNameToInt={}
 UniversalProcessKit.fillTypeIntToName={}
-
 for k,v in pairs(Fillable.fillTypeNameToInt) do
 	UniversalProcessKit.fillTypeNameToInt[k]=v
 	UniversalProcessKit.fillTypeIntToName[v]=k
 end
-UniversalProcessKit.NUM_FILLTYPES = Fillable.NUM_FILLTYPES
+UniversalProcessKit.NUM_FILLTYPES = 1025
 
 local fillTypeNameToInt_mt={
+	__index=Fillable.fillTypeNameToInt,
 	__call=function(func,...)
 		local t={}
 		local args=...
@@ -22,7 +22,7 @@ local fillTypeNameToInt_mt={
 		for k,v in pairs(args) do
 			local type=type(v)
 			if type=="string" then
-				if rawget(UniversalProcessKit.fillTypeNameToInt,v)==nil then
+				if rawget(UniversalProcessKit.fillTypeNameToInt,v)==nil and Fillable.fillTypeNameToInt[v]==nil then
 					UniversalProcessKit.addFillType(v) -- add fillTypes as used
 				end
 				table.insert(t,UniversalProcessKit.fillTypeNameToInt[v])
@@ -31,11 +31,12 @@ local fillTypeNameToInt_mt={
 		return t
 		end,
 	__newindex=function(t,k,v)
-		UniversalProcessKit.addFillType(v)
+		UniversalProcessKit.addFillType(k)
 		end
-	}
+	};
 
 local fillTypeIntToName_mt={
+	__index=Fillable.fillTypeIntToName,
 	__call=function(func,...)
 		local t={}
 		local args=...
@@ -52,7 +53,7 @@ local fillTypeIntToName_mt={
 		end
 		return t
 		end
-	}
+	};
 
 setmetatable(UniversalProcessKit.fillTypeNameToInt,fillTypeNameToInt_mt)
 setmetatable(UniversalProcessKit.fillTypeIntToName,fillTypeIntToName_mt)
@@ -63,17 +64,8 @@ function UniversalProcessKit.addFillType(name,index)
 			UniversalProcessKit.addFillType(v)
 		end
 	elseif type(name)=="string" then
-		local fillType=rawget(Fillable.fillTypeNameToInt,name)
-		if fillType~=nil then
-			oldFillTypeName=UniversalProcessKit.fillTypeIntToName[fillType]
-			rawset(UniversalProcessKit.fillTypeIntToName,fillType,name)
-			rawset(UniversalProcessKit.fillTypeNameToInt,name,fillType)
-			
-			if oldFillTypeName~=nil then -- spot at fillType is already used
-				UniversalProcessKit.addFillType(oldFillTypeName)
-			end
-		else
-			local index=index or Fillable.NUM_FILLTYPES
+		if UniversalProcessKit.fillTypeNameToInt[name]==nil then
+			local index=index or UniversalProcessKit.NUM_FILLTYPES
 			if UniversalProcessKit.fillTypeIntToName[index]~=nil then
 				UniversalProcessKit.addFillType(name,index+1)
 			else
@@ -86,15 +78,18 @@ function UniversalProcessKit.addFillType(name,index)
 				rawset(UniversalProcessKit.fillTypeIntToName,index,name)
 				rawset(UniversalProcessKit.fillTypeNameToInt,name,index)
 				UniversalProcessKit.NUM_FILLTYPES=UniversalProcessKit.NUM_FILLTYPES+1
+				return index
 			end
 		end
 	end
-end
+end;
 
 function UniversalProcessKit.registerFillType(name, hudFilename)
 	Fillable.registerFillType(name, nil, nil, true, hudFilename)
 	UniversalProcessKit.addFillType(name)
-end
+end;
 
 -- special fillType "money"
 UniversalProcessKit.addFillType("money")
+
+

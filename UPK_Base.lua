@@ -8,18 +8,8 @@ local UPK_Base_mt = ClassUPK(UPK_Base)
 InitObjectClass(UPK_Base, "UPK_Base")
 UniversalProcessKit.addModule("base",UPK_Base)
 
-function UPK_Base.onCreate(id)
-	local object = UPK_Base:new(g_server ~= nil, g_client ~= nil)
-	if object:load(id) then
-		g_currentMission:addOnCreateLoadedObject(object)
-		object:register(true)
-		object.builtIn=true
-	else
-		object:delete()
-	end
-end
-
 function UPK_Base:new(isServer, isClient, customMt)
+	self:print('UPK_Base:new')
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_Base_mt)
 	registerObjectClassName(self, "UPK_Base")
 	self.placeable=nil
@@ -27,9 +17,13 @@ function UPK_Base:new(isServer, isClient, customMt)
 end
 
 function UPK_Base:load(id, placeable)
-	self:print('placeable '..tostring(placeable))
 	if placeable~=nil then
 		self.placeable=placeable
+	end
+	
+	if self.builtIn then
+		self:print('wantToSave UPK_Base')
+		g_currentMission:addOnCreateLoadedObjectToSave(self)
 	end
 	
 	if not UPK_Base:superClass().load(self, id, nil) then
@@ -60,5 +54,3 @@ function UPK_Base:update(dt)
 		self:delete()
 	end
 end
-
-g_onCreateUtil.addOnCreateFunction("UPK", UPK_Base.onCreate)

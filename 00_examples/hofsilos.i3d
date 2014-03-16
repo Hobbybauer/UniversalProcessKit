@@ -152,7 +152,7 @@
   <UserAttributes>
     <UserAttribute nodeId="1">
       <Attribute name="fillTypes" type="string" value="wheat barley rape maize"/>
-	  <Attribute name="onCreate" type="scriptCallback" value="modOnCreate.UPK"/>
+	  <Attribute name="onCreate" type="scriptCallback" value="UniversalProcessKit.onCreate"/>
     </UserAttribute>
 	
 	<UserAttribute nodeId="101">

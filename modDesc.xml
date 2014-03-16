@@ -23,6 +23,7 @@
 		<sourceFile filename="UniversalProcessKitSyncEvent.lua"/>
 		<sourceFile filename="UniversalProcessKitModules.lua"/>
 		<sourceFile filename="UniversalProcessKitFillTypes.lua"/>
+		<sourceFile filename="UniversalProcessKitListener.lua"/>
 		<sourceFile filename="UPK_Activator.lua"/>
 		<sourceFile filename="UPK_Animator.lua"/>
 		<sourceFile filename="UPK_Base.lua"/>

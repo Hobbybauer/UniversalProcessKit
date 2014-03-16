@@ -361,7 +361,7 @@ Wie eine zusätzliche _base_ innerhalb des UPK-Mods, die unabhägig Füllstände
 
   <UserAttribute nodeId="1">
     <Attribute name="fillTypes" type="string" value="wheat barley rape maize"/>
-    <Attribute name="onCreate" type="scriptCallback" value="modOnCreate.UPK"/>
+    <Attribute name="onCreate" type="scriptCallback" value="UniversalProcessKit.onCreate"/>
   </UserAttribute>
 
   <UserAttribute nodeId="101">
@@ -414,7 +414,7 @@ Ein UPK-Mod lässt sich auf 2 Arten einbinden: als __Platzierbares Objekt__ oder
 Für jeden in eine Karte verbauten UPK-Mod muss folgendes UserAttribute zur jeweiligen _base_ hinzugefügt werden:
 
 ```
-    <Attribute name="onCreate" type="scriptCallback" value="modOnCreate.UPK"/>
+    <Attribute name="onCreate" type="scriptCallback" value="UniversalProcessKit.onCreate"/>
 ```
 
 #### Als platzierbares Objekt

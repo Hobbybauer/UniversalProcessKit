@@ -4,6 +4,17 @@ UniversalProcessKit=_g.UniversalProcessKit
 local UniversalProcessKit_mt = ClassUPK(UniversalProcessKit, Object);
 InitObjectClass(UniversalProcessKit, "UniversalProcessKit");
 
+function UniversalProcessKit:onCreate(id)
+	local object = UPK_Base:new(g_server ~= nil, g_client ~= nil)
+	object.builtIn=true
+	if object:load(id) then
+		g_currentMission:addOnCreateLoadedObject(object)
+		object:register(true)
+	else
+		object:delete()
+	end
+end;
+
 function UniversalProcessKit:new(isServer, isClient, customMt)
 	local self = Object:new(isServer, isClient, customMt or UniversalProcessKit_mt)
 	registerObjectClassName(self, "UniversalProcessKit")
@@ -589,6 +600,7 @@ function UniversalProcessKit:setEnable(isEnabled,alreadySent)
 end;
 
 function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)
+	self:print('calling UniversalProcessKit:loadFromAttributesAndNodes for id '..tostring(self.nodeId))
 	key=key.."."..self.name
 	
 	--local fillType=getXMLFloat(xmlFile, key .. "#fillType")
@@ -617,6 +629,7 @@ function UniversalProcessKit:loadFromAttributesAndNodes(xmlFile, key)
 end;
 
 function UniversalProcessKit:getSaveAttributesAndNodes(nodeIdent)
+	self:print('calling UniversalProcessKit:getSaveAttributesAndNodes for id '..tostring(self.nodeId))
 	local attributes=""
 	
 	local nodes = "\t<"..tostring(self.name)

@@ -55,11 +55,11 @@ function UPK_FillTrigger:load(id,parent)
 
 	local fillTypeStr = Utils.getNoNil(getUserAttribute(id, "fillType"))
 	if fillTypeStr~=nil then
-		local fillType=unpack(UniversalProcessKit.fillTypeNameToInt(fillTypeString))
+		local fillType=UniversalProcessKit.fillTypeNameToInt[fillTypeStr]
 		if type(fillType)=="number" then
 			self.fillType=fillType
 		else
-			self:print('Error: unknown fillType \"'..tostring(fillTypeStr)..'\" in filltrigger '..tostring(self.name))
+			self:print('Error: unknown fillType \"'..tostring(fillTypeStr)..'\" ('..tostring(fillType)..')')
 		end
 	end
 	
@@ -104,7 +104,7 @@ function UPK_FillTrigger:load(id,parent)
           local particleSystem = Utils.getNoNil(getUserAttribute(id, "particleSystem"), "wheatParticleSystemLong")
           psData.psFile = "$data/vehicles/particleSystems/" .. particleSystem .. ".i3d"
         end
-        psData.posX, psData.posY, psData.posZ = unpack(self.pos+getVectorFromUserAttribute("particlePosition", "0 0 0"))
+        psData.posX, psData.posY, psData.posZ = unpack(self.pos+getVectorFromUserAttribute(self.nodeId,"particlePosition", "0 0 0"))
         psData.forceNoWorldSpace = true
         self.dropParticleSystems = {}
         Utils.loadParticleSystemFromData(psData, self.dropParticleSystems, nil, false, nil, g_currentMission.baseDirectory, getParent(id))
