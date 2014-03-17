@@ -56,7 +56,7 @@ function UniversalProcessKit.InitEventClass(classObject,className)
 end;
 
 function length(t)
-	if t==nil or type(t)~="array" then
+	if t==nil or type(t)~="table" then
 		return 0
 	end
 	local len=0
@@ -158,14 +158,14 @@ function _g.__c(arr)
 		end,
 		__add = function(lhs,rhs)
 			local arr={}
-			if rhs~=nil and type(lhs)=="array" then
+			if rhs~=nil and type(lhs)=="table" then
 				if type(rhs)=="number" then
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
 							arr[k]=v+rhs
 						end
 					end
-				elseif type(rhs)=="array" then
+				elseif type(rhs)=="table" then
 					local i=1
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
@@ -183,14 +183,14 @@ function _g.__c(arr)
 		end,
 		__sub = function(lhs,rhs)
 			local arr={}
-			if rhs~=nil and type(lhs)=="array" then
+			if rhs~=nil and type(lhs)=="table" then
 				if type(rhs)=="number" then
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
 							arr[k]=v-rhs
 						end
 					end
-				elseif type(rhs)=="array" then
+				elseif type(rhs)=="table" then
 					local i=1
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
@@ -208,14 +208,14 @@ function _g.__c(arr)
 		end,
 		__mul = function(lhs,rhs)
 			local arr={}
-			if rhs~=nil and type(lhs)=="array" then
+			if rhs~=nil and type(lhs)=="table" then
 				if type(rhs)=="number" then
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
 							arr[k]=v*rhs
 						end
 					end
-				elseif type(rhs)=="array" then
+				elseif type(rhs)=="table" then
 					local i=1
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
@@ -233,14 +233,14 @@ function _g.__c(arr)
 		end,
 		__div = function(lhs,rhs)
 			local arr={}
-			if rhs~=nil and type(lhs)=="array" then
+			if rhs~=nil and type(lhs)=="table" then
 				if type(rhs)=="number" then
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
 							arr[k]=v/rhs
 						end
 					end
-				elseif type(rhs)=="array" then
+				elseif type(rhs)=="table" then
 					local i=1
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
@@ -258,14 +258,14 @@ function _g.__c(arr)
 		end,
 		__mod = function(lhs,rhs)
 			local arr={}
-			if rhs~=nil and type(lhs)=="array" then
+			if rhs~=nil and type(lhs)=="table" then
 				if type(rhs)=="number" then
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then
 							arr[k]=v%rhs
 						end
 					end
-				elseif type(rhs)=="array" then
+				elseif type(rhs)=="table" then
 					local i=1
 					for k,v in pairs(lhs) do
 						if type(v)=="number" then

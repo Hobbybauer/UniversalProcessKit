@@ -69,7 +69,7 @@ function UPK_Switcher:load(id,parent)
 		end
 		table.insert(self.maxfillLevelPerShape,math.huge)
 		local numChildren = getNumOfChildren(self.nodeId)
-		for i=1,math.min(numChildren,#self.maxfillLevelPerShape) do
+		for i=1,numChildren do
 			local childId = getChildAt(self.nodeId, i-1)
 			setVisibility(childId,false)
 			self.shapePositions[childId]=__c({getTranslation(childId)})
