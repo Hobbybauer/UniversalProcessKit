@@ -36,3 +36,30 @@ end
 function UPK_Storage:delete()
 	UPK_Storage:superClass().delete(self)
 end
+
+function UniversalProcessKit:loadExtraNodes(xmlFile, key)
+	if self.storageType==UPK_Storage.SINGLE then
+		for k,v in pairs(UniversalProcessKit.fillTypeIntToName) do
+			local fillLevel = getXMLFloat(xmlFile, key .. "#" .. tostring(v))
+			if fillLevel~=nil then
+				self.fillType=k
+				break
+			end
+		end
+	end
+	return true
+end;
+
+function UPK_Storage:getSaveExtraNodes(nodeIdent)
+	local extraNodes=""
+	if self.storageType==UPK_Storage.SINGLE then
+		local fillLevel=self.fillLevel
+		if self.fillLevel==0 then
+			local fillTypeStr=UniversalProcessKit.fillTypeIntToName[self.fillType]
+			if fillTypeStr~=nil then
+				extraNodes = extraNodes .. " " .. tostring(fillTypeStr) .. "=\"" .. tostring(math.floor(fillLevel*1000+0.5)/1000) .. "\""
+			end
+		end
+	end
+	return extraNodes
+end;

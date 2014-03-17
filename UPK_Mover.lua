@@ -141,7 +141,9 @@ function UPK_Mover:update(dt)
 		end
 
 		-- rotate all the time
-		rotate(self.nodeId, unpack(self.rotStep*(dt*0.001)))
+		if self.rotStep~=nil then
+			rotate(self.nodeId, unpack(self.rotStep*(dt*0.001)))
+		end
 
 		self.oldFillLevel=newFillLevel
 	end

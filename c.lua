@@ -56,11 +56,14 @@ function UniversalProcessKit.InitEventClass(classObject,className)
 end;
 
 function length(t)
-	local length=0
-	for k,v in pairs(t or {}) do
-		length=length+1
+	if t==nil or type(t)~="array" then
+		return 0
 	end
-	return length
+	local len=0
+	for _ in pairs(t) do
+		len=len+1
+	end
+	return len
 end;
 	
 function max(...)
@@ -149,23 +152,23 @@ function _g.__c(arr)
 	local c_mt={
 		__index=function(arr,key)
 			if type(key)=="number" and key>1 then
-				return arr[(key-1) % #arr +1]
+				return arr[(key-1) % length(arr) +1]
 			end
 			return nil
 		end,
 		__add = function(lhs,rhs)
 			local arr={}
-			if type(rhs)=="number" then
-				for k,v in pairs(lhs) do
-					if type(v)=="number" then -- exclude functions
-						arr[k]=v+rhs
+			if rhs~=nil and type(lhs)=="array" then
+				if type(rhs)=="number" then
+					for k,v in pairs(lhs) do
+						if type(v)=="number" then
+							arr[k]=v+rhs
+						end
 					end
-				end
-			elseif rhs~=nil then
-				if #lhs==0 then -- table has (only) keys
+				elseif type(rhs)=="array" then
 					local i=1
 					for k,v in pairs(lhs) do
-						if type(v)=="number" then -- exclude functions
+						if type(v)=="number" then
 							if type(rhs[k])=="number" then
 								arr[k]=lhs[k]+rhs[k]
 							elseif type(rhs[i])=="number" then
@@ -174,31 +177,23 @@ function _g.__c(arr)
 							end
 						end
 					end
-				else
-					for i=1,#lhs do
-						if rhs[i]~=nil then
-							table.insert(arr,i,lhs[i]+rhs[i])
-						else
-							table.insert(arr,i,lhs[i])
-						end
-					end
 				end
 			end
 			return __c(arr)
 		end,
 		__sub = function(lhs,rhs)
 			local arr={}
-			if type(rhs)=="number" then
-				for k,v in pairs(lhs) do
-					if type(v)=="number" then -- exclude functions
-						arr[k]=v-rhs
+			if rhs~=nil and type(lhs)=="array" then
+				if type(rhs)=="number" then
+					for k,v in pairs(lhs) do
+						if type(v)=="number" then
+							arr[k]=v-rhs
+						end
 					end
-				end
-			elseif rhs~=nil then
-				if #lhs==0 then -- table has (only) keys
+				elseif type(rhs)=="array" then
 					local i=1
 					for k,v in pairs(lhs) do
-						if type(v)=="number" then -- exclude functions
+						if type(v)=="number" then
 							if type(rhs[k])=="number" then
 								arr[k]=lhs[k]-rhs[k]
 							elseif type(rhs[i])=="number" then
@@ -207,31 +202,23 @@ function _g.__c(arr)
 							end
 						end
 					end
-				else
-					for i=1,#lhs do
-						if rhs[i]~=nil then
-							table.insert(arr,i,lhs[i]-rhs[i])
-						else
-							table.insert(arr,i,lhs[i])
-						end
-					end
 				end
 			end
 			return __c(arr)
 		end,
 		__mul = function(lhs,rhs)
 			local arr={}
-			if type(rhs)=="number" then
-				for k,v in pairs(lhs) do
-					if type(v)=="number" then -- exclude functions
-						arr[k]=v*rhs
+			if rhs~=nil and type(lhs)=="array" then
+				if type(rhs)=="number" then
+					for k,v in pairs(lhs) do
+						if type(v)=="number" then
+							arr[k]=v*rhs
+						end
 					end
-				end
-			elseif rhs~=nil then
-				if #lhs==0 then -- table has (only) keys
+				elseif type(rhs)=="array" then
 					local i=1
 					for k,v in pairs(lhs) do
-						if type(v)=="number" then -- exclude functions
+						if type(v)=="number" then
 							if type(rhs[k])=="number" then
 								arr[k]=lhs[k]*rhs[k]
 							elseif type(rhs[i])=="number" then
@@ -240,31 +227,23 @@ function _g.__c(arr)
 							end
 						end
 					end
-				else
-					for i=1,#lhs do
-						if rhs[i]~=nil then
-							table.insert(arr,i,lhs[i]*rhs[i])
-						else
-							table.insert(arr,i,nil)
-						end
-					end
 				end
 			end
 			return __c(arr)
 		end,
 		__div = function(lhs,rhs)
 			local arr={}
-			if type(rhs)=="number" then
-				for k,v in pairs(lhs) do
-					if type(v)=="number" then -- exclude functions
-						arr[k]=v/rhs
+			if rhs~=nil and type(lhs)=="array" then
+				if type(rhs)=="number" then
+					for k,v in pairs(lhs) do
+						if type(v)=="number" then
+							arr[k]=v/rhs
+						end
 					end
-				end
-			elseif rhs~=nil then
-				if #lhs==0 then -- table has (only) keys
+				elseif type(rhs)=="array" then
 					local i=1
 					for k,v in pairs(lhs) do
-						if type(v)=="number" then -- exclude functions
+						if type(v)=="number" then
 							if type(rhs[k])=="number" then
 								arr[k]=lhs[k]/rhs[k]
 							elseif type(rhs[i])=="number" then
@@ -273,45 +252,29 @@ function _g.__c(arr)
 							end
 						end
 					end
-				else
-					for i=1,#lhs do
-						if rhs[i]~=nil then
-							table.insert(arr,i,lhs[i]/rhs[i])
-						else
-							table.insert(arr,i,nil)
-						end
-					end
 				end
 			end
 			return __c(arr)
 		end,
 		__mod = function(lhs,rhs)
 			local arr={}
-			if type(rhs)=="number" then
-				for k,v in pairs(lhs) do
-					if type(v)=="number" then -- exclude functions
-						arr[k]=v%rhs
+			if rhs~=nil and type(lhs)=="array" then
+				if type(rhs)=="number" then
+					for k,v in pairs(lhs) do
+						if type(v)=="number" then
+							arr[k]=v%rhs
+						end
 					end
-				end
-			elseif rhs~=nil then
-				if #lhs==0 then -- table has (only) keys
+				elseif type(rhs)=="array" then
 					local i=1
 					for k,v in pairs(lhs) do
-						if type(v)=="number" then -- exclude functions
+						if type(v)=="number" then
 							if type(rhs[k])=="number" then
 								arr[k]=lhs[k]%rhs[k]
 							elseif type(rhs[i])=="number" then
 								arr[k]=lhs[k]%rhs[i]
 								i=i+1
 							end
-						end
-					end
-				else
-					for i=1,#lhs do
-						if rhs[i]~=nil then
-							table.insert(arr,i,lhs[i]%rhs[i])
-						else
-							table.insert(arr,i,nil)
 						end
 					end
 				end
@@ -331,30 +294,25 @@ function _g.__c(arr)
 		end,
 		__concat = function(lhs,rhs) -- not consistent logic yet
 			local arr=lhs
-			for i=1,#rhs do
+			for i=1,length(rhs) do
 				table.insert(arr,rhs[i])
 			end
 			return __c(arr) 
 		end,
 		__len=function(t)
-			count=0
-			for _,v in pairs(t) do
-				if type(v)~="function" then
-					count=count+1
-				end
-			end
-			return count
+			return length(t)
 		end	
 	}
 	setmetatable(arr,c_mt)
 	function arr:min()
 		local nr=math.huge
-		if #self>0 then
-			for i=1,#self do
+		local len=length(self)
+		if len>0 then
+			for i=1,len do
 				nr=math.min(nr,self[i])
 			end
 			return nr
-		elseif #self==0 then
+		elseif len==0 then
 			for k,v in pairs(self) do
 				if type(self[k])=="number" then -- exclude functions
 					nr=math.min(nr,v)
@@ -367,12 +325,13 @@ function _g.__c(arr)
 	function arr:max(returnKey)
 		local nr=-math.huge
 		local key
-		if #self>0 then
-			for i=1,#self do
+		local len=length(self)
+		if len>0 then
+			for i=1,len do
 				nr=math.max(nr,self[i])
 				key=i
 			end
-		elseif #self==0 then
+		elseif len==0 then
 			for k,v in pairs(self) do
 				if type(v)=="number" then -- exclude functions
 					nr=math.max(nr,v)
@@ -380,7 +339,7 @@ function _g.__c(arr)
 				end
 			end
 		end
-		if #self>=0 then
+		if len>=0 then
 			if returnKey then
 				return key
 			else
@@ -394,14 +353,14 @@ function _g.__c(arr)
 			keys={keys}
 		end
 		local values={}
-		for i=1,#keys do
+		for i=1,length(keys) do
 			values[keys[i]]=self[keys[i]]
 		end
 		return values
 	end
 	function arr:zeroToNil()
 		local values=self
-		for i=1,#self do
+		for i=1,length(self) do
 			if self[i]==0 then
 				--values
 			end
