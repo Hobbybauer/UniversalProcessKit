@@ -80,47 +80,50 @@ function UPK_FillTrigger:load(id,parent)
 	self.useParticleSystem = tobool(getUserAttribute(id, "useParticleSystem"))
 	
     if self.isClient and self.useParticleSystem then
-      local dropParticleSystem = Utils.indexToObject(id, getUserAttribute(id, "dropParticleSystemIndex"))
-      if dropParticleSystem ~= nil then
-        self.dropParticleSystems = {}
-        Utils.loadParticleSystemFromNode(dropParticleSystem, self.dropParticleSystems, false, true)
-      end
-      local lyingParticleSystem = Utils.indexToObject(id, getUserAttribute(id, "lyingParticleSystemIndex"))
-      if lyingParticleSystem ~= nil then
-        self.lyingParticleSystems = {}
-        Utils.loadParticleSystemFromNode(lyingParticleSystem, self.lyingParticleSystems, true, true)
-        for _, ps in ipairs(self.lyingParticleSystems) do
-          local lifespan = getParticleSystemLifespan(ps.geometry)
-          addParticleSystemSimulationTime(ps.geometry, lifespan)
+        local dropParticleSystem = Utils.indexToObject(id, getUserAttribute(id, "dropParticleSystemIndex"))
+        if dropParticleSystem ~= nil then
+            self.dropParticleSystems = {}
+            Utils.loadParticleSystemFromNode(dropParticleSystem, self.dropParticleSystems, false, true)
         end
-        Utils.setParticleSystemTimeScale(self.lyingParticleSystems, 0)
-      end
+        local lyingParticleSystem = Utils.indexToObject(id, getUserAttribute(id, "lyingParticleSystemIndex"))
+        if lyingParticleSystem ~= nil then
+            self.lyingParticleSystems = {}
+            Utils.loadParticleSystemFromNode(lyingParticleSystem, self.lyingParticleSystems, true, true)
+            for _, ps in ipairs(self.lyingParticleSystems) do
+                local lifespan = getParticleSystemLifespan(ps.geometry)
+                addParticleSystemSimulationTime(ps.geometry, lifespan)
+            end
+            Utils.setParticleSystemTimeScale(self.lyingParticleSystems, 0)
+        end
 	  
-      if self.dropParticleSystems == nil then
-        local particleSystem = Utils.getNoNil(getUserAttribute(id, "particleSystem"), "wheatParticleSystemLong")
-        local psData = {}
-        psData.psFile = getUserAttribute(id, "particleSystemFilename")
-        if psData.psFile == nil then
-          local particleSystem = Utils.getNoNil(getUserAttribute(id, "particleSystem"), "wheatParticleSystemLong")
-          psData.psFile = "$data/vehicles/particleSystems/" .. particleSystem .. ".i3d"
-        end
-        psData.posX, psData.posY, psData.posZ = unpack(self.pos+getVectorFromUserAttribute(self.nodeId,"particlePosition", "0 0 0"))
-        psData.forceNoWorldSpace = true
-        self.dropParticleSystems = {}
-        Utils.loadParticleSystemFromData(psData, self.dropParticleSystems, nil, false, nil, g_currentMission.baseDirectory, getParent(id))
-      end
-    
-	
-      local fillSoundFilename = Utils.getFilename("$data/maps/sounds/siloFillSound.wav", g_currentMission.baseDirectory)
-  	--self:print('Set fillSoundFilename to '..tostring(fillSoundFilename))
-      self.siloFillSound = createAudioSource("siloFillSound", fillSoundFilename, 30, 10, 1, 0)
-  	--self:print('self.siloFillSound is '..tostring(self.siloFillSound))
-      link(id, self.siloFillSound)
-      setVisibility(self.siloFillSound, false)
-  end
-  
-  self:print('loaded FillTrigger successfully')
-  return true
+        if self.dropParticleSystems == nil then
+            local particleSystem = Utils.getNoNil(getUserAttribute(self.nodeId, "particleSystem"), "wheatParticleSystemLong")
+            local psData = {}
+            psData.psFile = getUserAttribute(id, "particleSystemFilename")
+            if psData.psFile == nil then
+                local particleSystem = Utils.getNoNil(getUserAttribute(self.nodeId, "particleSystem"), "wheatParticleSystemLong")
+                psData.psFile = "$data/vehicles/particleSystems/" .. particleSystem .. ".i3d"
+            end
+			self:print('psData.psFile: '..tostring(psData.psFile))
+            psData.posX, psData.posY, psData.posZ = unpack(getVectorFromUserAttribute(self.nodeId,"particlePosition", "0 0 0"))
+			self:print('x: '..tostring(psData.posX)..' y: '..tostring(psData.posY)..' z: '..tostring(psData.posZ))
+            psData.forceNoWorldSpace = true
+            self.dropParticleSystems = {}
+            Utils.loadParticleSystemFromData(psData, self.dropParticleSystems, nil, false, nil, g_currentMission.baseDirectory, self.nodeId)
+		end
+    end
+
+    self.useFillSound = tobool(Utils.getNoNil(getUserAttribute(id, "useFillSound"),"true"))
+    if self.useFillSound then
+  		local fillSoundStr = Utils.getNoNil(getUserAttribute(id, "fillSoundFilename"),"$data/maps/sounds/siloFillSound.wav")
+        local fillSoundFilename = Utils.getFilename(fillSoundStr, g_currentMission.baseDirectory)
+        self.siloFillSound = createAudioSource("siloFillSound", fillSoundFilename, 30, 10, 1, 0)
+        link(self.nodeId, self.siloFillSound)
+        setVisibility(self.siloFillSound, false)
+    end
+
+    self:print('loaded FillTrigger successfully')
+    return true
 end
 
 function UPK_FillTrigger:delete()

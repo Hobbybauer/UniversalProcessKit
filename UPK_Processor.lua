@@ -44,7 +44,7 @@ function UPK_Processor:load(id, parent)
 	self.productsPerMinute = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerMinute")),0)
 	self.productsPerHour = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerHour")),0)
 	self.productsPerDay = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerDay")),0)
-	self.onlyWholeProducts = tobool(getUserAttribute(id, "onlyWholeProducts"))
+	self.useRessources = tobool(Utils.getNoNil(getUserAttribute(id, "useRessources"),"true")) == true
 	self.bufferedProducts = 0
 	
 	self.hasRecipe=false
@@ -144,32 +144,37 @@ end
 
 function UPK_Processor:produce(processed)
 	if self.isServer then
-		if self.hasRecipe then
-			for k,v in pairs(self.recipe) do
-				if type(v)=="number" then
-					processed=math.min(processed,self:getFillLevel(k)/v or 0)
+		processed=math.min(processed,self.capacity-self:getFillLevel(self.product))
+		if processed>0 then
+			if self.hasRecipe then
+				for k,v in pairs(self.recipe) do
+					if type(v)=="number" then
+						processed=math.min(processed,self:getFillLevel(k)/v or 0)
+					end
+				end
+				if self.useRessources then
+					local ressourcesUsed=self.recipe*processed
+					for k,v in pairs(ressourcesUsed) do
+						if type(v)=="number" then
+							self:addFillLevel(-v,k)
+						end
+					end
 				end
 			end
-			local ressourcesUsed=self.recipe*processed
-			for k,v in pairs(ressourcesUsed) do
-				if type(v)=="number" then
-					self:addFillLevel(-v,k)
+			-- deal with the produced outcome
+			self.bufferedProducts=self.bufferedProducts+processed
+			local finalProducts=0
+			if self.onlyWholeProducts then
+				local wholeProducts=math.floor(self.bufferedProducts)
+				if wholeProducts>=1 then
+					finalProducts=wholeProducts
+					self.bufferedProducts=self.bufferedProducts-wholeProducts
 				end
+			else
+				finalProducts=self.bufferedProducts
+				self.bufferedProducts=0
 			end
+			self:addFillLevel(finalProducts,self.product)
 		end
-		-- deal with the produced outcome
-		self.bufferedProducts=self.bufferedProducts+processed
-		local finalProducts=0
-		if self.onlyWholeProducts then
-			local wholeProducts=math.floor(self.bufferedProducts)
-			if wholeProducts>=1 then
-				finalProducts=wholeProducts
-				self.bufferedProducts=self.bufferedProducts-wholeProducts
-			end
-		else
-			finalProducts=self.bufferedProducts
-			self.bufferedProducts=0
-		end
-		self:addFillLevel(finalProducts,self.product)
 	end
 end

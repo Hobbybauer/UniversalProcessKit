@@ -145,6 +145,10 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __particlePosition__ (string): Lage des Ursprungs der Partikel
     (default: "0 0 0")
 
+-   __useFillSound__ (string): gibt an, ob ein Sound beim Befüllen abgespielt werden soll (default: "true")
+
+-   __fillSoundFilename__ (string): Pfad zur Sounddatei (default: "$data/maps/sounds/siloFillSound.wav")
+
 ### displaytrigger
 
 -   __fillTypes__ (string): Namen der anzuzeigenden Fruchtsorten, mit
@@ -192,6 +196,9 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     "0.5 wheat 0.3 water 0.2 salt", zu lesen als "1 Liter des Produkts
     ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default:
     ohne)
+
+-   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
+    "true")
 
 -   __statName__ (string): (falls product="money") zu welcher Statistik
     der Betrag gebucht wird, entweder "newVehiclesCost",
