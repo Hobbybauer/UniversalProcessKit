@@ -197,6 +197,9 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default:
     ohne)
 
+-   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen.
+	Und zwar im Verhältnis zu einem Liter des Produkts (default: ohne)
+
 -   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
     "true")
 

@@ -59,6 +59,18 @@ function UPK_Processor:load(id, parent)
 		end
 	end
 	
+	self.hasByproducts=false
+	self.byproducts=__c()
+	local byproductsArr=gmatch(Utils.getNoNil(getUserAttribute(id, "byproducts"),""),"%S+")
+	for i=1,#byproductsArr,2 do
+		local amount=tonumber(byproductsArr[i])
+		local type=unpack(UniversalProcessKit.fillTypeNameToInt(byproductsArr[i+1]))
+		if amount~=nil and type~=nil then
+			self.byproducts[type]=amount
+			self.hasByproducts=true
+		end
+	end
+	
 	self.statName=getUserAttribute(id, "statName")
 	local validStatName=false
 	if self.statName~=nil then
@@ -148,7 +160,7 @@ function UPK_Processor:produce(processed)
 		if processed>0 then
 			if self.hasRecipe then
 				for k,v in pairs(self.recipe) do
-					if type(v)=="number" then
+					if type(v)=="number" and v>0 then
 						processed=math.min(processed,self:getFillLevel(k)/v or 0)
 					end
 				end
@@ -175,6 +187,14 @@ function UPK_Processor:produce(processed)
 				self.bufferedProducts=0
 			end
 			self:addFillLevel(finalProducts,self.product)
+			if self.hasByproducts then
+				self:print('hasByproduct!')
+				for k,v in pairs(self.byproducts) do
+					if type(v)=="number" and v>0 then
+						self:addFillLevel(v*finalProducts,k)
+					end
+				end
+			end
 		end
 	end
 end
