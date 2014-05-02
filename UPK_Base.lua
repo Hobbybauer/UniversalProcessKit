@@ -40,13 +40,13 @@ function UPK_Base:load(id, placeable)
 end
 
 function UPK_Base:delete()
-	UPK_Base:superClass().delete(self)
 	if self.builtIn then
 		g_currentMission:removeOnCreateLoadedObjectToSave(self)
 		if self.nodeId ~= 0 then
 	        g_currentMission:removeNodeObject(self.nodeId)
 	    end
 	end
+	UPK_Base:superClass().delete(self)
 end
 
 function UPK_Base:update(dt)

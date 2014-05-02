@@ -66,9 +66,6 @@ function UPK_FillTrigger:load(id,parent)
     self.fillLitersPerSecond = Utils.getNoNil(getUserAttribute(id, "fillLitersPerSecond"), 1500)
 	self.createFillType = tobool(getUserAttribute(id, "createFillType"))
     self.pricePerLiter = Utils.getNoNil(tonumber(getUserAttribute(id, "pricePerLiter")), 0)
-	if self.pricePerLiter~=0 then
-		self.createFillType = true
-	end
 
     self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowTrailer"), "true"))
     self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(id, "allowShovel"), "true"))

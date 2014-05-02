@@ -583,6 +583,7 @@ function UniversalProcessKit:showMapHotspot(on,alreadySent)
 	end
 	if on==false and type(self.mapHotspot)=="table" and self.mapHotspot.delete~=nil then
 		g_currentMission.missionPDA:deleteMapHotspot(self.mapHotspot)
+		self.mapHotspot=nil
 	end
 	if not alreadySent then
 		self:raiseDirtyFlags(self.maphotspotDirtyFlag)
