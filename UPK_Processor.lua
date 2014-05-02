@@ -188,7 +188,6 @@ function UPK_Processor:produce(processed)
 			end
 			self:addFillLevel(finalProducts,self.product)
 			if self.hasByproducts then
-				self:print('hasByproduct!')
 				for k,v in pairs(self.byproducts) do
 					if type(v)=="number" and v>0 then
 						self:addFillLevel(v*finalProducts,k)

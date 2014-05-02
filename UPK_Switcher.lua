@@ -106,11 +106,12 @@ end
 
 function UPK_Switcher:update(dt)
 	UPK_Switcher:superClass().update(self,dt)
-	
+
 	if self.isClient and self.isEnabled then
 		if self.useFillTypes then
 			local fillType=self.fillType
-			if fillType~=nil and fillType~=self.oldFillType then
+			local shapeToShow=nil
+			if fillType~=nil and fillType~=Fillable.FILLTYPE_UNKNOWN and fillType~=self.oldFillType then
 				shapeToShow=self.switchFillTypes[fillType]
 			end
 			if shapeToShow~=nil and shapeToShow~=self.oldShapeToShow then
@@ -119,7 +120,10 @@ function UPK_Switcher:update(dt)
 					setTranslation(self.oldShapeToShow,unpack((self.shapePositions[self.oldShapeToShow]+self.hidingPosition) or {}))
 				end
 				setVisibility(shapeToShow,true)
-				setTranslation(shapeToShow,unpack(self.shapePositions[shapeToShow] or {}))
+				local x,y,z=unpack(self.shapePositions[shapeToShow] or {})
+				if x~=nil and y~=nil and z~=nil then
+					setTranslation(shapeToShow,x,y,z)
+				end
 				self.oldShapeToShow=shapeToShow
 			end
 			self.oldFillType=fillType

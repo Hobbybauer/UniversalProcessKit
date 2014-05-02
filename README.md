@@ -441,7 +441,7 @@ Mit der Zeit werden weitere Funktionen hinzukommen, so zB. Förderbänder. Prior
 
 ## Instalation
 
-Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in dein Mod-Ordner.
+Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
 
 ## Hinweise zum Gebrauch
 

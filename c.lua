@@ -145,164 +145,165 @@ UPK_Storage.FILO=4
 
 _g.g_upkTipTrigger={}
 
+local c_mt={
+	__index=function(arr,key)
+		if type(key)=="number" and key>1 then
+			return arr[(key-1) % length(arr) +1]
+		end
+		return nil
+	end,
+	__add = function(lhs,rhs)
+		local arr={}
+		if rhs~=nil and type(lhs)=="table" then
+			if type(rhs)=="number" then
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						arr[k]=v+rhs
+					end
+				end
+			elseif type(rhs)=="table" then
+				local i=1
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						if type(rhs[k])=="number" then
+							arr[k]=lhs[k]+rhs[k]
+						elseif type(rhs[i])=="number" then
+							arr[k]=lhs[k]+rhs[i]
+							i=i+1
+						end
+					end
+				end
+			end
+		end
+		return __c(arr)
+	end,
+	__sub = function(lhs,rhs)
+		local arr={}
+		if rhs~=nil and type(lhs)=="table" then
+			if type(rhs)=="number" then
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						arr[k]=v-rhs
+					end
+				end
+			elseif type(rhs)=="table" then
+				local i=1
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						if type(rhs[k])=="number" then
+							arr[k]=lhs[k]-rhs[k]
+						elseif type(rhs[i])=="number" then
+							arr[k]=lhs[k]-rhs[i]
+							i=i+1
+						end
+					end
+				end
+			end
+		end
+		return __c(arr)
+	end,
+	__mul = function(lhs,rhs)
+		local arr={}
+		if rhs~=nil and type(lhs)=="table" then
+			if type(rhs)=="number" then
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						arr[k]=v*rhs
+					end
+				end
+			elseif type(rhs)=="table" then
+				local i=1
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						if type(rhs[k])=="number" then
+							arr[k]=lhs[k]*rhs[k]
+						elseif type(rhs[i])=="number" then
+							arr[k]=lhs[k]*rhs[i]
+							i=i+1
+						end
+					end
+				end
+			end
+		end
+		return __c(arr)
+	end,
+	__div = function(lhs,rhs)
+		local arr={}
+		if rhs~=nil and type(lhs)=="table" then
+			if type(rhs)=="number" then
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						arr[k]=v/rhs
+					end
+				end
+			elseif type(rhs)=="table" then
+				local i=1
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						if type(rhs[k])=="number" then
+							arr[k]=lhs[k]/rhs[k]
+						elseif type(rhs[i])=="number" then
+							arr[k]=lhs[k]/rhs[i]
+							i=i+1
+						end
+					end
+				end
+			end
+		end
+		return __c(arr)
+	end,
+	__mod = function(lhs,rhs)
+		local arr={}
+		if rhs~=nil and type(lhs)=="table" then
+			if type(rhs)=="number" then
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						arr[k]=v%rhs
+					end
+				end
+			elseif type(rhs)=="table" then
+				local i=1
+				for k,v in pairs(lhs) do
+					if type(v)=="number" then
+						if type(rhs[k])=="number" then
+							arr[k]=lhs[k]%rhs[k]
+						elseif type(rhs[i])=="number" then
+							arr[k]=lhs[k]%rhs[i]
+							i=i+1
+						end
+					end
+				end
+			end
+		end
+		return __c(arr)
+	end,
+	__call = function(func, ...)
+		local t={}
+		local args=...
+		if type(args)~="table" then
+			args={...}
+		end
+		for k,v in pairs(args) do
+			table.insert(t,k,func[v])
+		end
+		return __c(t)
+	end,
+	__concat = function(lhs,rhs) -- not consistent logic yet
+		local arr=lhs
+		for i=1,length(rhs) do
+			table.insert(arr,rhs[i])
+		end
+		return __c(arr) 
+	end,
+	__len=function(t)
+		return length(t)
+	end	
+}
+
 function _g.__c(arr)
 	if type(arr)~="table" then
 		arr={arr}
 	end
-	local c_mt={
-		__index=function(arr,key)
-			if type(key)=="number" and key>1 then
-				return arr[(key-1) % length(arr) +1]
-			end
-			return nil
-		end,
-		__add = function(lhs,rhs)
-			local arr={}
-			if rhs~=nil and type(lhs)=="table" then
-				if type(rhs)=="number" then
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							arr[k]=v+rhs
-						end
-					end
-				elseif type(rhs)=="table" then
-					local i=1
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							if type(rhs[k])=="number" then
-								arr[k]=lhs[k]+rhs[k]
-							elseif type(rhs[i])=="number" then
-								arr[k]=lhs[k]+rhs[i]
-								i=i+1
-							end
-						end
-					end
-				end
-			end
-			return __c(arr)
-		end,
-		__sub = function(lhs,rhs)
-			local arr={}
-			if rhs~=nil and type(lhs)=="table" then
-				if type(rhs)=="number" then
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							arr[k]=v-rhs
-						end
-					end
-				elseif type(rhs)=="table" then
-					local i=1
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							if type(rhs[k])=="number" then
-								arr[k]=lhs[k]-rhs[k]
-							elseif type(rhs[i])=="number" then
-								arr[k]=lhs[k]-rhs[i]
-								i=i+1
-							end
-						end
-					end
-				end
-			end
-			return __c(arr)
-		end,
-		__mul = function(lhs,rhs)
-			local arr={}
-			if rhs~=nil and type(lhs)=="table" then
-				if type(rhs)=="number" then
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							arr[k]=v*rhs
-						end
-					end
-				elseif type(rhs)=="table" then
-					local i=1
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							if type(rhs[k])=="number" then
-								arr[k]=lhs[k]*rhs[k]
-							elseif type(rhs[i])=="number" then
-								arr[k]=lhs[k]*rhs[i]
-								i=i+1
-							end
-						end
-					end
-				end
-			end
-			return __c(arr)
-		end,
-		__div = function(lhs,rhs)
-			local arr={}
-			if rhs~=nil and type(lhs)=="table" then
-				if type(rhs)=="number" then
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							arr[k]=v/rhs
-						end
-					end
-				elseif type(rhs)=="table" then
-					local i=1
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							if type(rhs[k])=="number" then
-								arr[k]=lhs[k]/rhs[k]
-							elseif type(rhs[i])=="number" then
-								arr[k]=lhs[k]/rhs[i]
-								i=i+1
-							end
-						end
-					end
-				end
-			end
-			return __c(arr)
-		end,
-		__mod = function(lhs,rhs)
-			local arr={}
-			if rhs~=nil and type(lhs)=="table" then
-				if type(rhs)=="number" then
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							arr[k]=v%rhs
-						end
-					end
-				elseif type(rhs)=="table" then
-					local i=1
-					for k,v in pairs(lhs) do
-						if type(v)=="number" then
-							if type(rhs[k])=="number" then
-								arr[k]=lhs[k]%rhs[k]
-							elseif type(rhs[i])=="number" then
-								arr[k]=lhs[k]%rhs[i]
-								i=i+1
-							end
-						end
-					end
-				end
-			end
-			return __c(arr)
-		end,
-		__call = function(func, ...)
-			local t={}
-			local args=...
-			if type(args)~="table" then
-				args={...}
-			end
-			for k,v in pairs(args) do
-				table.insert(t,k,func[v])
-			end
-			return __c(t)
-		end,
-		__concat = function(lhs,rhs) -- not consistent logic yet
-			local arr=lhs
-			for i=1,length(rhs) do
-				table.insert(arr,rhs[i])
-			end
-			return __c(arr) 
-		end,
-		__len=function(t)
-			return length(t)
-		end	
-	}
 	setmetatable(arr,c_mt)
 	function arr:min()
 		local nr=math.huge
