@@ -41,6 +41,7 @@ function UPK_Processor:load(id, parent)
 	if self.product ~= nil and self.fillLevels[self.product]==nil then
 		self:setFillLevel(0,self.product)
 	end
+	self.productsPerSecond = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerSecond")),0)
 	self.productsPerMinute = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerMinute")),0)
 	self.productsPerHour = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerHour")),0)
 	self.productsPerDay = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerDay")),0)
@@ -142,6 +143,12 @@ end
 
 -- to save: bufferedProducts
 
+function UPK_Processor:update(dt)
+	if self.productsPerSecond>0 then
+		self:produce(self.productsPerSecond/1000*dt)
+	end
+end;
+
 function UPK_Processor:minuteChanged()
 	self:produce(self.productsPerMinute)
 end
@@ -156,7 +163,9 @@ end
 
 function UPK_Processor:produce(processed)
 	if self.isServer then
-		processed=math.min(processed,self.capacity-self:getFillLevel(self.product))
+		if self.product~=UniversalProcessKit.FILLTYPE_MONEY then
+			processed=math.min(processed,self.capacity-self:getFillLevel(self.product))
+		end
 		if processed>0 then
 			if self.hasRecipe then
 				for k,v in pairs(self.recipe) do

@@ -175,17 +175,20 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __*product__ (string): legt fest, welche Fruchtsorte erzeugt
     werden soll - Geld ist "money" (kein default)
 
--   __a) productsPerMinute__ (float): welche Menge maximal pro Minute
+-   __a) productsPerMinute__ (float): welche Menge maximal pro Minute (Spielzeit) 
     erzeugt wird (veranlasst die Produktion der Fruchtsorte im
     Minutentakt) (default: 0)
 
--   __b) productsPerHour__ (float): welche Menge maximal pro Stunde
+-   __b) productsPerHour__ (float): welche Menge maximal pro Stunde (Spielzeit) 
     erzeugt wird (veranlasst die Produktion der Fruchtsorte im
     Stundentakt) (default: 0)
 
--   __c) productsPerDay__ (float): welche Menge maximal pro Tag erzeugt
+-   __c) productsPerDay__ (float): welche Menge maximal pro Tag (Spielzeit) erzeugt
     wird (veranlasst die Produktion der Fruchtsorte im Tagestakt)
     (default: 0)
+
+-   __a) productsPerSecond__ (float): welche Menge maximal pro Sekunde (Echtzeit)
+    erzeugt wird (veranlasst die Produktion der Fruchtsorte in Echtzeit) (default: 0)
 
 -   __onlyWholeProducts__ (string): ob nur ganze Zahlen dem Füllstand
     hinzugefügt werden sollen, entweder "true" oder "false" (default:
