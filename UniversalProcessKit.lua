@@ -120,7 +120,7 @@ function UniversalProcessKit:new(isServer, isClient, customMt)
 		end,
 		__len=function(t)
 			local len=0
-			for i=1,UniversalProcessKit.NUM_FILLTYPES do
+			for i=1,UniversalProcessKit.NUM_FILLTYPES do  --fillTypes used: 1-max. 64, 1025-sth
 				if t[i]~=nil then
 					len=len+1
 				end
@@ -496,12 +496,11 @@ function UniversalProcessKit:getFillType()
 end;
 
 function UniversalProcessKit:setFillType(fillType)
-	self:print('who?')
 	if fillType~=nil then
 		self.fillType = fillType
 		--self.capacity=self.capacities[self.fillType]
 	else
-		self.fillType = Fillable.FILLTYPE_UNKNOWN
+		self.fillType = nil
 		--self.capacity=self.capacities.FILLTYPE_UNKNOWN
 	end	
 end;

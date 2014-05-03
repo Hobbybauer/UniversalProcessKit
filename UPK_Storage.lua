@@ -43,6 +43,7 @@ function UniversalProcessKit:loadExtraNodes(xmlFile, key)
 			local fillLevel = getXMLFloat(xmlFile, key .. "#" .. tostring(v))
 			if fillLevel~=nil then
 				self.fillType=k
+				self.fillLevels[k]=fillLevel
 				break
 			end
 		end
