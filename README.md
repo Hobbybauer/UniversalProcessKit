@@ -187,7 +187,7 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     wird (veranlasst die Produktion der Fruchtsorte im Tagestakt)
     (default: 0)
 
--   __a) productsPerSecond__ (float): welche Menge maximal pro Sekunde (Echtzeit)
+-   __d) productsPerSecond__ (float): welche Menge maximal pro Sekunde (Echtzeit)
     erzeugt wird (veranlasst die Produktion der Fruchtsorte in Echtzeit) (default: 0)
 
 -   __onlyWholeProducts__ (string): ob nur ganze Zahlen dem Füllstand
@@ -441,6 +441,10 @@ Folgender Code muss in der register.lua des Mods stehen, die in der modDesc.xml 
 ## Ausblick
 
 Mit der Zeit werden weitere Funktionen hinzukommen, so zB. Förderbänder. Priorität hat erstmal die Server-Client-Synchronisation.
+
+#### Größtes Problem, das mal gelöst werden sollte
+
+Die Netzwerksynchronisation funktioniert eigentlich ganz gut. Platzierbare und verbaute Objekte werden zwischen Server und Client synchronisiert. Das Problem entsteht beim Löschen von UPK-Objekten, da bleiben auf dem Client welche ungelöscht zurück und verursachen Fehler wegen falschen Netzwerk-Ids, die auf dem Client dann für dasgleiche Objekt andere sind, wie auf dem Server. Leider habe ich nicht rausgefunden, welche Objekte beim Löschen nicht gelöscht werden. Das sollte sich mal jemand anschauen..
 
 ## Instalation
 

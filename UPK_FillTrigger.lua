@@ -30,7 +30,7 @@ function UPK_FillTrigger:load(id,parent)
 	self.fill = {}
 	self.siloTrailer = nil
 	self.fillDone = {}
-	self.isFilling = {}
+	self.isFilling = false
 	
 	-- find shapes to show fillType
 	self.fillTypeShapes={}
@@ -82,6 +82,7 @@ function UPK_FillTrigger:load(id,parent)
             self.dropParticleSystems = {}
             Utils.loadParticleSystemFromNode(dropParticleSystem, self.dropParticleSystems, false, true)
         end
+		--[[ somebody needs this??
         local lyingParticleSystem = Utils.indexToObject(id, getUserAttribute(id, "lyingParticleSystemIndex"))
         if lyingParticleSystem ~= nil then
             self.lyingParticleSystems = {}
@@ -92,6 +93,7 @@ function UPK_FillTrigger:load(id,parent)
             end
             Utils.setParticleSystemTimeScale(self.lyingParticleSystems, 0)
         end
+		]]--
 	  
         if self.dropParticleSystems == nil then
             local particleSystem = Utils.getNoNil(getUserAttribute(self.nodeId, "particleSystem"), "wheatParticleSystemLong")
@@ -103,9 +105,9 @@ function UPK_FillTrigger:load(id,parent)
             end
 			self:print('psData.psFile: '..tostring(psData.psFile))
             psData.posX, psData.posY, psData.posZ = unpack(getVectorFromUserAttribute(self.nodeId,"particlePosition", "0 0 0"))
-			self:print('x: '..tostring(psData.posX)..' y: '..tostring(psData.posY)..' z: '..tostring(psData.posZ))
-            psData.forceNoWorldSpace = true
+			psData.forceNoWorldSpace = true
             self.dropParticleSystems = {}
+			-- psData.rotX, psData.rotY, psData.rotZ = unpack(self.rot*(-1))
             Utils.loadParticleSystemFromData(psData, self.dropParticleSystems, nil, false, nil, g_currentMission.baseDirectory, self.nodeId)
 		end
     end
@@ -115,8 +117,10 @@ function UPK_FillTrigger:load(id,parent)
   		local fillSoundStr = Utils.getNoNil(getUserAttribute(id, "fillSoundFilename"),"$data/maps/sounds/siloFillSound.wav")
         local fillSoundFilename = Utils.getFilename(fillSoundStr, g_currentMission.baseDirectory)
         self.siloFillSound = createAudioSource("siloFillSound", fillSoundFilename, 30, 10, 1, 0)
+		self:print('self.siloFillSound~=nil? '..tostring(self.siloFillSound~=nil))
         link(self.nodeId, self.siloFillSound)
         setVisibility(self.siloFillSound, false)
+		
     end
 
     self:print('loaded FillTrigger successfully')
@@ -158,7 +162,7 @@ function UPK_FillTrigger:update(dt)
 	if self.isServer then
 		--self:print("isServer")
 		if self.allowTrailer then
-			for _,v in pairs(self.trailers) do
+			for k,v in pairs(self.trailers) do
 				local trailer = g_currentMission.objectToTrailer[v]
 				--self:print("trailer: "..tostring(type(self.parentTrailer))..", fill: "..tostring(self.fill)..", fillDone: "..tostring(self.fillDone))
 				if trailer~=nil then
@@ -168,11 +172,11 @@ function UPK_FillTrigger:update(dt)
 							trailer:resetFillLevelIfNeeded(fillType)
 							local fillLevel = trailer:getFillLevel(fillType)
 							if trailer:allowFillType(fillType, false) then
-								if trailer.capacity~=nil and fillLevel==trailer.capacity then
+								if (trailer.capacity~=nil and fillLevel==trailer.capacity) or (self.fillLevels[fillType]==0) then
 									self.fill[v]=nil
 									self.fillDone[v]=nil
+									table.remove(self.trailers,k)
 			    					self:stopFill()
-									table.remove(self.trailers,v)
 								else
 			    					local deltaFillLevel = self.fillLitersPerSecond * 0.001 * dt
 			    					if not self.createFillType then
@@ -275,7 +279,12 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 				elseif onLeave then
 					self.fill[otherShapeId] = nil
 					self.fillDone[otherShapeId] = nil
-					table.remove(self.trailers,otherShapeId)
+					for k,v in pairs(self.trailers) do
+						if otherShapeId==v then
+							table.remove(self.trailers,k)
+							break
+						end
+					end
 					self:stopFill(otherShapeId)
 				end
 			end
@@ -314,7 +323,7 @@ function UPK_FillTrigger:getIsActivatable(vehicle)
 end
 
 function UPK_FillTrigger:startFill()
-	SiloTrigger:startFill(self)
+	SiloTrigger.startFill(self)
 end
 
 function UPK_FillTrigger:stopFill()
@@ -323,7 +332,7 @@ function UPK_FillTrigger:stopFill()
 		trailercount=trailercount+1
 	end	
 	if trailercount==0 then
-		SiloTrigger:stopFill(self)
+		SiloTrigger.stopFill(self)
 	end
 end
 
