@@ -292,6 +292,23 @@ Wie eine zusätzliche _base_ innerhalb des UPK-Mods, die unabhägig Füllstände
 
 -   __storageType__ (string): wie die Füllstande gespeichert werden sollen, entweder "separate", "single", "fifo" oder "filo" (default: "separate")
 
+-   __a) leakPerMinute__ (string): welche Menge maximal pro Minute (Spielzeit) 
+    an das übergeordnete Modul weitergegeben wird, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
+    "500 wheat 150 water" (default: ohne)
+
+-   __b) leakPerHour__ (string): welche Menge maximal pro Stunde (Spielzeit) 
+    an das übergeordnete Modul weitergegeben wird, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
+    "500 wheat 150 water" (default: ohne)
+
+-   __c) leakPerDay__ (string): welche Menge maximal pro Tag (Spielzeit) 
+    an das übergeordnete Modul weitergegeben wird, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
+    "500 wheat 150 water" (default: ohne)
+
+-   __d) leakPerSecond__ (string): welche Menge maximal pro Sekunde (Echtzeit) 
+    an das übergeordnete Modul weitergegeben wird, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
+    "500 wheat 150 water" (default: ohne)
+
+
 ## Beispiele
 
 1.  __Apfelmod__: Der __Apfelbaum__ besteht aus einem _switcher_, einem _filltrigger_, einem _displaytrigger_ und einem _proessor_. Der _processor_ erzeugt die Äpfel (16l/h) und der _filltrigger_ füllt Kipper und Schaufeln. Der _switcher_ zeigt je nach Füllstand das entsprechende Shape mit der Apfellautextur an (oder eben nicht). Der __Straßenverkauf__ ist ein _processor_, ein _tiptrigger_, ein _dumptrigger_, ein _displaytrigger_ und ein _mover_. Der _processor_ wandelt pro Stunde max. 200 Äpfel in 100 "money", also Geld, um und der _mover_ regelt die y-Höhe der Apfelplane.

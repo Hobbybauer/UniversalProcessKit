@@ -141,8 +141,6 @@ function UPK_Processor:getSaveExtraNodes(nodeIdent)
 	return nodes
 end	
 
--- to save: bufferedProducts
-
 function UPK_Processor:update(dt)
 	if self.productsPerSecond>0 then
 		self:produce(self.productsPerSecond/1000*dt)
