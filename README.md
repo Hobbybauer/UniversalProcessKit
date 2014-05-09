@@ -1,19 +1,32 @@
 # UniversalProcessKit
 
-## Grundsätzliches
-
-Dies ist die Entwickler-Seite des UniversalProcessKits. Es werden
-Features ausprobiert oder es kann auch mal eine kaputte Version online
-stehen. Hier ist nichts "fertig" und es kann täglich zu Änderungen der
-Skripte kommen. Wenn du eine gebrauchsfähige Version suchst, schau auf
-www.modhoster.de (da wirst du wegen der momentanen Alpha-Phase nichts
-finden).
-
 ## Nutzen
 
 Das UniversalProcessKit, kurz UPK, stellt Funktionen für Modder und
 Mapper bereit, damit diese so wenig wie möglich oder auch gar nicht mehr
 selber skripten müssen.
+
+#### Hinweise zum Gebrauch
+
+Es ist nicht gestattet diese Skripte in Maps oder Mods selbst
+einzubinden. Bitte verweist darauf, dass die Nutzer eurer Mods
+zusätzlich das UPK im Modordner haben müssen, damit eure Mods
+funktionieren.
+
+## Instalation
+
+Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
+
+## Updates
+
+Dies ist die Entwickler-Seite des UniversalProcessKits. Es werden
+Features ausprobiert oder es kann auch mal eine kaputte Version online
+stehen. Hier ist nichts "fertig" und es kann täglich zu Änderungen der
+Skripte kommen. Wenn du eine gebrauchsfähige Version suchst, schau auf
+http://www.modhoster.de/mods/universalprocesskit.
+
+Um immer auf dem Laufenden zu bleiben und alle Änderungen zu verfolgen einfach https://github.com/mor2000/UniversalProcessKit/commits/master.atom als Feed abonnieren.
+
 
 ## Funktionsweise
 
@@ -22,8 +35,7 @@ Aktionen durch den Spieler ausgelöst werden, und __Funktionen__, die je
 nach Füllstand aktiv werden. Es kann zudem durch selbst programmierte
 __Module__ erweitert werden.
 
-Die Steuerung des UPK wird allein über UserAttributes in der i3d
-geregelt.
+Die Steuerung des UPK wird allein über UserAttributes in der i3d geregelt. Mapper und Modder "verwenden" die Funktionen einfach (wie die Funktionen der Giants-Skripte auch) - es ist nicht nötig/erlaubt das UPK zu "verbauen".
 
 Die Anordnung der Trigger, Funktionen und Module ist hierarchisch. Die
 Trigger sind üblicherweise das letzte Glied und regeln die Ein- und
@@ -34,6 +46,8 @@ weitergeben oder ganz stoppen. Ein _processor_ kann auf diesen Füllstand
 zugreifen und in einen anderen umwandeln, der nach oben durchgelassen
 wird. Somit lassen sich kleine Mods, die nur etwas lagern, oder große
 mit komplexer Funktionalität wie Fabriken mit dem UPK erschaffen.
+
+Mods, die das UPK verwenden, sind automatisch multiplayer-fähig. Eine Einschränkung gibt es zur Zeit noch: Das gilt nur für verbaute Mods. Platzierbare Mods gehen nur im Single-Player, da bin ich noch dabei.
 
 ### Basis
 
@@ -382,9 +396,7 @@ Wie eine zusätzliche _base_ innerhalb des UPK-Mods, die unabhägig Füllstände
 	</UserAttributes>
 ```
 
-2. __Weitere Hofsilos__: Das ist eine kleine i3d, die die Funktionalität des normalen Hofsilos hat (mit eigenen Füllständen versteht sich). Einfach in die Karte importieren und Form und Größe der Trigger anpassen. Es besteht aus einer _base_ (nodeId 1), einem _tiptrigger_ (nodeId 101), einem _dumptrigger_ (nodeId 108), einem _displaytrigger_ (nodeId 107) und 4 _filltrigger_ (nodeIds 103-106). Der _tiptrigger_ ist zum Entladen von Kippern, der _dumptrigger_ zum Entladen von Schaufeln und Erntemaschinen (ist eigentlich kein Trigger, nur ein flaches Objekt am Boden was Schaufeln glauben lässt, sie entlädt in einen Kipper), die _filltrigger_ zum Füllen von Kippern und der _displaytrigger_ zum Anzeigen der Füllstände. 
-
-	Die einfügbare Datei gibt es unter https://github.com/mor2000/UniversalProcessKit/blob/master/00_examples/hofsilos.i3d und hat folgende UserAttributes:
+2. __Weitere Hofsilos__: Das ist eine kleine i3d, die die Funktionalität des normalen Hofsilos hat (mit eigenen Füllständen versteht sich). Einfach in die Karte importieren und Form und Größe der Trigger anpassen. Es besteht aus einer _base_ (nodeId 1), einem _tiptrigger_ (nodeId 101), einem _dumptrigger_ (nodeId 108), einem _displaytrigger_ (nodeId 107) und 4 _filltrigger_ (nodeIds 103-106). Der _tiptrigger_ ist zum Entladen von Kippern, der _dumptrigger_ zum Entladen von Schaufeln und Erntemaschinen (ist eigentlich kein Trigger, nur ein flaches Objekt am Boden was Schaufeln glauben lässt, sie entlädt in einen Kipper), die _filltrigger_ zum Füllen von Kippern und der _displaytrigger_ zum Anzeigen der Füllstände.
 
 ```
 <UserAttributes>
@@ -463,20 +475,9 @@ Mit der Zeit werden weitere Funktionen hinzukommen, so zB. Förderbänder. Prior
 
 Die Netzwerksynchronisation funktioniert eigentlich ganz gut. Platzierbare und verbaute Objekte werden zwischen Server und Client synchronisiert. Das Problem entsteht beim Löschen von UPK-Objekten, da bleiben auf dem Client welche ungelöscht zurück und verursachen Fehler wegen falschen Netzwerk-Ids, die auf dem Client dann für dasgleiche Objekt andere sind, wie auf dem Server. Leider habe ich nicht rausgefunden, welche Objekte beim Löschen nicht gelöscht werden. Das sollte sich mal jemand anschauen..
 
-## Instalation
-
-Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
-
-## Hinweise zum Gebrauch
-
-Es ist nicht gestattet diese Skripte in Maps oder Mods selbst
-einzubinden. Bitte verweist darauf, dass die Nutzer eurer Mods
-zusätzlich das UPK im Modordner haben müssen, damit eure Mods
-funktionieren.
 
 # English
 
-Unpack the downloaded zip and zip the scripts to "UPK.zip" and place it
-in your mods folder.
+Download the file https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip and place it in your mod folder.
 
-Interested in more? Let me know!
+Need a translation of all this? Let me know!
