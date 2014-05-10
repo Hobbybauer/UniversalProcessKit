@@ -105,6 +105,8 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 
 -   __MapHotspot__ (string): Name des Icons zur Anzeige auf dem PDA. Keine Anzeige, falls leer
 
+-   __allowWaterTrailer__ (string): erlaubt Wasseranhängern das Abladen, entweder "true" oder "false" (default: "true")
+
 -   __showNoAllowedText__ (string): ob angezeigt werden soll, wenn eine Fruchtsorte nicht akzeptiert wird, entweder "true" oder "false" (default: "false")
 
 -   __NotAcceptedText__ (string): Name des l10n-Textes bei Anzeige dass eine Fruchtsorte nicht akzeptiert wird (default: "notAcceptedHere")
@@ -189,6 +191,22 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __*product__ (string): legt fest, welche Fruchtsorte erzeugt
     werden soll - Geld ist "money" (kein default)
 
+-   __recipe__ (string): wie ein Liter des Produkts hergestellt werden
+    soll, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
+    "0.5 wheat 0.3 water 0.2 salt", zu lesen als "1 Liter des Produkts
+    ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default:
+    ohne)
+
+-   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen.
+	Und zwar im Verhältnis zu einem Liter des Produkts (default: ohne)
+
+-   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
+    "true")
+
+-   __onlyWholeProducts__ (string): ob nur ganze Zahlen dem Füllstand
+    hinzugefügt werden sollen, entweder "true" oder "false" (default:
+    "false")
+
 -   __a) productsPerMinute__ (float): welche Menge maximal pro Minute (Spielzeit) 
     erzeugt wird (veranlasst die Produktion der Fruchtsorte im
     Minutentakt) (default: 0)
@@ -204,21 +222,20 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __d) productsPerSecond__ (float): welche Menge maximal pro Sekunde (Echtzeit)
     erzeugt wird (veranlasst die Produktion der Fruchtsorte in Echtzeit) (default: 0)
 
--   __onlyWholeProducts__ (string): ob nur ganze Zahlen dem Füllstand
-    hinzugefügt werden sollen, entweder "true" oder "false" (default:
-    "false")
+-   __productionHours__ (string): für productsPerMinute, productsPerHour oder productsPerSecond. Legt fest, zu welchen Stunden produziert
+	werden soll, Mitternacht ist 0 (nicht 24). Bsp: "6-12, 14-18" bedeutet von 6:00:00 bis 12:59:59 und von 14:00:00 bis 18:59:59 wird produziert (default: 0-23)
 
--   __recipe__ (string): wie ein Liter des Produkts hergestellt werden
-    soll, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
-    "0.5 wheat 0.3 water 0.2 salt", zu lesen als "1 Liter des Produkts
-    ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default:
-    ohne)
+-   __productionProbability__ (float): Wahrscheinlichkeit als Kommazahl zwischen 0 und 1, ob die Produktion tatsächlich
+	ausgeführt wird. Gut für zufällige Ereignisse oder Tierfarmen. Bsp: Beim Verwenden von productsPerHour und einer productionProbability von 0.8 (=80% Wahrscheinlichkeit), wird im Schnitt bei 4 von 5 Stunden etwas produziert (default: 1)
 
--   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen.
-	Und zwar im Verhältnis zu einem Liter des Produkts (default: ohne)
+-   __outcomeVariation__ (float): Bestimmt um welchen Grad die Produktion schwankt, in Werten zwischen 0 und 1. Bsp: Eine Fabrik soll
+	nicht jedes mal exakt(!) die Menge produzieren, die angegeben ist, sondern die hergestellten Güter sollen für jeden Durchgang 5%
+	nach oben oder unter schwanken (outcomeVariation=0.05). Für productsPerHour=100 und outcomeVariation=0.05 werden stündlich zwischen
+	95 und 105 Güter produziert - die dafür benötigten Asugangsressourcen werden entsprechend mehr oder weniger verbraucht (default: 0)
 
--   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
-    "true")
+-   __outcomeVariationType__ (string): Legt die Verteilung für die zufällige Abweichung bei outcomeVariation fest. "equal" für
+	Gleichverteilung und "normal" für Normalverteilung. Der Rechenaufwand für "normal" ist höher als für "equal", deshalb
+	diese Variante sparsam einsetzen! (default: "equal")
 
 -   __statName__ (string): (falls product="money") zu welcher Statistik
     der Betrag gebucht wird, entweder "newVehiclesCost",
@@ -288,7 +305,7 @@ Skaliert je nach Füllstand das entsprechende Shape.
 
 ###switcher
 
-Der _switcher_ umfasst mehrere Shapes oder TransformGroups (auch leere), die entweder in Abhängigkeit von der Fruchtsorte (es empfiehlt sich bei der base storage="single" zu setzen) oder des Füllstandes ausgetauscht werden. Dabei entspricht die Reihenfolge der Auflistung jeweils der Reihenfolge des Shapes. Im Modus "stack" beim Füllstand werden alle Shapes bis zum aktuellen Füllstand angezeigt.
+Der _switcher_ umfasst mehrere Shapes oder TransformGroups (auch leere), die entweder in Abhängigkeit von der Fruchtsorte (es empfiehlt sich bei der _base_ oder _storage_ den storageType="single" zu setzen) oder des Füllstandes ausgetauscht werden. Dabei entspricht die Reihenfolge der Auflistung jeweils der Reihenfolge des Shapes. Im Modus "stack" beim Füllstand werden alle Shapes bis zum aktuellen Füllstand angezeigt.
 
 -   __a) switchFillTypes__ (string): listet die Fruchtsorten auf, für die die Shapes angezeigt werden sollen
 
@@ -296,7 +313,9 @@ Der _switcher_ umfasst mehrere Shapes oder TransformGroups (auch leere), die ent
 
 -   __fillTypeChoice__ (string): gibt die Entscheidungsregel an, welche Fruchtsorte bei mehreren genommen wird (default: "max")
 
--   __mode__ (string): gibt den Modus des _switcher_s an (default: leer)
+-   __mode__ (string): gibt den Modus des _switchers_ an. Der Modus "stack" gibt bei Verwendung von switchFillLevels an, dass
+	 alle Shapes bis zu dem entsprechenden Füllstand angezeigt werden. Bspw. um Kartoffelsäcke an einer Marktbude nach und nach
+	 einblenden zu lassen (default: leer)
 
 -   __hidingPosition__ (string): relative Position der verborgenen Shapes (default: "0 0 0")
 

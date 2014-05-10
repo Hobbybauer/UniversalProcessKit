@@ -76,6 +76,30 @@ function UPK_Storage:load(id, parent)
 		self.isLeaking=true
 	end
 	
+	local leakVariation=tonumber(getUserAttribute(id, "leakVariation"))
+	if leakVariation~=nil then
+		if leakVariation < 0 then
+			self:print('Error: leakVariation cannot be lower than 0',true)
+			return false
+		elseif leakVariation>1 and leakVariation<=100 then
+			self:print('Warning: leakVariation is not between 0 and 1')
+			leakVariation=leakVariation/100
+		elseif leakVariation>100 then
+			self:print('Warning: leakVariation is not between 0 and 1')
+			leakVariation=0
+		end
+	else
+		leakVariation=0
+	end
+	self.leakVariation = leakVariation
+	
+	if self.leakVariation>0 then
+		self.leakVariationType = Utils.getNoNil(getUserAttribute(id, "leakVariationType"),"equal")
+		if self.leakVariationType=="normal" and (self.changeListenerType==0 or self.changeListenerType==1) then
+			self:print('Warning: Its not recommended to use normal distributed outcome variation for leakPerSecond and leakPerMinute')
+		end
+	end
+	
 	self:print('loaded Storage successfully')
 	return true
 end;
@@ -94,7 +118,17 @@ end;
 function UPK_Storage:update(dt)
 	if self.isLeaking and self.changeListenerType==0 then
 		for k,v in pairs(self.leaks) do
-			self:addFillLevel(-self.parentForce:addFillLevel(v/1000*dt,k),k)
+			local leak=v
+			if self.leakVariation~=0 then
+				if self.leakVariationType=="normal" then -- normal distribution
+					local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
+					leak=leak+leak*self.leakVariation*r
+				elseif self.leakVariationType=="equal" then -- equal distribution
+					local r=2*mathrandom()-1
+					leak=leak+leak*self.leakVariation*r
+				end
+			end
+			self:addFillLevel(-self.parentForce:addFillLevel(leak/1000*dt,k),k)
 		end
 	end
 end;
@@ -113,7 +147,17 @@ end;
 
 function UPK_Storage:leak()
 	for k,v in pairs(self.leaks) do
-		self:addFillLevel(-self.parentForce:addFillLevel(v,k),k)
+		local leak=v
+		if self.leakVariation~=0 then
+			if self.leakVariationType=="normal" then -- normal distribution
+				local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
+				leak=leak+leak*self.leakVariation*r
+			elseif self.leakVariationType=="equal" then -- equal distribution
+				local r=2*mathrandom()-1
+				leak=leak+leak*self.leakVariation*r
+			end
+		end
+		self:addFillLevel(-self.parentForce:addFillLevel(leak,k),k)
 	end
 end;
 

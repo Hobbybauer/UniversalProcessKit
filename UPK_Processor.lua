@@ -44,7 +44,66 @@ function UPK_Processor:load(id, parent)
 	self.productsPerSecond = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerSecond")),0)
 	self.productsPerMinute = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerMinute")),0)
 	self.productsPerHour = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerHour")),0)
+	self.productionHours={}
+	if self.productsPerSecond>0 or self.productsPerMinute>0 or self.productsPerHour>0 then
+		local productionHoursStrings = Utils.getNoNil(getUserAttribute(id, "productionHours"),"0-23")
+		local productionHoursStringArr=Utils.splitString(",",productionHoursStrings)
+		for _,v in pairs(productionHoursStringArr) do
+			self:print(v)
+			local productionHoursArr = Utils.splitString("-",v)
+			local lowerHour = mathmin(mathmax(tonumber(productionHoursArr[1]),0),23)
+			local upperHour = mathmin(mathmax(tonumber(productionHoursArr[2]),lowerHour),23)
+			if lowerHour~=nil and upperHour~=nil then
+				for i=lowerHour,upperHour do
+					self:print('produce sth at hour '..tostring(i))
+					self.productionHours[i]=true
+				end
+			end
+		end
+	end
 	self.productsPerDay = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerDay")),0)
+	
+	local productionProbability=tonumber(getUserAttribute(id, "productionProbability"))
+	if productionProbability~=nil then
+		if productionProbability <= 0 then
+			self:print('Error: productionProbability cannot be lower than or equal to 0',true)
+			return false
+		elseif productionProbability>1 and productionProbability<=100 then
+			self:print('Warning: productionProbability is not between 0 and 1')
+			productionProbability=productionProbability/100
+		elseif productionProbability>100 then
+			self:print('Warning: productionProbability is not between 0 and 1')
+			productionProbability=1
+		end
+	else
+		productionProbability=1
+	end
+	self.productionProbability = productionProbability
+	
+	local outcomeVariation=tonumber(getUserAttribute(id, "outcomeVariation"))
+	if outcomeVariation~=nil then
+		if outcomeVariation < 0 then
+			self:print('Error: outcomeVariation cannot be lower than 0',true)
+			return false
+		elseif outcomeVariation>1 and outcomeVariation<=100 then
+			self:print('Warning: outcomeVariation is not between 0 and 1')
+			outcomeVariation=outcomeVariation/100
+		elseif outcomeVariation>100 then
+			self:print('Warning: outcomeVariation is not between 0 and 1')
+			outcomeVariation=0
+		end
+	else
+		outcomeVariation=0
+	end
+	self.outcomeVariation = outcomeVariation
+	
+	if self.outcomeVariation>0 then
+		self.outcomeVariationType = Utils.getNoNil(getUserAttribute(id, "outcomeVariationType"),"equal")
+		if self.outcomeVariationType=="normal" and (self.productsPerSecond>0 or self.productsPerMinute>0) then
+			self:print('Warning: Its not recommended to use normal distributed outcome variation for productsPerSecond and productsPerMinute')
+		end
+	end
+	
 	self.useRessources = tobool(Utils.getNoNil(getUserAttribute(id, "useRessources"),"true")) == true
 	self.bufferedProducts = 0
 	
@@ -113,6 +172,8 @@ function UPK_Processor:load(id, parent)
 		end
 	end
 	
+	self.dtsum=0
+	
 	self:print('loaded Processor successfully')
 	return true
 end
@@ -136,23 +197,33 @@ end
 function UPK_Processor:getSaveExtraNodes(nodeIdent)
 	local nodes=""
 	if self.bufferedProducts>0 then
-		nodes=nodes .. " bufferedProducts=\""..tostring(math.floor(self.bufferedProducts*1000+0.5)/1000).."\""
+		nodes=nodes .. " bufferedProducts=\""..tostring(mathfloor(self.bufferedProducts*1000+0.5)/1000).."\""
 	end
 	return nodes
 end	
 
 function UPK_Processor:update(dt)
 	if self.productsPerSecond>0 then
-		self:produce(self.productsPerSecond/1000*dt)
+		if self.productionHours[g_currentMission.environment.currentHour] then
+			self.dtsum=self.dtsum+dt
+			if self.dtsum>=1000 then
+				self:produce(self.productsPerSecond*(self.dtsum/1000))
+				self.dtsum=0
+			end
+		end
 	end
 end;
 
 function UPK_Processor:minuteChanged()
-	self:produce(self.productsPerMinute)
+	if self.productionHours[g_currentMission.environment.currentHour] then
+		self:produce(self.productsPerMinute)
+	end
 end
 
 function UPK_Processor:hourChanged()
-	self:produce(self.productsPerHour)
+	if self.productionHours[g_currentMission.environment.currentHour] then
+		self:produce(self.productsPerHour)
+	end
 end
 
 function UPK_Processor:dayChanged()
@@ -160,44 +231,59 @@ function UPK_Processor:dayChanged()
 end
 
 function UPK_Processor:produce(processed)
-	if self.isServer then
-		if self.product~=UniversalProcessKit.FILLTYPE_MONEY then
-			processed=math.min(processed,self.capacity-self:getFillLevel(self.product))
+	if self.isServer and self.isEnabled then
+		local produce=self.productionProbability==1
+		if not produce then
+			produce = mathrandom()<=self.productionProbability
 		end
-		if processed>0 then
-			if self.hasRecipe then
-				for k,v in pairs(self.recipe) do
-					if type(v)=="number" and v>0 then
-						processed=math.min(processed,self:getFillLevel(k)/v or 0)
-					end
+		if produce then
+			if self.outcomeVariation~=0 then
+				if self.outcomeVariationType=="normal" then -- normal distribution
+					local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
+					processed=processed+processed*self.outcomeVariation*r
+				elseif self.outcomeVariationType=="equal" then -- equal distribution
+					local r=2*mathrandom()-1
+					processed=processed+processed*self.outcomeVariation*r
 				end
-				if self.useRessources then
-					local ressourcesUsed=self.recipe*processed
-					for k,v in pairs(ressourcesUsed) do
-						if type(v)=="number" then
-							self:addFillLevel(-v,k)
+			end
+			if self.product~=UniversalProcessKit.FILLTYPE_MONEY then
+				processed=mathmin(processed,self.capacity-self:getFillLevel(self.product))
+			end
+			if processed>0 then
+				if self.hasRecipe then
+					for k,v in pairs(self.recipe) do
+						if type(v)=="number" and v>0 then
+							processed=mathmin(processed,self:getFillLevel(k)/v or 0)
+						end
+					end
+					if self.useRessources then
+						local ressourcesUsed=self.recipe*processed
+						for k,v in pairs(ressourcesUsed) do
+							if type(v)=="number" then
+								self:addFillLevel(-v,k)
+							end
 						end
 					end
 				end
-			end
-			-- deal with the produced outcome
-			self.bufferedProducts=self.bufferedProducts+processed
-			local finalProducts=0
-			if self.onlyWholeProducts then
-				local wholeProducts=math.floor(self.bufferedProducts)
-				if wholeProducts>=1 then
-					finalProducts=wholeProducts
-					self.bufferedProducts=self.bufferedProducts-wholeProducts
+				-- deal with the produced outcome
+				self.bufferedProducts=self.bufferedProducts+processed
+				local finalProducts=0
+				if self.onlyWholeProducts then
+					local wholeProducts=mathfloor(self.bufferedProducts)
+					if wholeProducts>=1 then
+						finalProducts=wholeProducts
+						self.bufferedProducts=self.bufferedProducts-wholeProducts
+					end
+				else
+					finalProducts=self.bufferedProducts
+					self.bufferedProducts=0
 				end
-			else
-				finalProducts=self.bufferedProducts
-				self.bufferedProducts=0
-			end
-			self:addFillLevel(finalProducts,self.product)
-			if self.hasByproducts then
-				for k,v in pairs(self.byproducts) do
-					if type(v)=="number" and v>0 then
-						self:addFillLevel(v*finalProducts,k)
+				self:addFillLevel(finalProducts,self.product)
+				if self.hasByproducts then
+					for k,v in pairs(self.byproducts) do
+						if type(v)=="number" and v>0 then
+							self:addFillLevel(v*finalProducts,k)
+						end
 					end
 				end
 			end

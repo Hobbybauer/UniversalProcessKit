@@ -40,7 +40,7 @@ function UPK_Switcher:load(id,parent)
 	if fillTypeString~=nil then
 		local fillTypesPerShape=Utils.splitString(",",fillTypeString)
 		local numChildren = getNumOfChildren(self.nodeId)
-		for i=1,math.min(numChildren,#fillTypesPerShape) do
+		for i=1,mathmin(numChildren,#fillTypesPerShape) do
 			local childId = getChildAt(self.nodeId, i-1)
 			setVisibility(childId,false)
 			self.shapePositions[childId]=__c({getTranslation(childId)})

@@ -26,6 +26,14 @@
 
 _m=_G;_G=nil;_g=_G;_G=_m;
 
+_m.mathrandom=math.random
+_m.mathsqrt=math.sqrt
+_m.mathlog=math.log
+_m.mathmin=math.min
+_m.mathmax=math.max
+_m.mathfloor=math.floor
+_m.mathceil=math.ceil
+
 _g.UniversalProcessKit = {};
 
 function _m.print(string, debug)
@@ -120,6 +128,57 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 		return __c({Utils.getVectorFromString(str)})
 	end
 	return str
+end;
+
+function removeValueFromTable(table, value, all)
+	print('called removeValueFromTable')
+	local index={}
+	if type(table)=="array" and value~=nil then
+		for k,v in pairs(table) do
+			if v==value then
+				table.insert(index,k)
+				if all~=true then
+					break
+				end
+			end
+		end
+		table.sort(table, function(a, b) return a>b end)
+		for _,v in pairs(index) do
+			print('removing element '..tostring(v))
+			table.remove(table,v)
+		end
+		return #index
+	end
+	return -1
+end;
+
+function getTableLength(table)
+	local len=0
+	if type(table)=="array" then
+		for _ in pairs(table) do
+			len=len+1
+		end
+	end
+	return len
+end;
+
+local secondNormalDistributedRandomNumber=false -- function below generates 2 normal distributed random numbers
+
+function getNormalDistributedRandomNumber() -- see http://de.wikipedia.org/wiki/Polar-Methode
+	if secondNormalDistributedRandomNumber~=false then
+		local r=secondNormalDistributedRandomNumber
+		secondNormalDistributedRandomNumber=false
+		return r
+	end	
+	local u,v,q,p
+	repeat
+		u=2*mathrandom()-1
+		v=2*mathrandom()-1
+		q=u*u+v*v
+	until 0<q and q<1
+	p=mathsqrt(-2 * mathlog(q)/q)
+	secondNormalDistributedRandomNumber=v*p
+	return u*p
 end;
 
 _g.UPK_Activator={}
@@ -310,13 +369,13 @@ function _g.__c(arr)
 		local len=length(self)
 		if len>0 then
 			for i=1,len do
-				nr=math.min(nr,self[i])
+				nr=mathmin(nr,self[i])
 			end
 			return nr
 		elseif len==0 then
 			for k,v in pairs(self) do
 				if type(self[k])=="number" then -- exclude functions
-					nr=math.min(nr,v)
+					nr=mathmin(nr,v)
 				end
 			end
 			return nr
@@ -329,13 +388,13 @@ function _g.__c(arr)
 		local len=length(self)
 		if len>0 then
 			for i=1,len do
-				nr=math.max(nr,self[i])
+				nr=mathmax(nr,self[i])
 				key=i
 			end
 		elseif len==0 then
 			for k,v in pairs(self) do
 				if type(v)=="number" then -- exclude functions
-					nr=math.max(nr,v)
+					nr=mathmax(nr,v)
 					key=k
 				end
 			end

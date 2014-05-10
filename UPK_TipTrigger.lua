@@ -15,9 +15,7 @@ function UPK_TipTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt)
 	registerObjectClassName(self, "UPK_TipTrigger")
 	self.addNodeObject=true
-	self.setIsWaterTankFilling=GreenhousePlaceable.setIsWaterTankFilling
-	self.addWaterTrailer=GreenhousePlaceable.addWaterTrailer
-	self.removeWaterTrailer=GreenhousePlaceable.removeWaterTrailer
+	self.waterFillingDirtyFlag = self:getNextDirtyFlag()
 	return self
 end
 
@@ -30,13 +28,10 @@ function UPK_TipTrigger:load(id, parent)
 	self:addTrigger()
 	self:registerUpkTipTrigger()
 	
+	-- water
 	self.waterTrailers = {}
-	self.isWaterTankFilling = false
-	self.waterTankFillTrailer = nil
-	self.allowWaterTrailer=false
-	
-	if self.acceptedFillTypes[Fillable.FILLTYPE_WATER] then
-		self.allowWaterTrailer=true
+	self.allowWaterTrailer=tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowWaterTrailer"),"true"))
+	if rawget(self.acceptedFillTypes,Fillable.FILLTYPE_WATER) and self.allowWaterTrailer then
 		self.waterTrailerActivatable = UPK_WaterTankActivatable:new(self)
 	end
 	
@@ -51,6 +46,64 @@ function UPK_TipTrigger:load(id, parent)
 	self:print('loaded TipTrigger successfully')
 	return true
 end
+
+function UPK_TipTrigger:readStream(streamId, connection)
+	UPK_TipTrigger:superClass().readStream(self, streamId, connection)
+	if connection:getIsServer() then
+		local nrWaterTrailerToSync=streamReadIntN(streamId,12) or 0
+		for i=1,nrWaterTrailerToSync do
+			vehicle = networkGetObject(streamReadInt32(streamId))
+			isFilling = streamReadBool(streamId)
+			if type(vehicle)=="array" then
+				table.insert(self.waterTrailers,vehicle)
+				vehicle.upk_isWaterTankFilling=isFilling
+			end
+		end
+	end
+end;
+
+function UPK_TipTrigger:writeStream(streamId, connection)
+	UPK_TipTrigger:superClass().writeStream(self, streamId, connection)
+	if not connection:getIsServer() then
+		local nrWaterTrailerToSync=getTableLength(self.waterTrailers)
+		streamWriteIntN(streamId,nrWaterTrailerToSync,12)
+		for k,v in pairs(self.waterTrailers) do
+			streamWriteInt32(streamId, networkGetObjectId(v))
+			streamWriteBool(v.upk_isWaterTankFilling)
+		end
+	end
+end;
+
+function UPK_TipTrigger:readUpdateStream(streamId, timestamp, connection)
+	UPK_TipTrigger:superClass().readUpdateStream(self, streamId, timestamp, connection)
+	if not connection:getIsServer() then
+		if bitAND(dirtyMask,self.waterFillingDirtyFlag)~=0 then
+			local nrWaterTrailerToSync=streamReadIntN(streamId,12) or 0
+			for i=1,nrWaterTrailerToSync do
+				vehicle = networkGetObject(streamReadInt32(streamId))
+				isFilling = streamReadBool(streamId)
+				if type(vehicle)=="array" then
+					table.insert(self.waterTrailers,vehicle)
+					vehicle.upk_isWaterTankFilling=isFilling
+				end
+			end
+		end
+	end
+end;
+
+function UPK_TipTrigger:writeUpdateStream(streamId, connection, dirtyMask)
+	UPK_TipTrigger:superClass().writeUpdateStream(self, streamId, connection, dirtyMask)
+	if connection:getIsServer() then
+		if bitAND(dirtyMask,self.waterFillingDirtyFlag)~=0 or syncall then
+			local nrWaterTrailerToSync=getTableLength(self.waterTrailers)
+			streamWriteIntN(streamId,nrWaterTrailerToSync,12)
+			for k,v in pairs(self.waterTrailers) do
+				streamWriteInt32(streamId, networkGetObjectId(v))
+				streamWriteBool(v.upk_isWaterTankFilling)
+			end
+		end
+	end
+end;
 
 function UPK_TipTrigger:delete()
 	self:unregisterUpkTipTrigger()
@@ -117,7 +170,7 @@ end
 function UPK_TipTrigger:getTipDistance(trailerId)
 	local trailerX, _, trailerZ = getWorldTranslation(trailerId)
 	local x,_,z = unpack(self.pos)
-	local distance=math.max(Utils.vector2Length(trailerX - x, trailerZ - z),0)
+	local distance=mathmax(Utils.vector2Length(trailerX - x, trailerZ - z),0)
 	return distance
 end
 
@@ -138,7 +191,7 @@ end
 
 function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
 	if self.isClient and self.isEnabled then
-		local vehicle=g_currentMission.objectToTrailer[otherShapeId]
+		local vehicle=g_currentMission.objectToTrailer[otherShapeId] or {}
 		if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
 			if onEnter then
 				vehicle.currentUpkFillTrigger=self
@@ -149,10 +202,20 @@ function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeav
 			end
 		elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle.removeWaterTrailerFillTrigger ~= nil then
 			if onEnter then
+				self:print('UPK_TipTrigger:triggerCallback Enter')
 				vehicle.currentUpkFillTrigger=self
+				g_currentMission:addActivatableObject(self.waterTrailerActivatable)
+				table.insert(self.waterTrailers,vehicle)
 			else
+				self:print('UPK_TipTrigger:triggerCallback Leave')
 				if vehicle.currentUpkFillTrigger==self then
 					vehicle.currentUpkFillTrigger=nil
+				end
+				removeValueFromTable(self.waterTrailers,vehicle)
+				if getTableLength(self.waterTrailers)==0 then
+					self:print('no other water trailers')
+					self:setIsWaterTankFilling(false,vehicle)
+					g_currentMission:removeActivatableObject(self.waterTrailerActivatable)
 				end
 			end
 		elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
@@ -198,42 +261,49 @@ end
 -- waterTrailer
 
 function UPK_TipTrigger:updateTick(dt)
-	--[[
-	if self.isServer then
-		if self.fillLevels[Fillable.FILLTYPE_WATER] ~= self.sentWaterTankFillLevel then
-			self:raiseDirtyFlags(self.myDirtyFlag) -- needs update
-			self.sentWaterTankFillLevel = self.fillLevels[Fillable.FILLTYPE_WATER]
-		end
-		if self.isWaterTankFilling then
-			local disableFilling = false
-			local waterFillLevel = self.waterTankFillTrailer:getFillLevel(Fillable.FILLTYPE_WATER)
-			if waterFillLevel > 0 then
-				local oldFillLevel = self.fillLevels[Fillable.FILLTYPE_WATER]
-				local delta = self.fillLitersPerSecond * dt * 0.001
-				delta = math.min(delta, waterFillLevel)
-				self:setWaterTankFillLevel(self.fillLevels[Fillable.FILLTYPE_WATER] + delta)
-				local delta = self.fillLevels[Fillable.FILLTYPE_WATER] - oldFillLevel
-				disableFilling = delta <= 0
-				self.waterTankFillTrailer:setFillLevel(waterFillLevel - delta, Fillable.FILLTYPE_WATER, true)
-			else
-				disableFilling = true
-			end
-			if disableFilling then
-				self:setIsWaterTankFilling(false)
+	if self.isServer and self.isEnabled then
+		if self.waterTrailerActivatable~=nil then
+			local fillLevel=self:getFillLevel(Fillable.FILLTYPE_WATER)
+			for k,vehicle in pairs(self.waterTrailers) do
+				if vehicle.upk_isWaterTankFilling then
+					local waterFillLevel = vehicle:getFillLevel(Fillable.FILLTYPE_WATER)
+					if waterFillLevel > 0 and fillLevel<self.capacity then
+						local delta = mathmin(self.fillLitersPerSecond/1000 * dt, waterFillLevel)
+						delta=self:addFillLevel(delta, Fillable.FILLTYPE_WATER)
+						vehicle:setFillLevel(waterFillLevel - delta, Fillable.FILLTYPE_WATER, true)
+					else
+						vehicle.upk_isWaterTankFilling=false
+					end
+				end
 			end
 		end
 	end
-	]]--
+end
+
+function UPK_TipTrigger:setIsWaterTankFilling(isWaterTankFilling, trailer, noEventSend)
+	if isWaterTankFilling~=trailer.upk_isWaterTankFilling then
+		trailer.upk_isWaterTankFilling=isWaterTankFilling
+		self:raiseDirtyFlags(self.waterFillingDirtyFlag)
+	end
 end
 
 UPK_WaterTankActivatable = {}
 local UPK_WaterTankActivatable_mt = Class(UPK_WaterTankActivatable,GreenhousePlaceableWaterTankActivatable)
+function UPK_WaterTankActivatable:new(upkmodule)
+	local self = {}
+	setmetatable(self, UPK_WaterTankActivatable_mt)
+	self.upkmodule = upkmodule
+	self.activateText = "unknown"
+	self.currentTrailer = nil
+	return self
+end
 function UPK_WaterTankActivatable:getIsActivatable()
 	self.currentTrailer = nil
-	if self.greenhouse.fillLevels[Fillable.FILLTYPE_WATER] >= self.greenhouse.capacity then
+	
+	if self.upkmodule:getFillLevel(Fillable.FILLTYPE_WATER) >= self.upkmodule.capacity then
 		return false
 	end
-	for _, trailer in pairs(self.greenhouse.waterTrailers) do
+	for _, trailer in pairs(self.upkmodule.waterTrailers) do
 		if trailer:getIsActiveForInput() and trailer:getFillLevel(Fillable.FILLTYPE_WATER) > 0 then
 			self.currentTrailer = trailer
 			self:updateActivateText()
@@ -242,10 +312,17 @@ function UPK_WaterTankActivatable:getIsActivatable()
 	end
 	return false
 end
+function UPK_WaterTankActivatable:onActivateObject()
+	self.upkmodule:setIsWaterTankFilling(not self.currentTrailer.upk_isWaterTankFilling, self.currentTrailer)
+	self:updateActivateText()
+	g_currentMission:addActivatableObject(self)
+end
+function UPK_WaterTankActivatable:drawActivate()
+end
 function UPK_WaterTankActivatable:updateActivateText()
-	if self.greenhouse.isWaterTankFilling then
-		self.activateText = string.format(g_i18n:getText("stop_refill_OBJECT"), "LALA")
+	if self.currentTrailer.upk_isWaterTankFilling then
+		self.activateText = string.format(g_i18n:getText("stop_refill_OBJECT"), "TextToReplace1")
 	else
-		self.activateText = string.format(g_i18n:getText("refill_OBJECT"), "BLABLA")
+		self.activateText = string.format(g_i18n:getText("refill_OBJECT"), "TextToReplace2")
 	end
 end

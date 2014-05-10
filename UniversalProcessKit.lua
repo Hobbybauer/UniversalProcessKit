@@ -190,7 +190,7 @@ function UniversalProcessKit:load(id,parent)
 	
 	-- capacity
 	
-	self.capacity=getUserAttribute(self.nodeId, "capacity")
+	self.capacity=tonumber(getUserAttribute(self.nodeId, "capacity"))
 
 	-- self.capacity = tonumber(Utils.getNoNil(getUserAttribute(self.nodeId, "capacity"),math.huge))
 	-- self.capacities not quite implemented yet
@@ -344,14 +344,14 @@ end;
 function UniversalProcessKit:readUpdateStream(streamId, timestamp, connection)
 	UniversalProcessKit:superClass().readUpdateStream(self, streamId, timestamp, connection)
 	
-	local dirtyMask=streamReadInt8(streamId)
+	local dirtyMask=streamReadIntN(streamId,12)
 	local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
 	
 	if connection:getIsServer() then
 		if bitAND(dirtyMask,self.fillLevelDirtyFlag)~=0 or syncall then
-			nrFillTypesToSync=streamReadInt8(streamId) or 0
+			nrFillTypesToSync=streamReadIntN(streamId,12) or 0
 			for i=1,nrFillTypesToSync do
-				fillType=streamReadInt8(streamId)
+				fillType=streamReadIntN(streamId,12)
 				fillLevel=streamReadFloat32(streamId)
 				self.fillLevels[fillType]=fillLevel
 			end
@@ -373,7 +373,7 @@ end;
 function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 	UniversalProcessKit:superClass().writeUpdateStream(self, streamId, connection, dirtyMask)
 	
-	streamWriteInt8(streamId,dirtyMask) -- max 8 dirtyFlags, 4 already used by default
+	streamWriteIntN(streamId,dirtyMask,12) -- max 12 dirtyFlags, 4 already used by default
 	local syncall=bitAND(dirtyMask,self.syncDirtyFlag)~=0
 	
 	if not connection:getIsServer() then
@@ -384,10 +384,10 @@ function UniversalProcessKit:writeUpdateStream(streamId, connection, dirtyMask)
 					nrFillTypesToSync=nrFillTypesToSync+1
 				end
 			end
-			streamWriteInt8(streamId,nrFillTypesToSync) -- max 256 fillTypes
+			streamWriteIntN(streamId,nrFillTypesToSync,12) -- max 2048 fillTypes
 			for k,v in pairs(self.fillTypesToSync) do
 				if v then
-					streamWriteInt8(streamId,k)
+					streamWriteIntN(streamId,k,12)
 					streamWriteFloat32(streamId,self.fillLevels[k])
 				end
 			end
@@ -515,7 +515,7 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 	fillType=fillType or currentFillType
 	if fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN then
 		if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
-			local newFillLevel=math.min(math.max(fillLevel,0),self.capacity)
+			local newFillLevel=mathmin(mathmax(fillLevel,0),self.capacity)
 			self.fillLevels[fillType]=newFillLevel
 			self.fillTypesToSync[fillType]=true
 			if self.isServer then
@@ -535,7 +535,7 @@ function UniversalProcessKit:addFillLevel(deltaFillLevel, fillType)
 	self:print('UniversalProcessKit:addFillLevel('..tostring(deltaFillLevel)..', '..tostring(fillType)..')')
 	if fillType==UniversalProcessKit.FILLTYPE_MONEY then
 		if deltaFillLevel<0 then
-			deltaFillLevel=-math.min(g_currentMission:getTotalMoney(),-deltaFillLevel)
+			deltaFillLevel=-mathmin(g_currentMission:getTotalMoney(),-deltaFillLevel)
 		end
 		if self.isServer then
 			g_currentMission:addMoney(deltaFillLevel, 1, self.statName or "other")
@@ -646,7 +646,7 @@ function UniversalProcessKit:getSaveAttributesAndNodes(nodeIdent)
 	for k,v in pairs(UniversalProcessKit.fillTypeIntToName) do
 		local fillLevel=rawget(self.fillLevels,k)
 		if fillLevel~=nil and fillLevel>=0.001 then
-			extraNodes = extraNodes .. " " .. tostring(v) .. "=\"" .. tostring(math.floor(fillLevel*1000+0.5)/1000) .. "\""
+			extraNodes = extraNodes .. " " .. tostring(v) .. "=\"" .. tostring(mathfloor(fillLevel*1000+0.5)/1000) .. "\""
 		end
 	end
 
