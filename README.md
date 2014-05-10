@@ -15,15 +15,15 @@ funktionieren.
 
 ## Instalation
 
-Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
-
-## Updates
-
 Dies ist die Entwickler-Seite des UniversalProcessKits. Es werden
 Features ausprobiert oder es kann auch mal eine kaputte Version online
 stehen. Hier ist nichts "fertig" und es kann täglich zu Änderungen der
 Skripte kommen. Wenn du eine gebrauchsfähige Version suchst, schau auf
 http://www.modhoster.de/mods/universalprocesskit.
+
+Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
+
+## Updates
 
 Um immer auf dem Laufenden zu bleiben und alle Änderungen zu verfolgen einfach https://github.com/mor2000/UniversalProcessKit/commits/master.atom als Feed abonnieren.
 
@@ -340,6 +340,13 @@ Wie eine zusätzliche _base_ innerhalb des UPK-Mods, die unabhägig Füllstände
 -   __d) leakPerSecond__ (string): welche Menge maximal pro Sekunde (Echtzeit) 
     an das übergeordnete Modul weitergegeben wird, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
     "500 wheat 150 water" (default: ohne)
+
+-   __leakVariation__ (float): Bestimmt um welchen Grad die Weitergabe schwankt, in Werten zwischen 0 und 1 ähnlich
+	outcomeVariation beim _processor_ (default: 0)
+
+-   __leakVariationType__ (string): Legt die Verteilung für die zufällige Abweichung bei leakVariation fest. "equal" für
+	Gleichverteilung und "normal" für Normalverteilung. Der Rechenaufwand für "normal" ist höher als für "equal", deshalb
+	diese Variante sparsam einsetzen! (default: "equal")
 
 
 ## Beispiele
