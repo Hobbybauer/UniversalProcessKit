@@ -184,6 +184,7 @@ end;
 _g.UPK_Activator={}
 _g.UPK_Animator={}
 _g.UPK_Base={}
+_g.UPK_BuyTrigger={}
 _g.UPK_Conveyor={}
 _g.UPK_DisplayTrigger={}
 _g.UPK_DumpTrigger={}

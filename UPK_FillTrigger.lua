@@ -11,7 +11,6 @@ function UPK_FillTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_FillTrigger_mt)
 	registerObjectClassName(self, "UPK_FillTrigger")
 	self.triggerIds={}
-	self.siloTriggerDirtyFlag=self:getNextDirtyFlag()
 	return self
 end
 

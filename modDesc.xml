@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="9">
     <author>mor2000</author>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <title>
         <en>AAA UniversalProcessKit</en>
         <de>AAA UniversalProcessKit</de>
@@ -27,6 +27,7 @@
 		<sourceFile filename="UPK_Activator.lua"/>
 		<sourceFile filename="UPK_Animator.lua"/>
 		<sourceFile filename="UPK_Base.lua"/>
+		<sourceFile filename="UPK_BuyTrigger.lua"/>
 		<sourceFile filename="UPK_Conveyor.lua"/>
 		<sourceFile filename="UPK_DisplayTrigger.lua"/>
 		<sourceFile filename="UPK_DumpTrigger.lua"/>
@@ -43,5 +44,10 @@
 	<storeItems/>
 		
     <l10n>
+		<text name="buytrigger_buy_OBJECT"> <en>buy %s</en> <de>%s kaufen</de> </text>
+		<text name="buytrigger_sell_OBJECT"> <en>sell %s</en> <de>%s verkaufen</de> </text>
+		<text name="buytrigger_start_rent_OBJECT"> <en>rent %</en> <de>%s mieten</de> </text>
+		<text name="buytrigger_stop_rent_OBJECT"> <en>stop to rent %s</en> <de>Mieten von %s stoppen</de> </text>
+		<text name="buytrigger_remaining_time"> <en>%s hours of rent left</en> <de>%s Stunden Miete verbleibend</de> </text>
 	</l10n>
 </modDesc>

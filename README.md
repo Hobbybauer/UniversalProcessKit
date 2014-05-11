@@ -67,6 +67,8 @@ Im Moment gibt es folgende Trigger:
 
 4.  __displaytrigger__: veranlasst die Anzeige von Füllständen
 
+5.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf
+
 ### Funktionen
 
 1.  __processor__: Das Kernstück des UPK. Es erzeugt Güter bzw. Früchte, wenn gewünscht verbraucht es dafür andere.
@@ -90,6 +92,10 @@ Im Moment gibt es folgende Trigger:
 
 -   __isEnabled__ (string): Modul ist aktiviert oder deaktiviert,
     entweder "true" oder "false" (default: "true")
+
+-   __i18nNameSpace__ (string): Name des Mods genau wie er im Modordner als Zip oder Ordner liegt, um auf selbst festgelegte
+    Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
+    Fruchtsorten, die der Mod neu einführt. (default: ohne)
 
 ### base
 
@@ -179,9 +185,9 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __fillTypes__ (string): Namen der anzuzeigenden Fruchtsorten, mit
     Leerzeichen getrennt, bspw. "wheat barley rape"
 
--   __i18nNameSpace__ (string): Name des Mods, um auf selbst festgelegte
+-   __i18nNameSpace__ (string): (falls nicht in der base festgelegt) Name des Mods genau wie er im Modordner als Zip oder Ordner liegt, um auf selbst festgelegte
     Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
-    Fruchtsorten, die der Mod neu einführt.
+    Fruchtsorten, die der Mod neu einführt. (default: ohne)
 
 -   __onlyFilled__ (string): legt fest, ob nur Füllstände ungleich 0
     angezeigt werden soll, entweder "true" oder "false" (default:
@@ -194,6 +200,33 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __showPercentage__ (string): legt fest, ob die Füllstände relativ
     zur Füllmenge angezeigt werden soll, entweder "true" oder "false"
     (default: "false")
+
+### buytrigger
+
+Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
+
+-   __isBought__ (string): legt fest, ob das Objekt schon gekauft ist, entweder "true" oder "false" (default: "false")
+
+-   __sellable__ (string): legt fest, ob das Objekt gekauft werden kann, entweder "true" oder "false" (default: "true")
+
+-   __buyable__ (string): legt fest, ob das Objekt verkauft werden kann, entweder "true" oder "false" (default: "true")
+
+-   __mode__ (string): entweder "buy" falls das Objekt kaufbar sein soll, oder "rent" für Miete (default: "buy")
+
+-   __cost__ (float): (für mode="buy") Preis für das Objekt beim Kauf (default: 0)
+
+-   __revenues__ (float): (für mode="buy") Erlös für das Objekt beim Verkauf (default: 0)
+
+-   __dailyRent__ (float): (für mode="rent") tägliche Kosten der Miete (default: 0)
+
+-   __statName__ (string): zu welcher Statistik der Betrag gebucht wird, entweder "newVehiclesCost", "newAnimalsCost", "constructionCost", "vehicleRunningCost",
+    "propertyMaintenance", "wagePayment", "harvestIncome", "missionIncome", "other", "loanInterest" (default: "constructionCost")
+
+-   __i18nNameSpace__ (string): (falls nicht in der base festgelegt) Name des Mods genau wie er im Modordner als Zip oder Ordner liegt, um auf selbst festgelegte
+    Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
+    Fruchtsorten, die der Mod neu einführt. (default: ohne)
+
+-   __objectName__ (string): Name des kauf-/mietbaren Objekts, der auf den entsprechenden Eintrag in der modDesc verweist (default: ohne)
 
 ### processor
 

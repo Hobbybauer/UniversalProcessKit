@@ -19,15 +19,15 @@ function UPK_DisplayTrigger:load(id, parent)
 		self:print('Error: loading DisplayTrigger failed',true)
 		return false
 	end
-	
-	self:addTrigger()
-	
+
 	self.playerInRange=false
 	self.vehiclesInRange={}
 
 	self.onlyFilled = tobool(getUserAttribute(id, "onlyFilled"))
 	self.showFillLevel = tobool(Utils.getNoNil(getUserAttribute(id, "showFillLevel"),true))
 	self.showPercentage = tobool(getUserAttribute(id, "showPercentage"))
+
+	self:addTrigger()
 
 	self:print('loaded DisplayTrigger successfully')
 	return true
