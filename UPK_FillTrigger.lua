@@ -10,7 +10,6 @@ UniversalProcessKit.addModule("filltrigger",UPK_FillTrigger)
 function UPK_FillTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_FillTrigger_mt)
 	registerObjectClassName(self, "UPK_FillTrigger")
-	self.fillSowingMachine=UPK_FillTrigger.fillVehicle
 	self.fillWater=UPK_FillTrigger.fillVehicle
 	self.fillSprayer=UPK_FillTrigger.fillVehicle
 	self.fillFuel=UPK_FillTrigger.fillVehicle
@@ -70,6 +69,7 @@ function UPK_FillTrigger:load(id,parent)
     self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowTrailer"), "true"))
     self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(id, "allowShovel"), "true"))
 	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(id, "allowSowingMachine"), "false"))
+	self:print('allowSowingMachine='..tostring(self.allowSowingMachine))
 	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowWaterTrailer"), "false"))
 	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(id, "allowSprayer"), "false"))
 	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowFuelTrailer"), "false"))
@@ -236,10 +236,12 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 			if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
 				if onEnter then
 					vehicle:addSowingMachineFillTrigger(self)
+					self:print('vehicle:addSowingMachineFillTrigger(self)')
 					table.insert(self.sowingMachines,otherShapeId)
 				else
 					vehicle:removeSowingMachineFillTrigger(self)
-					table.remove(self.sowingMachines,otherShapeId)
+					self:print('vehicle:removeSowingMachineFillTrigger(self)')
+					removeValueFromTable(self.trailers,otherShapeId)
 				end
 			elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle.removeWaterTrailerFillTrigger ~= nil then
 				if onEnter then
@@ -247,7 +249,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 					table.insert(self.waterTrailers,otherShapeId)
 				else
 					vehicle:removeWaterTrailerFillTrigger(self)
-					table.remove(self.waterTrailers,otherShapeId)
+					removeValueFromTable(self.trailers,otherShapeId)
 				end
 			elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
 				if onEnter then
@@ -255,7 +257,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 					table.insert(self.sprayers,otherShapeId)
 				else
 					vehicle:removeSprayerFillTrigger(self)
-					table.remove(self.sprayers,otherShapeId)
+					removeValueFromTable(self.trailers,otherShapeId)
 				end
 			elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil then
 				if onEnter then
@@ -263,7 +265,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 					table.insert(self.fuelTrailers,otherShapeId)
 				else
 					vehicle:removeFuelFillTrigger(self)
-					table.remove(self.fuelTrailers,otherShapeId)
+					removeValueFromTable(self.trailers,otherShapeId)
 				end
 			end
 			if self.allowShovel and vehicle.getAllowFillShovel ~= nil then
@@ -309,15 +311,21 @@ function UPK_FillTrigger:setFillType(fillType)
 end
 
 function UPK_FillTrigger:getIsActivatable(vehicle)
-	--self:print("UPK_FillTrigger:getIsActivatable")
-	if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_SEEDS, false) and (self.fillLevels[Fillable.FILLTYPE_SEEDS] > 0 or self.createFillType) then
-		return true
-	elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_WATER, false) and (self.fillLevels[Fillable.FILLTYPE_WATER] > 0 or self.createFillType) then
-		return true
-	elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FERTILIZER, false) and (self.fillLevels[Fillable.FILLTYPE_FERTILIZER] > 0 or self.createFillType) then
-		return true
-	elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FUEL, false) and (self.fillLevels[Fillable.FILLTYPE_FUEL] > 0 or self.createFillType) then
-		return true
+	self:print("UPK_FillTrigger:getIsActivatable")
+	if type(vehicle)=="table" then
+		local fillType=self.fillType
+		if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and
+			vehicle:allowFillType(Fillable.FILLTYPE_SEEDS, false) and
+			(self.createFillType or (fillType==FruitUtil.fruitTypeToFillType[vehicle.seeds[vehicle.currentSeed]] and self:getFillLevel(fillType)>0)) then
+				self:print('return true for '..tostring(fillType))
+			return true
+		elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_WATER, false) and (self.fillLevels[Fillable.FILLTYPE_WATER] > 0 or self.createFillType) then
+			return true
+		elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FERTILIZER, false) and (self.fillLevels[Fillable.FILLTYPE_FERTILIZER] > 0 or self.createFillType) then
+			return true
+		elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FUEL, false) and (self.fillLevels[Fillable.FILLTYPE_FUEL] > 0 or self.createFillType) then
+			return true
+		end
 	end
 	return false
 end
@@ -363,14 +371,40 @@ function UPK_FillTrigger:fillShovel(shovel, dt)
 	return delta
 end
 
--- for sowingMachines, waterTrailers and sprayers
+-- for sowingMachines
+
+function UPK_FillTrigger:fillSowingMachine(vehicle, delta)
+	if self.isServer and self.isEnabled then
+		fillType=self.fillType
+		local oldFillLevel = vehicle:getFillLevel(Fillable.FILLTYPE_SEEDS)
+		if not self.createFillType then
+			delta=-self:addFillLevel(-delta,fillType)
+		end
+		vehicle:setFillLevel(oldFillLevel + delta, Fillable.FILLTYPE_SEEDS, true)
+		delta2=vehicle:getFillLevel(Fillable.FILLTYPE_SEEDS) - oldFillLevel
+		if not self.createFillType and (delta-delta2)>0 then
+			self:addFillLevel(delta-delta2,fillType)
+		end
+		if self.pricePerLiter ~= 0 then
+			local price = delta2 * self.pricePerLiter
+			g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + price
+			g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + price
+			g_currentMission:addSharedMoney(-price, "other")
+		end
+		return delta2
+	end
+end
+
+-- for waterTrailers and sprayers
 
 function UPK_FillTrigger:fillVehicle(vehicle, delta)
+	self:print('UPK_FillTrigger:fillVehicle')
+	--[[ nothing to see
 	fillType=self.fillType
-	if not vehicle:allowFillType(fillType, false) then
-		return 0
-	end
-	local oldFillLevel = vehicle:getFillLevel(fillType)
+		if not vehicle:allowFillType(fillType, false) then
+			return 0
+		end
+	local oldFillLevel = vehicle:getFillLevel()
 	vehicle:setFillLevel(oldFillLevel + delta, fillType, true)
 	delta=vehicle:getFillLevel(fillType) - oldFillLevel
 	if delta>0 then
@@ -385,5 +419,6 @@ function UPK_FillTrigger:fillVehicle(vehicle, delta)
 		end
 	end
 	return delta
+	--]]
 end
 

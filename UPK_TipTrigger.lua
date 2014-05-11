@@ -55,7 +55,7 @@ function UPK_TipTrigger:readStream(streamId, connection)
 		for i=1,nrTrailersToSync do
 			vehicle = networkGetObject(streamReadInt32(streamId))
 			isFilling = streamReadBool(streamId)
-			if type(vehicle)=="array" then
+			if type(vehicle)=="table" then
 				table.insert(self.trailers,vehicle)
 				vehicle.upk_isTipTriggerFilling=isFilling
 			end
@@ -83,7 +83,7 @@ function UPK_TipTrigger:readUpdateStream(streamId, timestamp, connection)
 			for i=1,nrTrailersToSync do
 				vehicle = networkGetObject(streamReadInt32(streamId))
 				isFilling = streamReadBool(streamId)
-				if type(vehicle)=="array" then
+				if type(vehicle)=="table" then
 					table.insert(self.trailers,vehicle)
 					vehicle.upk_isTipTriggerFilling=isFilling
 				end

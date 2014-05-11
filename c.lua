@@ -130,11 +130,11 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 	return str
 end;
 
-function removeValueFromTable(table, value, all)
+function removeValueFromTable(tbl, value, all)
 	print('called removeValueFromTable')
 	local index={}
-	if type(table)=="array" and value~=nil then
-		for k,v in pairs(table) do
+	if type(tbl)=="table" and value~=nil then
+		for k,v in pairs(tbl) do
 			if v==value then
 				table.insert(index,k)
 				if all~=true then
@@ -142,10 +142,10 @@ function removeValueFromTable(table, value, all)
 				end
 			end
 		end
-		table.sort(table, function(a, b) return a>b end)
+		table.sort(tbl, function(a, b) return a>b end)
 		for _,v in pairs(index) do
 			print('removing element '..tostring(v))
-			table.remove(table,v)
+			table.remove(tbl,v)
 		end
 		return #index
 	end
@@ -154,7 +154,7 @@ end;
 
 function getTableLength(table)
 	local len=0
-	if type(table)=="array" then
+	if type(table)=="table" then
 		for _ in pairs(table) do
 			len=len+1
 		end
