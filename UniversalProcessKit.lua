@@ -462,11 +462,12 @@ function UniversalProcessKit:delete()
 	self:unregister(true)
 	print('successful? '..tostring(self.isRegistered==false))
 	
-	for i=#self.kids,1,-1 do
-		self.kids[i]:removeTrigger()
-		self.kids[i]:delete()
-		self.kids[i]=nil
+	for _,v in pairs(self.kids) do
+		v:removeTrigger()
+		v:delete()
 	end
+	
+	self.kids={}
 
 	if self.addNodeObject and self.nodeId ~= 0 then
 		g_currentMission:removeNodeObject(self.nodeId)
@@ -514,7 +515,10 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 	local currentFillType=self.fillType or Fillable.FILLTYPE_UNKNOWN
 	fillType=fillType or currentFillType
 	if fillType==currentFillType or currentFillType==Fillable.FILLTYPE_UNKNOWN then
-		if fillLevel~=nil and fillType~=nil and fillType~=UniversalProcessKit.FILLTYPE_MONEY then
+		if fillType==UniversalProcessKit.FILLTYPE_MONEY or fillType==UniversalProcessKit.FILLTYPE_VOID then
+			-- can't set money, delete void
+			return 0
+		elseif fillLevel~=nil and fillType~=nil then
 			local newFillLevel=mathmin(mathmax(fillLevel,0),self.capacity)
 			self.fillLevels[fillType]=newFillLevel
 			self.fillTypesToSync[fillType]=true
@@ -523,9 +527,6 @@ function UniversalProcessKit:setFillLevel(fillLevel, fillType)
 			end
 			self:raiseDirtyFlags(self.fillLevelDirtyFlag)
 			return newFillLevel-fillLevel
-		elseif fillType==UniversalProcessKit.FILLTYPE_MONEY then
-			-- can't set money
-			return 0
 		end
 	end
 	return 0

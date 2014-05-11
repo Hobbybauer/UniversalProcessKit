@@ -133,6 +133,12 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __pricePerLiter__ (float): Kosten des fillTypes pro Liter (default:
     0)
 
+-   __statName__ (string): (falls pricePerLiter nicht 0) zu welcher Statistik
+    die Kosten gebucht wird, entweder "newVehiclesCost",
+    "newAnimalsCost", "constructionCost", "vehicleRunningCost",
+    "propertyMaintenance", "wagePayment", "harvestIncome",
+    "missionIncome", "other", "loanInterest" (default: "other")
+
 -   __allowTrailer__ (string): akzeptiert Kipper als Füllobjekt,
     entweder "true" oder "false" (default: "true")
 
@@ -140,16 +146,19 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     entweder "true" oder "false" (default: "true")
 
 -   __allowSowingMachine__ (string): akzeptiert Sämaschinen als
-    Füllobjekt, entweder "true" oder "false" (default: "true")
+    Füllobjekt, entweder "true" oder "false" (default: "false")
 
 -   __allowWaterTrailer__ (string): akzeptiert Wasseranhänger als
-    Füllobjekt, entweder "true" oder "false" (default: "true")
+    Füllobjekt, entweder "true" oder "false" (default: "false")
 
 -   __allowSprayer__ (string): akzeptiert Spritzen/ Düngestreuer als
-    Füllobjekt, entweder "true" oder "false" (default: "true")
+    Füllobjekt, entweder "true" oder "false" (default: "false")
 
 -   __allowFuelTrailer__ (string): akzeptiert Tankanhänger als
-    Füllobjekt, entweder "true" oder "false" (default: "true")
+    Füllobjekt, entweder "true" oder "false" (default: "false")
+
+-   __allowFuelRefill__ (string): (für fillType=fuel) legt fest, ob der Filltrigger bei Treibstoff auch Traktoren, Erntemaschinen etc. betanken kann, entweder "true" oder "false". Nicht
+	vergessen die collisionMask des Triggers entsprechend abzuändern! (default: "false")
 
 -   __useParticleSystem__ (string): legt fest ob Partikel beim Laden
     angezeigt werden sollen, entweder "true" oder "false" (default:

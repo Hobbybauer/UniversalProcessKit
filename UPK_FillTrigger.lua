@@ -10,9 +10,6 @@ UniversalProcessKit.addModule("filltrigger",UPK_FillTrigger)
 function UPK_FillTrigger:new(isServer, isClient, customMt)
 	local self = UniversalProcessKit:new(isServer, isClient, customMt or UPK_FillTrigger_mt)
 	registerObjectClassName(self, "UPK_FillTrigger")
-	self.fillWater=UPK_FillTrigger.fillVehicle
-	self.fillSprayer=UPK_FillTrigger.fillVehicle
-	self.fillFuel=UPK_FillTrigger.fillVehicle
 	self.triggerIds={}
 	self.siloTriggerDirtyFlag=self:getNextDirtyFlag()
 	return self
@@ -65,14 +62,27 @@ function UPK_FillTrigger:load(id,parent)
     self.fillLitersPerSecond = Utils.getNoNil(getUserAttribute(id, "fillLitersPerSecond"), 1500)
 	self.createFillType = tobool(getUserAttribute(id, "createFillType"))
     self.pricePerLiter = Utils.getNoNil(tonumber(getUserAttribute(id, "pricePerLiter")), 0)
+	self.statName=getUserAttribute(id, "statName")
+	local validStatName=false
+	if self.statName~=nil then
+		for _,v in pairs(FinanceStats.statNames) do
+			if self.statName==v then
+				validStatName=true
+				break
+			end
+		end
+	end
+	if not validStatName then
+		self.statName="other"
+	end
 
     self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowTrailer"), "true"))
     self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(id, "allowShovel"), "true"))
 	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(id, "allowSowingMachine"), "false"))
-	self:print('allowSowingMachine='..tostring(self.allowSowingMachine))
 	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowWaterTrailer"), "false"))
 	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(id, "allowSprayer"), "false"))
 	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(id, "allowFuelTrailer"), "false"))
+	self.allowFuelRefill = tobool(Utils.getNoNil(getUserAttribute(id, "allowFuelRefill"), "false"))
 	
 	self.useParticleSystem = tobool(getUserAttribute(id, "useParticleSystem"))
 	
@@ -219,7 +229,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 	if self.isServer and self.isEnabled then
 		local vehicle=g_currentMission.objectToTrailer[otherShapeId] or g_currentMission.nodeToVehicle[otherShapeId]
 		if vehicle~=nil then
-			--[[
+			
 			self:print("decide what")
 			self:print("self.allowSowingMachine: "..tostring(self.allowSowingMachine))
 			self:print("vehicle.addSowingMachineFillTrigger: "..tostring(vehicle.addSowingMachineFillTrigger~=nil))
@@ -228,51 +238,68 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 			self:print("self.allowSprayer: "..tostring(self.allowSprayer))
 			self:print("vehicle.addSprayerFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
 			self:print("self.allowFuelTrailer: "..tostring(self.allowFuelTrailer))
-			self:print("vehicle.addFuelFillTrigger: "..tostring(vehicle.addSprayerFillTrigger~=nil))
+			self:print("vehicle.addFuelFillTrigger: "..tostring(vehicle.addFuelFillTrigger~=nil))
+			self:print("vehicle.setFuelFillLevel: "..tostring(vehicle.setFuelFillLevel~=nil))
 			self:print("self.allowShovel: "..tostring(self.allowShovel))
 			self:print("vehicle.getAllowFillShovel: "..tostring(vehicle.getAllowFillShovel~=nil))
 			self:print("self.allowTrailer: "..tostring(self.allowTrailer))
-			--]]
-			if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
-				if onEnter then
-					vehicle:addSowingMachineFillTrigger(self)
-					self:print('vehicle:addSowingMachineFillTrigger(self)')
-					table.insert(self.sowingMachines,otherShapeId)
-				else
-					vehicle:removeSowingMachineFillTrigger(self)
-					self:print('vehicle:removeSowingMachineFillTrigger(self)')
-					removeValueFromTable(self.trailers,otherShapeId)
+			
+			if vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
+				if self.allowSowingMachine then
+					if onEnter then
+						vehicle:addSowingMachineFillTrigger(self)
+						vehicle.upk_trailerType=1
+						table.insert(self.sowingMachines,otherShapeId)
+					else
+						vehicle:removeSowingMachineFillTrigger(self)
+						vehicle.upk_trailerType=nil
+						removeValueFromTable(self.sowingMachines,otherShapeId)
+					end
 				end
-			elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle.removeWaterTrailerFillTrigger ~= nil then
-				if onEnter then
-					vehicle:addWaterTrailerFillTrigger(self)
-					table.insert(self.waterTrailers,otherShapeId)
-				else
-					vehicle:removeWaterTrailerFillTrigger(self)
-					removeValueFromTable(self.trailers,otherShapeId)
+			elseif vehicle.addWaterTrailerFillTrigger ~= nil and vehicle.removeWaterTrailerFillTrigger ~= nil then
+				if self.allowWaterTrailer then
+					if onEnter then
+						vehicle:addWaterTrailerFillTrigger(self)
+						vehicle.upk_trailerType=2
+						table.insert(self.waterTrailers,otherShapeId)
+					else
+						vehicle:removeWaterTrailerFillTrigger(self)
+						vehicle.upk_trailerType=nil
+						removeValueFromTable(self.waterTrailers,otherShapeId)
+					end
 				end
-			elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
-				if onEnter then
-					vehicle:addSprayerFillTrigger(self)
-					table.insert(self.sprayers,otherShapeId)
-				else
-					vehicle:removeSprayerFillTrigger(self)
-					removeValueFromTable(self.trailers,otherShapeId)
+			elseif vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
+				if self.allowSprayer then
+					if onEnter then
+						vehicle:addSprayerFillTrigger(self)
+						vehicle.upk_trailerType=3
+						table.insert(self.sprayers,otherShapeId)
+					else
+						vehicle:removeSprayerFillTrigger(self)
+						vehicle.upk_trailerType=nil
+						removeValueFromTable(self.sprayers,otherShapeId)
+					end
 				end
-			elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil then
-				if onEnter then
-					vehicle:addFuelFillTrigger(self)
-					table.insert(self.fuelTrailers,otherShapeId)
-				else
-					vehicle:removeFuelFillTrigger(self)
-					removeValueFromTable(self.trailers,otherShapeId)
+			elseif vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil then
+				if self.allowFuelTrailer or (self.allowFuelRefill and vehicle.setFuelFillLevel ~= nil) then
+					if onEnter then
+						vehicle:addFuelFillTrigger(self)
+						vehicle.upk_trailerType=4
+						table.insert(self.fuelTrailers,otherShapeId)
+					else
+						vehicle:removeFuelFillTrigger(self)
+						vehicle.upk_trailerType=nil
+						removeValueFromTable(self.fuelTrailers,otherShapeId)
+					end
 				end
-			end
-			if self.allowShovel and vehicle.getAllowFillShovel ~= nil then
-				if onEnter then
-					self.shovels[otherShapeId]=true
-				else
-					self.shovels[otherShapeId]=nil
+				-- milk 5
+			elseif vehicle.getAllowFillShovel ~= nil then
+				if self.allowShovel then
+					if onEnter then
+						self.shovels[otherShapeId]=true
+					else
+						self.shovels[otherShapeId]=nil
+					end
 				end
 			elseif self.allowTrailer then
 				if onEnter then
@@ -314,17 +341,14 @@ function UPK_FillTrigger:getIsActivatable(vehicle)
 	self:print("UPK_FillTrigger:getIsActivatable")
 	if type(vehicle)=="table" then
 		local fillType=self.fillType
-		if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and
-			vehicle:allowFillType(Fillable.FILLTYPE_SEEDS, false) and
-			(self.createFillType or (fillType==FruitUtil.fruitTypeToFillType[vehicle.seeds[vehicle.currentSeed]] and self:getFillLevel(fillType)>0)) then
-				self:print('return true for '..tostring(fillType))
-			return true
-		elseif self.allowWaterTrailer and vehicle.addWaterTrailerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_WATER, false) and (self.fillLevels[Fillable.FILLTYPE_WATER] > 0 or self.createFillType) then
-			return true
-		elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FERTILIZER, false) and (self.fillLevels[Fillable.FILLTYPE_FERTILIZER] > 0 or self.createFillType) then
-			return true
-		elseif self.allowFuelTrailer and vehicle.addFuelFillTrigger ~= nil and vehicle:allowFillType(Fillable.FILLTYPE_FUEL, false) and (self.fillLevels[Fillable.FILLTYPE_FUEL] > 0 or self.createFillType) then
-			return true
+		if self.allowSowingMachine and vehicle.upk_trailerType==1 then
+			return (self.createFillType or (fillType==FruitUtil.fruitTypeToFillType[vehicle.seeds[vehicle.currentSeed]] and self:getFillLevel(fillType)>0))
+		elseif self.allowWaterTrailer and vehicle.upk_trailerType==2 then
+			return (self.fillLevels[Fillable.FILLTYPE_WATER] > 0 or self.createFillType)
+		elseif self.allowSprayer and vehicle.upk_trailerType==3 then
+			return (self.fillLevels[Fillable.FILLTYPE_FERTILIZER] > 0 or self.createFillType)
+		elseif (self.allowFuelTrailer or self.allowFuelRefill) and vehicle.upk_trailerType==4 then
+			return (self.fillLevels[Fillable.FILLTYPE_FUEL] > 0 or self.createFillType)
 		end
 	end
 	return false
@@ -374,14 +398,31 @@ end
 -- for sowingMachines
 
 function UPK_FillTrigger:fillSowingMachine(vehicle, delta)
+	return self:fillVehicle(vehicle, delta, Fillable.FILLTYPE_SEEDS)
+end
+
+function UPK_FillTrigger:fillWater(vehicle, delta)
+	return self:fillVehicle(vehicle, delta, Fillable.FILLTYPE_WATER)
+end
+
+function UPK_FillTrigger:fillFuel(vehicle, delta)
 	if self.isServer and self.isEnabled then
 		fillType=self.fillType
-		local oldFillLevel = vehicle:getFillLevel(Fillable.FILLTYPE_SEEDS)
 		if not self.createFillType then
 			delta=-self:addFillLevel(-delta,fillType)
 		end
-		vehicle:setFillLevel(oldFillLevel + delta, Fillable.FILLTYPE_SEEDS, true)
-		delta2=vehicle:getFillLevel(Fillable.FILLTYPE_SEEDS) - oldFillLevel
+		local delta2=delta
+		if self.allowFuelRefill and vehicle.setFuelFillLevel ~= nil then
+			self:print('vehicle:setFuelFillLevel')
+			local oldFillLevel = vehicle.fuelFillLevel
+			vehicle:setFuelFillLevel(oldFillLevel + delta)
+			delta2 = vehicle.fuelFillLevel - oldFillLevel
+		else
+			self:print('vehicle:setFillLevel')
+			local oldFillLevel = vehicle:getFillLevel(Fillable.FILLTYPE_FUEL)
+			vehicle:setFillLevel(oldFillLevel + delta, Fillable.FILLTYPE_FUEL, true)
+			delta2=vehicle:getFillLevel(Fillable.FILLTYPE_FUEL) - oldFillLevel
+		end
 		if not self.createFillType and (delta-delta2)>0 then
 			self:addFillLevel(delta-delta2,fillType)
 		end
@@ -389,36 +430,31 @@ function UPK_FillTrigger:fillSowingMachine(vehicle, delta)
 			local price = delta2 * self.pricePerLiter
 			g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + price
 			g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + price
-			g_currentMission:addSharedMoney(-price, "other")
+			g_currentMission:addSharedMoney(-price, self.statName)
 		end
 		return delta2
 	end
 end
 
--- for waterTrailers and sprayers
-
-function UPK_FillTrigger:fillVehicle(vehicle, delta)
-	self:print('UPK_FillTrigger:fillVehicle')
-	--[[ nothing to see
-	fillType=self.fillType
-		if not vehicle:allowFillType(fillType, false) then
-			return 0
-		end
-	local oldFillLevel = vehicle:getFillLevel()
-	vehicle:setFillLevel(oldFillLevel + delta, fillType, true)
-	delta=vehicle:getFillLevel(fillType) - oldFillLevel
-	if delta>0 then
-		if self.pricePerLiter ~= 0 then
-			local price = delta * self.pricePerLiter
-			g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + price
-			g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + price
-			g_currentMission:addSharedMoney(-price, "other")
-		end
+function UPK_FillTrigger:fillVehicle(vehicle, delta, fillTypeTrailer)
+	if self.isServer and self.isEnabled then
+		fillType=self.fillType
+		local oldFillLevel = vehicle:getFillLevel(fillTypeTrailer)
 		if not self.createFillType then
 			delta=-self:addFillLevel(-delta,fillType)
 		end
+		vehicle:setFillLevel(oldFillLevel + delta, fillTypeTrailer, true)
+		delta2=vehicle:getFillLevel(fillTypeTrailer) - oldFillLevel
+		if not self.createFillType and (delta-delta2)>0 then
+			self:addFillLevel(delta-delta2,fillType)
+		end
+		if self.pricePerLiter ~= 0 then
+			local price = delta2 * self.pricePerLiter
+			g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + price
+			g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + price
+			g_currentMission:addSharedMoney(-price, self.statName)
+		end
+		return delta2
 	end
-	return delta
-	--]]
 end
 
