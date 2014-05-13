@@ -238,7 +238,7 @@ function UPK_BuyTriggerActivatable:updateActivateText()
 	end
 	if self.upkmodule.mode=="buy" then
 		if self.upkmodule:getIsBought() then
-			setfenv(1,_g['AAA_UniversalProcessKit']); dummy=g_i18n:getText('buytrigger_sell_OBJECT');
+			setfenv(1,_g['AAA_UniversalProcessKit']); dummy=g_i18n:getText('buytrigger_sell_OBJECT'); --setenv necessary??
 			self.activateText = string.format(dummy, objectName)
 		else
 			setfenv(1,_g['AAA_UniversalProcessKit']); dummy=g_i18n:getText('buytrigger_buy_OBJECT');

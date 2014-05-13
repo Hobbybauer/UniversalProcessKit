@@ -67,7 +67,7 @@ Im Moment gibt es folgende Trigger:
 
 4.  __displaytrigger__: veranlasst die Anzeige von Füllständen
 
-5.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf
+5.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf oder Miete
 
 ### Funktionen
 
@@ -118,6 +118,10 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __NotAcceptedText__ (string): Name des l10n-Textes bei Anzeige dass eine Fruchtsorte nicht akzeptiert wird (default: "notAcceptedHere")
 
 -   __CapacityReachedText__ (string): Text der angezeigt wird wenn die Füllmenge erreicht ist (default: "capacityReached")
+
+-   __l10n\_displayName__ (string): (nicht vergessen i18nNameSpace beim entsprechendem _tiptrigger_ zu setzen) anzuzeigender Triggername, v.a. zum Abladen von Flüssigkeiten. Muss
+	im l10n-Abschnitt der modDesc aufgeführt sein (default: ohne)
+
 
 ### dumptrigger
 

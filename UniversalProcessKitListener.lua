@@ -15,6 +15,13 @@ function UniversalProcessKitListener:loadMap(name)
 			--UniversalProcessKit.fillTypeIntToName[v]=nil
 		end
 	end
+	
+	--[[ maybe later
+	if _g.MapDoorTrigger~=nil then
+		_m.MapDoorTrigger=_g.MapDoorTrigger.MapDoorTrigger
+		_m.DoorTrigger=_g.MapDoorTrigger.DoorTrigger
+	end
+	--]]
 end
 
 local function emptyFunc() end

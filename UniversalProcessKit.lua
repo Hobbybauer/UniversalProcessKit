@@ -169,6 +169,7 @@ function UniversalProcessKit:load(id,parent)
 	self.sumdt=0
 	
 	self.parent = parent
+	self.onCreates = {}
 	
 	self.x,self.y,self.z = getTranslation(self.nodeId)
 	self.pos = __c({self.x,self.y,self.z})
@@ -450,6 +451,18 @@ function UniversalProcessKit:findChildren(id)
 					table.insert(self.kids,module)
 				end
 			else
+				--[[ maybe later
+				local onCreate=getUserAttribute(childId, "onCreate")
+				if self.placeable~=nil and onCreate~=nil then
+					if onCreate=="modOnCreate.DoorOnCreate" and (_g or {})['MapDoorTrigger']~=nil then
+						local instance = DoorTrigger:new(self.isServer, self.isClient)
+						g_currentMission:addNodeObject(childId, instance)
+						instance:load(childId)
+						instance:register(true)
+						table.insert(self.onCreates,instance)
+					end	
+				end
+				--]]
 				self:findChildren(childId)
 			end
 		end
@@ -457,6 +470,14 @@ function UniversalProcessKit:findChildren(id)
 end;
 
 function UniversalProcessKit:delete()
+	--[[ maybe later
+	for k,v in pairs(self.onCreates) do
+		local id=v.nodeId
+		v:delete()
+		g_currentMission:removeNodeObject(id)
+	end
+	--]]
+	
 	print('delete module '..tostring(self.name)..' with id '..tostring(self.id))
 	print('registered? '..tostring(self.isRegistered==true))
 	self:unregister(true)

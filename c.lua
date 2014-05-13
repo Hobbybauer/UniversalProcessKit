@@ -196,6 +196,7 @@ _g.UPK_Shower={}
 _g.UPK_Storage={}
 _g.UPK_Switcher={}
 _g.UPK_TipTrigger={}
+_g.UPK_TipTriggerActivatable={}
 _g.PlaceableUPK={}
 
 UPK_Storage.SEPARATE=1

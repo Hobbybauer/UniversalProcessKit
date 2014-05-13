@@ -40,6 +40,13 @@ function UPK_TipTrigger:load(id, parent)
 	-- getNoAllowedText
 	
 	self.getNoAllowedTextBool = tobool(getUserAttribute(self.nodeId, "showNoAllowedText"))
+	
+	local l10ndisplayName = getUserAttribute(self.nodeId, "l10n_displayName")
+	self.displayName=""
+	if l10ndisplayName~=nil and self.i18nNameSpace~=nil and (_g or {})[self.i18nNameSpace]~=nil then
+		self.displayName=_g[self.i18nNameSpace].g_i18n:getText(l10ndisplayName)
+	end
+	
 	self.notAcceptedText = g_i18n:getText(Utils.getNoNil(getUserAttribute(self.nodeId, "NotAcceptedText"), "notAcceptedHere"))
 	self.capacityReachedText = g_i18n:getText(Utils.getNoNil(getUserAttribute(self.nodeId, "CapacityReachedText"), "capacityReached"))
 	self.playerInRange = false
@@ -290,12 +297,12 @@ local UPK_TipTriggerActivatable_mt = Class(UPK_TipTriggerActivatable)
 function UPK_TipTriggerActivatable:new(upkmodule,fillType)
 	local self = {}
 	setmetatable(self, UPK_TipTriggerActivatable_mt)
-	self.upkmodule = upkmodule
+	self.upkmodule = upkmodule or {}
 	self.activateText = "unknown"
 	self.currentTrailer = nil
 	self.fillType = fillType
 	return self
-end
+end;
 function UPK_TipTriggerActivatable:getIsActivatable()
 	self.currentTrailer = nil
 	if self.upkmodule:getFillLevel(self.fillType) >= self.upkmodule.capacity then
@@ -309,18 +316,22 @@ function UPK_TipTriggerActivatable:getIsActivatable()
 		end
 	end
 	return false
-end
+end;
 function UPK_TipTriggerActivatable:onActivateObject()
 	self.upkmodule:setIsTipTriggerFilling(not self.currentTrailer.upk_isTipTriggerFilling, self.currentTrailer)
 	self:updateActivateText()
 	g_currentMission:addActivatableObject(self)
-end
+end;
 function UPK_TipTriggerActivatable:drawActivate()
-end
+end;
 function UPK_TipTriggerActivatable:updateActivateText()
 	if self.currentTrailer.upk_isTipTriggerFilling then
-		self.activateText = string.format(g_i18n:getText("stop_refill_OBJECT"), "TextToReplace1")
+		self.activateText = string.format(g_i18n:getText("stop_refill_OBJECT"), self.upkmodule.displayName)
 	else
-		self.activateText = string.format(g_i18n:getText("refill_OBJECT"), "TextToReplace2")
+		self.activateText = string.format(g_i18n:getText("refill_OBJECT"), self.upkmodule.displayName)
 	end
-end
+end;
+
+
+
+
