@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="9">
     <author>mor2000</author>
-    <version>1.0.8</version>
+    <version>1.1.0</version>
     <title>
         <en>AAA UniversalProcessKit</en>
         <de>AAA UniversalProcessKit</de>
@@ -26,6 +26,8 @@
 		<sourceFile filename="UniversalProcessKitListener.lua"/>
 		<sourceFile filename="UPK_Activator.lua"/>
 		<sourceFile filename="UPK_Animator.lua"/>
+		<sourceFile filename="UPK_BaleSpawner.lua"/>
+		<sourceFile filename="UPK_BaleTrigger.lua"/>
 		<sourceFile filename="UPK_Base.lua"/>
 		<sourceFile filename="UPK_BuyTrigger.lua"/>
 		<sourceFile filename="UPK_Conveyor.lua"/>
@@ -33,6 +35,8 @@
 		<sourceFile filename="UPK_DumpTrigger.lua"/>
 		<sourceFile filename="UPK_FillTrigger.lua"/>
 		<sourceFile filename="UPK_Mover.lua"/>
+		<sourceFile filename="UPK_PalettSpawner.lua"/>
+		<sourceFile filename="UPK_PalettTrigger.lua"/>
 		<sourceFile filename="UPK_Processor.lua"/>
 		<sourceFile filename="UPK_Scaler.lua"/>
 		<sourceFile filename="UPK_Shower.lua"/>
@@ -51,14 +55,12 @@
 		<text name="potato"> <en>potato</en> <de>Kartoffeln</de> </text>
 		<text name="sugarBeet"> <en>sugar beet</en> <de><![CDATA[Zuckerrüben]]></de> </text>
 		<text name="silage"> <en>silage</en> <de>Silage</de> </text>
-		<text name="manure"> <en>manure</en> <de>Mist</de> </text>
 		<text name="liquidManure"> <en>liquid manure</en> <de><![CDATA[Gülle]]></de> </text>
 		<text name="forage"> <en>compound feed</en> <de>Futter</de> </text>
 		<text name="forageMixing"> <en>forage</en> <de>Mischfutter</de> </text>
 		<text name="water"> <en>water</en> <de>Wasser</de> </text>
 		<text name="fuel"> <en>fuel</en> <de>Treibstoff</de> </text>
 		<text name="milk"> <en>milk</en> <de>Milch</de> </text>
-		<text name="sand"> <en>sand</en> <de>Sand</de> </text>
 		<text name="grass_windrow"> <en>grass</en> <de>Gras</de> </text>
 		<text name="dryGrass_windrow"> <en>hay</en> <de>Heu</de> </text>
 		<text name="wheat_windrow"> <en>wheat straw</en> <de>Weizenstroh</de> </text>
@@ -80,7 +82,6 @@
 		<text name="tomato"> <en>tomato</en> <de>Tomaten</de> </text>
 		<text name="pea"> <en>pea</en> <de>Erbsen</de> </text>
 		<text name="erbse"> <en>pea</en> <de>Erbsen</de> </text>
-		<text name="forage"> <en>forage</en> <de>Mischfutter</de> </text>
 		<text name="mohn"> <en>poppy</en> <de>Mohn</de> </text>
 		<text name="fertilizer"> <en>fertilizer</en> <de><![CDATA[Dünger]]></de> </text>
 		<text name="kalk"> <en>chalk</en> <de>Kalk</de> </text>
