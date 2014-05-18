@@ -24,6 +24,8 @@
 -- keys left and right (same, only take matching keys into account) + - * /
 -- c({a=1,b=2,c=3}) + c({b=2,d=4}) = {b=4}
 
+upkModDirectory = g_currentModDirectory
+
 _m=_G;_G=nil;_g=_G;_G=_m;
 
 _m.mathrandom=math.random
@@ -131,25 +133,25 @@ function getVectorFromUserAttribute(nodeId, attribute, default)
 end;
 
 function removeValueFromTable(tbl, value, all)
-	print('called removeValueFromTable')
 	local index={}
 	if type(tbl)=="table" and value~=nil then
 		for k,v in pairs(tbl) do
 			if v==value then
+				print('adding index '..tostring(k)..' to remove from table')
 				table.insert(index,k)
 				if all~=true then
 					break
 				end
 			end
 		end
-		table.sort(tbl, function(a, b) return a>b end)
+		table.sort(index, function(a, b) return a>b end)
 		for _,v in pairs(index) do
-			print('removing element '..tostring(v))
+			print('removing '..tostring(v))
 			table.remove(tbl,v)
 		end
 		return #index
 	end
-	return -1
+	return 0
 end;
 
 function getTableLength(table)

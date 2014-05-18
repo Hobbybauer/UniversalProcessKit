@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="9">
     <author>mor2000</author>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <title>
         <en>AAA UniversalProcessKit</en>
         <de>AAA UniversalProcessKit</de>
@@ -24,6 +24,7 @@
 		<sourceFile filename="UniversalProcessKitModules.lua"/>
 		<sourceFile filename="UniversalProcessKitFillTypes.lua"/>
 		<sourceFile filename="UniversalProcessKitListener.lua"/>
+		<sourceFile filename="UniversalProcessKitVehicleTypes.lua"/>
 		<sourceFile filename="UPK_Activator.lua"/>
 		<sourceFile filename="UPK_Animator.lua"/>
 		<sourceFile filename="UPK_BaleSpawner.lua"/>
