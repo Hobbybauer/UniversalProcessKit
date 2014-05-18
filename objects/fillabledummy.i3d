@@ -68,7 +68,7 @@
     </Shapes>
     <Dynamics/>
     <Scene>
-        <Shape materialIds="2" name="Cube" compound="true" nodeId="1" shapeId="1" dynamic="true" collisionMask="8397058"/>
+        <Shape materialIds="2" name="Cube" compound="true" nodeId="1" shapeId="1" dynamic="true" collisionMask="0" nonRenderable="true"/>
     </Scene>
     <Animation/>
     <UserAttributes/>

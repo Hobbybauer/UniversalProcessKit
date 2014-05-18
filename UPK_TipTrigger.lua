@@ -43,8 +43,8 @@ function UPK_TipTrigger:load(id, parent)
 			delete(nodeRoot)
 			self:print('object fillabledummy loaded successfully')
 			self.fillabledummyId = nodeId
-			setTranslation(self.fillabledummyId,0,-10,0)
-			setCollisionMask(self.fillabledummyId, 8397058)
+			addToPhysics(self.fillabledummyId)
+			setTranslation(self.fillabledummyId,0,2,0)
 		end	
 	end
 	
@@ -138,6 +138,11 @@ function UPK_TipTrigger:delete()
 	end
 	--]]
 	
+	if self.fillabledummyId~=nil then
+		g_currentMission:removeNodeObject(self.fillabledummyId)
+		self.fillabledummyId=nil
+	end
+	
 	g_currentMission:removeActivatableObject(self.tipTriggerActivatable)
 	self.tipTriggerActivatable=nil
 
@@ -196,7 +201,7 @@ end
 function UPK_TipTrigger:getTipDistance(pointNode)
 	--self:print('UPK_TipTrigger:getTipDistance')
 	local pointNodeX, pointNodeY, pointNodeZ = getWorldTranslation(pointNode)
-	--Utils.setWorldTranslation(self.fillabledummyId,pointNodeX, pointNodeY+2, pointNodeZ+4)
+	Utils.setWorldTranslation(self.fillabledummyId,pointNodeX, pointNodeY+2, pointNodeZ+4)
 	local x,_,z = unpack(self.wpos - self.pos)
 	local distance=mathmax(Utils.vector2Length(pointNodeX - x, pointNodeZ - z),0)
 	--self:print('return '..tostring(distance))
@@ -261,7 +266,7 @@ function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeav
 				print('self.trailersForActivatableObject='..tostring(self.trailersForActivatableObject))
 				self:disableActivatableObject()
 				removeValueFromTable(self.trailers,vehicle)
-				setTranslation(self.fillabledummyId,0,-10,0)
+				setTranslation(self.fillabledummyId,0,2,0)
 			end
 		elseif vehicle.allowTipDischarge then
 			if onEnter then
@@ -279,7 +284,7 @@ function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeav
 					end
 				end
 				removeValueFromTable(self.trailers,vehicle)
-				setTranslation(self.fillabledummyId,0,-10,0)
+				setTranslation(self.fillabledummyId,0,2,0)
 			end
 		end
 	end
