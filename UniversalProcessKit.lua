@@ -174,6 +174,12 @@ function UniversalProcessKit:load(id,parent)
 	self.x,self.y,self.z = getTranslation(self.nodeId)
 	self.pos = __c({self.x,self.y,self.z})
 	self.wpos = __c({getWorldTranslation(self.nodeId)})
+	self.adjustToTerrainHeight = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "adjustToTerrainHeight"), "false"))
+	if self.adjustToTerrainHeight then
+		local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, self.wpos[1], 0, self.wpos[3])
+		Utils.setWorldTranslation(self.nodeId, self.wpos[1], y, self.wpos[3])
+		self.wpos = __c({getWorldTranslation(self.nodeId)})
+	end
 	self.rot = __c({getRotation(self.nodeId)})
 	self.wrot = __c({getWorldRotation(self.nodeId)})
 	self.scale = __c({getScale(self.nodeId)})

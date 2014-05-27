@@ -37,10 +37,14 @@ function UniversalProcessKit.getVehicleType(vehicle)
 	return vehicleType
 end;
 
-function UniversalProcessKit.isVehicleType(vehicle, vehicleTypeTest)
-	local vehicleType=UniversalProcessKit.getVehicleType(vehicle)
-	if bitAND(vehicleType,vehicleTypeTest)~=0 then
-		return true
+function UniversalProcessKit.isVehicleType(vehicle, vehicleType)
+	if type(vehicle)=="table" then
+		if vehicle.upk_vehicleType==nil then
+			vehicle.upk_vehicleType=UniversalProcessKit.getVehicleType(vehicle)
+		end
+		if bitAND(vehicle.upk_vehicleType,vehicleType)~=0 then
+			return true
+		end
 	end
 	return false
 end;
