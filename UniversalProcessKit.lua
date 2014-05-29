@@ -176,9 +176,21 @@ function UniversalProcessKit:load(id,parent)
 	self.wpos = __c({getWorldTranslation(self.nodeId)})
 	self.adjustToTerrainHeight = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "adjustToTerrainHeight"), "false"))
 	if self.adjustToTerrainHeight then
+		self.childrenShapes={}
+		self:findChildrenShapes(self.nodeId)
+		for k,v in pairs(self.childrenShapes) do
+			if v=="Static" then
+				setRigidBodyType(k,"Kinematic")
+			end
+		end
 		local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, self.wpos[1], 0, self.wpos[3])
 		Utils.setWorldTranslation(self.nodeId, self.wpos[1], y, self.wpos[3])
 		self.wpos = __c({getWorldTranslation(self.nodeId)})
+		for k,v in pairs(self.childrenShapes) do
+			if v=="Static" then
+				setRigidBodyType(k,"Static")
+			end
+		end
 	end
 	self.rot = __c({getRotation(self.nodeId)})
 	self.wrot = __c({getWorldRotation(self.nodeId)})
@@ -443,33 +455,48 @@ end
 
 function UniversalProcessKit:findChildren(id)
 	local numChildren = getNumOfChildren(id)
-	for i=1,numChildren do
-		local childId = getChildAt(id, i-1)
-		if childId~=nil or childId~=0 then
-			local type = getUserAttribute(childId, "type")
-			if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
-				childName=Utils.getNoNil(getName(childId),"")
-				self:print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
-				local module=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
-				if module~=nil then
-					module:load(childId,self)
-					module:register(true)
-					table.insert(self.kids,module)
+	if type(numChildren)=="number" and numChildren>0 then
+		for i=1,numChildren do
+			local childId = getChildAt(id, i-1)
+			if childId~=nil or childId~=0 then
+				local type = getUserAttribute(childId, "type")
+				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
+					childName=Utils.getNoNil(getName(childId),"")
+					self:print('found module '..childName..' of type '..tostring(type)..' and id '..tostring(childId))
+					local module=UniversalProcessKit.ModuleTypes[type]:new(self.isServer,self.isClient)
+					if module~=nil then
+						module:load(childId,self)
+						module:register(true)
+						table.insert(self.kids,module)
+					end
+				else
+					--[[ maybe later
+					local onCreate=getUserAttribute(childId, "onCreate")
+					if self.placeable~=nil and onCreate~=nil then
+						if onCreate=="modOnCreate.DoorOnCreate" and (_g or {})['MapDoorTrigger']~=nil then
+							local instance = DoorTrigger:new(self.isServer, self.isClient)
+							g_currentMission:addNodeObject(childId, instance)
+							instance:load(childId)
+							instance:register(true)
+							table.insert(self.onCreates,instance)
+						end	
+					end
+					--]]
+					self:findChildren(childId)
 				end
-			else
-				--[[ maybe later
-				local onCreate=getUserAttribute(childId, "onCreate")
-				if self.placeable~=nil and onCreate~=nil then
-					if onCreate=="modOnCreate.DoorOnCreate" and (_g or {})['MapDoorTrigger']~=nil then
-						local instance = DoorTrigger:new(self.isServer, self.isClient)
-						g_currentMission:addNodeObject(childId, instance)
-						instance:load(childId)
-						instance:register(true)
-						table.insert(self.onCreates,instance)
-					end	
-				end
-				--]]
-				self:findChildren(childId)
+			end
+		end
+	end
+end;
+
+function UniversalProcessKit:findChildrenShapes(id)
+	local numChildren = getNumOfChildren(id)
+	if type(numChildren)=="number" and numChildren>0 then
+		for i=1,numChildren do
+			local childId = getChildAt(id, i-1)
+			if childId~=nil or childId~=0 then
+				table.insert(self.childrenShapes,childId,getRigidBodyType(childId))
+				self:findChildrenShapes(childId)
 			end
 		end
 	end
