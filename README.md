@@ -4,7 +4,7 @@
 
 Das UniversalProcessKit, kurz UPK, stellt Funktionen für Modder und
 Mapper bereit, damit diese so wenig wie möglich oder auch gar nicht mehr
-selber skripten müssen.
+selber skripten müssen. Dafür wurden bis jetzt etwa 4.500 Codezeilen neu geschrieben.
 
 #### Hinweise zum Gebrauch
 
@@ -63,11 +63,13 @@ Im Moment gibt es folgende Trigger:
 
 2.  __dumptrigger__: fängt das Entladen von Schaufeln und Erntemaschinen auf
 
-3.  __filltrigger__: lädt alle Arten von Anhänger (siehe tiptrigger) sowie Schaufeln
+3.  __filltrigger__: lädt alle Arten von Anhänger (siehe tiptrigger) sowie Schaufeln, Ladewagen und Ballenpressen
 
-4.  __displaytrigger__: veranlasst die Anzeige von Füllständen
+4.  __balertrigger__: wie der _filltrigger_ nur für Ladewagen und Ballenpressen
 
-5.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf oder Miete
+5.  __displaytrigger__: veranlasst die Anzeige von Füllständen
+
+6.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf oder Miete
 
 ### Funktionen
 
@@ -386,6 +388,8 @@ Skaliert je nach Füllstand das entsprechende Shape.
 ###switcher
 
 Der _switcher_ umfasst mehrere Shapes oder TransformGroups (auch leere), die entweder in Abhängigkeit von der Fruchtsorte (es empfiehlt sich bei der _base_ oder _storage_ den storageType="single" zu setzen) oder des Füllstandes ausgetauscht werden. Dabei entspricht die Reihenfolge der Auflistung jeweils der Reihenfolge des Shapes. Im Modus "stack" beim Füllstand werden alle Shapes bis zum aktuellen Füllstand angezeigt.
+
+-   __*fillTypes__ (string): Auflistung der zu berücksichtigenden Fülltypen (bspw. "water apfel")
 
 -   __a) switchFillTypes__ (string): listet die Fruchtsorten auf, für die die Shapes angezeigt werden sollen
 
