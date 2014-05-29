@@ -35,6 +35,7 @@ _m.mathmin=math.min
 _m.mathmax=math.max
 _m.mathfloor=math.floor
 _m.mathceil=math.ceil
+_m.mathabs=math.abs
 
 _g.UniversalProcessKit = {};
 
@@ -137,7 +138,6 @@ function removeValueFromTable(tbl, value, all)
 	if type(tbl)=="table" and value~=nil then
 		for k,v in pairs(tbl) do
 			if v==value then
-				print('adding index '..tostring(k)..' to remove from table')
 				table.insert(index,k)
 				if all~=true then
 					break
@@ -146,7 +146,6 @@ function removeValueFromTable(tbl, value, all)
 		end
 		table.sort(index, function(a, b) return a>b end)
 		for _,v in pairs(index) do
-			print('removing '..tostring(v))
 			table.remove(tbl,v)
 		end
 		return #index
@@ -193,6 +192,7 @@ _g.UPK_Conveyor={}
 _g.UPK_DisplayTrigger={}
 _g.UPK_DumpTrigger={}
 _g.UPK_FillTrigger={}
+_g.UPK_BalerTrigger={}
 _g.UPK_Mover={}
 _g.UPK_PalettSpawner={}
 _g.UPK_PalettTrigger={}

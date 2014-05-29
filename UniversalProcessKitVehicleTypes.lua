@@ -7,6 +7,9 @@ UniversalProcessKit.VEHICLE_FUELTRAILER=8
 UniversalProcessKit.VEHICLE_MILKTRAILER=16
 UniversalProcessKit.VEHICLE_LIQUIDMANURETRAILER=32
 UniversalProcessKit.VEHICLE_SHOVEL=64
+UniversalProcessKit.VEHICLE_TIPPER=128
+UniversalProcessKit.VEHICLE_FORAGEWAGON=256
+UniversalProcessKit.VEHICLE_BALER=512
 
 function UniversalProcessKit.getVehicleType(vehicle)
 	local vehicleType=0
@@ -34,17 +37,24 @@ function UniversalProcessKit.getVehicleType(vehicle)
 	if vehicle.getAllowFillShovel ~= nil then
 		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_SHOVEL
 	end
+	if vehicle.allowTipDischarge ~= nil then
+		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_TIPPER
+	end
+	if vehicle.forageWgnSoundEnabled ~= nil then
+		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_FORAGEWAGON
+	end
+	if vehicle.hasBaler ~= nil then
+		print('baler identified!')
+		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_BALER
+	end
+
 	return vehicleType
 end;
 
-function UniversalProcessKit.isVehicleType(vehicle, vehicleType)
-	if type(vehicle)=="table" then
-		if vehicle.upk_vehicleType==nil then
-			vehicle.upk_vehicleType=UniversalProcessKit.getVehicleType(vehicle)
-		end
-		if bitAND(vehicle.upk_vehicleType,vehicleType)~=0 then
-			return true
-		end
+function UniversalProcessKit.isVehicleType(vehicle, vehicleTypeTest)
+	local vehicleType=UniversalProcessKit.getVehicleType(vehicle)
+	if bitAND(vehicleType,vehicleTypeTest)~=0 then
+		return true
 	end
 	return false
 end;

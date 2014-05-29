@@ -90,12 +90,14 @@ Im Moment gibt es folgende Trigger:
 
 -   __capacity__ (float): Festlegung der maximalen Füllmenge
 
--   __isEnabled__ (string): Modul ist aktiviert oder deaktiviert,
-    entweder "true" oder "false" (default: "true")
+-   __isEnabled__ (bool): Modul ist aktiviert oder deaktiviert,
+    entweder "true" oder "false" (default: true)
 
 -   __i18nNameSpace__ (string): Name des Mods genau wie er im Modordner als Zip oder Ordner liegt, um auf selbst festgelegte
     Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
     Fruchtsorten, die der Mod neu einführt. (default: ohne)
+
+-   __adjustToTerrainHeight__ (bool): Ob der Ursprung des Shapes (0,0,0) auf die Terrain-Höhe angeglichen wird. Empfehlenswert für die base von allen UPK-Mods (default: false)
 
 ### base
 
@@ -111,9 +113,19 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 
 -   __MapHotspot__ (string): Name des Icons zur Anzeige auf dem PDA. Keine Anzeige, falls leer
 
--   __allowWaterTrailer__ (string): erlaubt Wasseranhängern das Abladen, entweder "true" oder "false" (default: "true")
+-   __allowTrailer__ (bool): akzeptiert Kipper als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __showNoAllowedText__ (string): ob angezeigt werden soll, wenn eine Fruchtsorte nicht akzeptiert wird, entweder "true" oder "false" (default: "false")
+-   __allowWaterTrailer__ (bool): erlaubt Wasseranhängern das Abladen, entweder "true" oder "false" (default: true)
+
+-   __allowFuelTrailer__ (bool): erlaubt Tankanhängern das Abladen, entweder "true" oder "false" (default: false)
+
+-   __allowLiquidManureTrailer__ (bool): erlaubt Gülleanhängern das Abladen, entweder "true" oder "false" (default: false)
+
+-   __allowMilkTrailer__ (bool): erlaubt Milchanhängern das Abladen, entweder "true" oder "false" (default: false)
+
+-   __allowSprayer__ (bool): erlaubt Spritzen/ Düngestreuer das Abladen, entweder "true" oder "false" (default: false)
+
+-   __showNoAllowedText__ (bool): ob angezeigt werden soll, wenn eine Fruchtsorte nicht akzeptiert wird, entweder "true" oder "false" (default: false)
 
 -   __NotAcceptedText__ (string): Name des l10n-Textes bei Anzeige dass eine Fruchtsorte nicht akzeptiert wird (default: "notAcceptedHere")
 
@@ -136,9 +148,8 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 -   __fillLitersPerSecond__ (float): Geschwindigkeit der Ausschüttung
     (default: 1500)
 
--   __createFillType__ (string): greift auf den Füllstand zurück oder
-    erzeugt fillType einfach so, entweder "true" oder "false" (default:
-    "false")
+-   __createFillType__ (bool): greift auf den Füllstand zurück oder erzeugt fillType einfach so, entweder "true" oder
+	"false" (default: false)
 
 -   __pricePerLiter__ (float): Kosten des fillTypes pro Liter (default:
     0)
@@ -149,40 +160,63 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     "propertyMaintenance", "wagePayment", "harvestIncome",
     "missionIncome", "other", "loanInterest" (default: "other")
 
--   __allowTrailer__ (string): akzeptiert Kipper als Füllobjekt,
-    entweder "true" oder "false" (default: "true")
+-   __allowTrailer__ (bool): akzeptiert Kipper als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowShovel__ (string): akzeptiert Schaufeln als Füllobjekt,
-    entweder "true" oder "false" (default: "true")
+-   __allowShovel__ (bool): akzeptiert Schaufeln als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowSowingMachine__ (string): akzeptiert Sämaschinen als
-    Füllobjekt, entweder "true" oder "false" (default: "false")
+-   __allowSowingMachine__ (bool): akzeptiert Sämaschinen als Füllobjekt, entweder "true" oder "false" (default: false)
 
--   __allowWaterTrailer__ (string): akzeptiert Wasseranhänger als
-    Füllobjekt, entweder "true" oder "false" (default: "false")
+-   __allowWaterTrailer__ (bool): akzeptiert Wasseranhänger als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowSprayer__ (string): akzeptiert Spritzen/ Düngestreuer als
-    Füllobjekt, entweder "true" oder "false" (default: "false")
+-   __allowSprayer__ (bool): akzeptiert Spritzen/ Düngestreuer als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowFuelTrailer__ (string): akzeptiert Tankanhänger als
-    Füllobjekt, entweder "true" oder "false" (default: "false")
+-   __allowFuelTrailer__ (bool): akzeptiert Tankanhänger als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowFuelRefill__ (string): (für fillType=fuel) legt fest, ob der Filltrigger bei Treibstoff auch Traktoren, Erntemaschinen etc. betanken kann, entweder "true" oder "false". Nicht
-	vergessen die collisionMask des Triggers entsprechend abzuändern! (default: "false")
+-   __allowFuelRefill__ (bool): (für fillType=fuel) legt fest, ob der Filltrigger bei Treibstoff auch Traktoren, Erntemaschinen etc. betanken kann, entweder "true" oder "false". Nicht
+	vergessen die collisionMask des Triggers entsprechend abzuändern! (default: false)
 
--   __useParticleSystem__ (string): legt fest ob Partikel beim Laden
-    angezeigt werden sollen, entweder "true" oder "false" (default:
-    "false")
+-   __allowMilkTrailer__ (bool): akzeptiert Milchanhänger als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __particleSystem__ (string): Name des Partikelsystems (default:
-    "wheatParticleSystemLong")
+-   __allowForageWagon__ (bool): akzeptiert Ladewagen als Füllobjekt, entweder "true" oder "false" (default: false)
 
--   __particlePosition__ (string): Lage des Ursprungs der Partikel
-    (default: "0 0 0")
+-   __allowBaler__ (bool): akzeptiert Ballenpressen als Füllobjekt, entweder "true" oder "false" (default: false)
 
--   __useFillSound__ (string): gibt an, ob ein Sound beim Befüllen abgespielt werden soll (default: "true")
+-   __useParticleSystem__ (bool): legt fest ob Partikel beim Laden angezeigt werden sollen, entweder "true" oder "false" (default:
+    false)
+
+-   __particleSystem__ (string): Name des Partikelsystems (default: "wheatParticleSystemLong")
+
+-   __particlePosition__ (string): Lage des Ursprungs der Partikel (default: "0 0 0")
+
+-   __useFillSound__ (bool): gibt an, ob ein Sound beim Befüllen abgespielt werden soll (default: true)
 
 -   __fillSoundFilename__ (string): Pfad zur Sounddatei (default: "$data/maps/sounds/siloFillSound.wav")
+
+### balertrigger
+
+Identisch zum _filltrigger_ mit denselben Attributen, jedoch mit der Standardkonfiguration, dass nur Ladewagen und Ballenpressen akzeptiert werden. Da die Ladewagen oder Ballenpressen in den Trigger fahren müssen, um erkannt zu werden, ist er zu groß für die Konfiguration mit Schaufeln, da diese dann in 2 oder 3 Meter Entfernung schon befüllt werden würden.
+
+-   __allowTrailer__ (bool): akzeptiert Kipper als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowShovel__ (bool): akzeptiert Schaufeln als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowSowingMachine__ (bool): akzeptiert Sämaschinen als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowWaterTrailer__ (bool): akzeptiert Wasseranhänger als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowSprayer__ (bool): akzeptiert Spritzen/ Düngestreuer als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowFuelTrailer__ (bool): akzeptiert Tankanhänger als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowFuelRefill__ (bool): (für fillType=fuel) legt fest, ob der Filltrigger bei Treibstoff auch Traktoren, Erntemaschinen etc. betanken kann, entweder "true" oder "false". Nicht
+	vergessen die collisionMask des Triggers entsprechend abzuändern! (default: false)
+
+-   __allowMilkTrailer__ (bool): akzeptiert Milchanhänger als Füllobjekt, entweder "true" oder "false" (default: false)
+
+-   __allowForageWagon__ (bool): akzeptiert Ladewagen als Füllobjekt, entweder "true" oder "false" (default: true)
+
+-   __allowBaler__ (bool): akzeptiert Ballenpressen als Füllobjekt, entweder "true" oder "false" (default: true)
+
 
 ### displaytrigger
 
@@ -193,27 +227,27 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
     Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
     Fruchtsorten, die der Mod neu einführt. (default: ohne)
 
--   __onlyFilled__ (string): legt fest, ob nur Füllstände ungleich 0
+-   __onlyFilled__ (bool): legt fest, ob nur Füllstände ungleich 0
     angezeigt werden soll, entweder "true" oder "false" (default:
-    "false")
+    false)
 
--   __showFillLevel__ (string): legt fest, ob die Füllstände mit
+-   __showFillLevel__ (bool): legt fest, ob die Füllstände mit
     absoluten Zahlen angezeigt werden soll, entweder "true" oder "false"
-    (default: "true")
+    (default: true)
 
--   __showPercentage__ (string): legt fest, ob die Füllstände relativ
+-   __showPercentage__ (bool): legt fest, ob die Füllstände relativ
     zur Füllmenge angezeigt werden soll, entweder "true" oder "false"
-    (default: "false")
+    (default: false)
 
 ### buytrigger
 
 Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 
--   __isBought__ (string): legt fest, ob das Objekt schon gekauft ist, entweder "true" oder "false" (default: "false")
+-   __isBought__ (bool): legt fest, ob das Objekt schon gekauft ist, entweder "true" oder "false" (default: false)
 
--   __sellable__ (string): legt fest, ob das Objekt gekauft werden kann, entweder "true" oder "false" (default: "true")
+-   __sellable__ (bool): legt fest, ob das Objekt gekauft werden kann, entweder "true" oder "false" (default: true)
 
--   __buyable__ (string): legt fest, ob das Objekt verkauft werden kann, entweder "true" oder "false" (default: "true")
+-   __buyable__ (bool): legt fest, ob das Objekt verkauft werden kann, entweder "true" oder "false" (default: true)
 
 -   __mode__ (string): entweder "buy" falls das Objekt kaufbar sein soll, oder "rent" für Miete (default: "buy")
 
@@ -235,7 +269,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 ### processor
 
 -   __*product__ (string): legt fest, welche Fruchtsorte erzeugt
-    werden soll - Geld ist "money" (kein default)
+    werden soll - Geld ist "money" (default: ohne)
 
 -   __recipe__ (string): wie ein Liter des Produkts hergestellt werden
     soll, jeweils Menge und Fruchtsorte mit Leerzeichen getrennt, bspw
@@ -249,7 +283,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 -   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
     "true")
 
--   __onlyWholeProducts__ (string): ob nur ganze Zahlen dem Füllstand
+-   __onlyWholeProducts__ (bool): ob nur ganze Zahlen dem Füllstand
     hinzugefügt werden sollen, entweder "true" oder "false" (default:
     "false")
 
@@ -283,7 +317,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 	Gleichverteilung und "normal" für Normalverteilung. Der Rechenaufwand für "normal" ist höher als für "equal", deshalb
 	diese Variante sparsam einsetzen! (default: "equal")
 
--   __statName__ (string): (falls product="money") zu welcher Statistik
+-   __statName__ (string): (falls product="money") zu welcher Statistik (siehe Finanzen im PDA)
     der Betrag gebucht wird, entweder "newVehiclesCost",
     "newAnimalsCost", "constructionCost", "vehicleRunningCost",
     "propertyMaintenance", "wagePayment", "harvestIncome",
@@ -327,7 +361,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 
 -   __stopVisibilityAt__ (float): (default: Wert von capacity)
 
--   __visibilityType__ (string): (default: "linear")
+-   __visibilityType__ (string): Ob die Sichtbarkeit zwischen start- bzw. stopVisibilityAt gelten soll ("show") oder außerhalb ("hide") (default: "show")
 
 ###scaler
 

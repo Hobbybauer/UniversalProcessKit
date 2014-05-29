@@ -47,6 +47,8 @@ function UPK_FillTrigger:load(id,parent)
 	self.waterTrailers={}
 	self.sprayers={}
 	self.fuelTrailers={}
+	self.forageWagons={}
+	self.balers={}
 
 	local fillTypeStr = Utils.getNoNil(getUserAttribute(id, "fillType"))
 	if fillTypeStr~=nil then
@@ -75,15 +77,19 @@ function UPK_FillTrigger:load(id,parent)
 		self.statName="other"
 	end
 
-    self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowTrailer"), "true"))
-    self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowShovel"), "true"))
-	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowSowingMachine"), "false"))
-	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowWaterTrailer"), "true"))
-	self.allowLiquidManureTrailer=tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowLiquidManureTrailer"),"true"))
-	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowSprayer"), "true"))
-	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelTrailer"), "true"))
-	self.allowFuelRefill = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelRefill"), "false"))
+    self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowTrailer"), true))
+    self.allowShovel = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowShovel"), true))
+	self.allowSowingMachine = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowSowingMachine"), false))
+	self.allowWaterTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowWaterTrailer"), true))
+	self.allowLiquidManureTrailer=tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowLiquidManureTrailer"), true))
+	self.allowSprayer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowSprayer"), true))
+	self.allowFuelTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelTrailer"), true))
+	self.allowFuelRefill = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelRefill"), false))
+	self.allowMilkTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_MILK)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowMilkTrailer"), true))
 	
+	self.allowForageWagon = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowForageWagon"), false))
+	self.allowBaler = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowBaler"), false))
+		
 	self.useParticleSystem = tobool(getUserAttribute(id, "useParticleSystem"))
 	
     if self.isClient and self.useParticleSystem then
@@ -139,6 +145,8 @@ end
 function UPK_FillTrigger:delete()
 	self.trailers={}
 	self.shovels={}
+	self.forageWagons={}
+	self.balers={}
 	for _,v in pairs(self.sowingMachines or {}) do
 		local sowingMachine = g_currentMission.objectToTrailer[v]
 		if sowingMachine ~= nil and sowingMachine.removeSowingMachineFillTrigger ~= nil then
@@ -209,7 +217,8 @@ function UPK_FillTrigger:update(dt)
 					end
 				end
 			end
-		elseif self.allowShovel then
+		end
+		if self.allowShovel then
 			for k,v in pairs(self.shovels) do
 				if v then
 					local shovel = g_currentMission.nodeToVehicle[k]
@@ -221,7 +230,154 @@ function UPK_FillTrigger:update(dt)
 				end
 			end
 		end
+		if self.allowForageWagon then
+			--self:print('update: self.allowForageWagon=true')
+			for k,v in pairs(self.forageWagons) do
+				--self:print('checking key '..tostring(k)..' with v='..tostring(v)..' of forage wagons')
+				if v then
+					local trailer = g_currentMission.objectToTrailer[v] or g_currentMission.nodeToVehicle[v]
+					--self:print('trailer is type '..type(trailer))
+					if trailer~=nil and trailer.isTurnedOn then
+						--self:print('forage wagon used in update')
+						if trailer.upk_pickupNode~=nil and trailer.upk_pickupNode~=0 then
+							self.raycastTriggerFound=false
+							local x,y,z=getWorldTranslation(trailer.upk_pickupNode)
+							raycastAll(x, y+20, z, 0, -1, 0, "findMyNodeRaycastCallback", 21, self)
+							if self.raycastTriggerFound then
+								self:print('raycast found trigger')
+								fillType=self.fillType
+								if trailer.currentFillType==fillType or trailer.currentFillType==Fillable.FILLTYPE_UNKNOWN then
+									self:print('accepted filltype!')
+									if self.fill[v] and not self.fillDone[v] then
+										trailer:resetFillLevelIfNeeded(fillType)
+										local fillLevel = trailer:getFillLevel(fillType)
+										self:print('fillLevel of forage wagon is '..tostring(fillLevel))
+										if trailer:allowFillType(fillType, false) then
+											self:print('fillType allowed!')
+											if (trailer.capacity~=nil and fillLevel==trailer.capacity) or (self.fillLevels[fillType]==0) then
+												self.fill[v]=nil
+												self.fillDone[v]=nil
+												table.remove(self.forageWagons,k)
+						    					self:stopFill()
+											else
+						    					local deltaFillLevel = self.fillLitersPerSecond * 0.001 * dt
+						    					if not self.createFillType then
+						    						deltaFillLevel=math.min(deltaFillLevel, self:getFillLevel(fillType))
+						    					end
+						    					trailer:setFillLevel(fillLevel + deltaFillLevel, fillType)
+						    					local newFillLevel = trailer:getFillLevel(fillType)
+						    					deltaFillLevel = newFillLevel-fillLevel
+						    					if(deltaFillLevel>0 and self.pricePerLiter~=0)then
+						    						g_currentMission:addSharedMoney(-deltaFillLevel*self.pricePerLiter, "other")
+						    					end
+						    					if not self.createFillType then
+						    						self:addFillLevel(-deltaFillLevel,fillType)
+						    					end
+						    					if fillLevel ~= newFillLevel then
+						    						self:startFill()
+												end
+											end
+					    				end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		if self.allowBaler then
+			--self:print('update: self.allowForageWagon=true')
+			for k,v in pairs(self.balers) do
+				--self:print('checking key '..tostring(k)..' with v='..tostring(v)..' of forage wagons')
+				if v then
+					local trailer = g_currentMission.objectToTrailer[v] or g_currentMission.nodeToVehicle[v]
+					--self:print('trailer is type '..type(trailer))
+					if trailer~=nil and trailer.isTurnedOn then
+						if trailer.upk_pickupNode~=nil and trailer.upk_pickupNode~=0 then
+							self.raycastTriggerFound=false
+							local x,y,z=getWorldTranslation(trailer.upk_pickupNode)
+							raycastAll(x, y+20, z, 0, -1, 0, "findMyNodeRaycastCallback", 21, self)
+							if self.raycastTriggerFound then
+								self:print('raycast found trigger')
+								fillType=self.fillType
+								if trailer.currentFillType==fillType or trailer.currentFillType==Fillable.FILLTYPE_UNKNOWN then
+									if self.fill[v] and not self.fillDone[v] then
+										trailer:resetFillLevelIfNeeded(fillType)
+										local fillLevel = trailer:getFillLevel(fillType)
+										if trailer:allowFillType(fillType, false) then
+											if trailer.capacity~=nil and fillLevel>=trailer.capacity and trailer.baleTypes ~= nil then
+										
+												do -- GIANTS code
+													if trailer.baleAnimCurve ~= nil then
+														local restDeltaFillLevel=0.000001
+														trailer:setFillLevel(0, fillType)
+														trailer:createBale(fillType, trailer.capacity)
+														local numBales = length(trailer.bales)
+														local bale = trailer.bales[numBales]
+														trailer:moveBale(numBales, trailer:getTimeFromLevel(restDeltaFillLevel), true)
+														g_server:broadcastEvent(BalerCreateBaleEvent:new(trailer, fillType, bale.time), nil, nil, trailer)
+													elseif trailer.baleUnloadAnimationName ~= nil then
+														trailer:createBale(fillType, trailer.capacity)
+														g_server:broadcastEvent(BalerCreateBaleEvent:new(trailer, fillType, 0), nil, nil, trailer)
+													end
+												end
+										
+										
+												--[[
+												self.fill[v]=nil
+												self.fillDone[v]=nil
+												table.remove(self.balers,k)
+						    					self:stopFill()
+												]]--
+											elseif self.fillLevels[fillType]==0 then
+												self.fill[v]=nil
+												self.fillDone[v]=nil
+												table.remove(self.balers,k)
+						    					self:stopFill()
+											elseif trailer:allowPickingUp() then
+						    					local deltaFillLevel = self.fillLitersPerSecond * 0.001 * dt
+						    					if not self.createFillType then
+						    						deltaFillLevel=mathmin(deltaFillLevel, self:getFillLevel(fillType))
+						    					end
+						    					trailer:setFillLevel(fillLevel + deltaFillLevel, fillType)
+						    					local newFillLevel = trailer:getFillLevel(fillType)
+						    					deltaFillLevel = newFillLevel-fillLevel
+						    					if(deltaFillLevel>0 and self.pricePerLiter~=0)then
+						    						g_currentMission:addSharedMoney(-deltaFillLevel*self.pricePerLiter, "other")
+						    					end
+						    					if not self.createFillType then
+						    						self:addFillLevel(-deltaFillLevel,fillType)
+						    					end
+						    					if fillLevel ~= newFillLevel then
+						    						self:startFill()
+												end
+											end
+										else
+											--warning
+											local fillTypeName=g_i18n:getText(UniversalProcessKit.fillTypeIntToName(fillType))
+											local forageWagonCollectWarning=g_i18n:getText("forage_wagon_cant_collect")
+											local text=string.format(forageWagonCollectWarning,fillTypeName)
+											g_currentMission:addWarning(text, 0.018, 0.033)
+					    				end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
 	end
+end
+
+function UPK_FillTrigger:findMyNodeRaycastCallback(transformId, x, y, z, distance)
+	--self:print('UPK_FillTrigger:findMyNodeRaycastCallback')
+	if transformId==self.nodeId then
+		self.raycastTriggerFound=true
+		return false
+	end
+	return true
 end
 
 function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
@@ -320,6 +476,88 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 						self.shovels[otherShapeId]=nil
 					end
 				end
+			elseif UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_FORAGEWAGON) then
+				if self.allowForageWagon then
+					if onEnter then
+						if vehicle.upk_pickupNode==nil and vehicle.upk_pickupNode~=0 then
+							self:print('configFile: '..tostring(vehicle.configFileName))
+							local xmlFile = loadXMLFile("TempConfig", vehicle.configFileName)
+							if not hasXMLProperty(xmlFile, "vehicle.pickupAnimation") then
+								vehicle.upk_pickupNode=0
+								self:print('no pickup animation!')
+							else
+								local pickupAnimationName = Utils.getNoNil(getXMLString(xmlFile, "vehicle.pickupAnimation#name"), "")
+								self:print('pickupAnimationName: '..tostring(pickupAnimationName))
+								if pickupAnimationName~="" then
+									local i = 0
+									while true do
+										local key = string.format("vehicle.animations.animation(%d)", i)
+										if not hasXMLProperty(xmlFile, key) then
+											break
+										end
+										if getXMLString(xmlFile, key .. "#name")==pickupAnimationName then
+											local keyNode = key..'.part'
+											self:print('keyNode '..tostring(keyNode))
+											local index=getXMLString(xmlFile, keyNode .. "#node")
+											vehicle.upk_pickupNode = Utils.getNoNil(Utils.indexToObject(vehicle.components, index), 0)
+											self:print('vehicle.upk_pickupNode '..tostring(vehicle.upk_pickupNode))
+											break
+										end
+										i = i + 1
+									end
+								end
+							end
+							delete(xmlFile)
+						end
+						vehicle.upk_vehicleType=UniversalProcessKit.VEHICLE_FORAGEWAGON
+						table.insert(self.fill,otherShapeId,true)
+						table.insert(self.forageWagons,otherShapeId)
+					elseif onLeave then
+						vehicle.upk_vehicleType=nil
+						removeValueFromTable(self.forageWagons,otherShapeId)
+					end
+				end
+			elseif UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_BALER) then
+				if self.allowBaler then
+					if onEnter then
+						if vehicle.upk_pickupNode==nil and vehicle.upk_pickupNode~=0 then
+							self:print('configFile: '..tostring(vehicle.configFileName))
+							local xmlFile = loadXMLFile("TempConfig", vehicle.configFileName)
+							if not hasXMLProperty(xmlFile, "vehicle.pickupAnimation") then
+								vehicle.upk_pickupNode=0
+								self:print('no pickup animation!')
+							else
+								local pickupAnimationName = Utils.getNoNil(getXMLString(xmlFile, "vehicle.pickupAnimation#name"), "")
+								self:print('pickupAnimationName: '..tostring(pickupAnimationName))
+								if pickupAnimationName~="" then
+									local i = 0
+									while true do
+										local key = string.format("vehicle.animations.animation(%d)", i)
+										if not hasXMLProperty(xmlFile, key) then
+											break
+										end
+										if getXMLString(xmlFile, key .. "#name")==pickupAnimationName then
+											local keyNode = key..'.part'
+											self:print('keyNode '..tostring(keyNode))
+											local index=getXMLString(xmlFile, keyNode .. "#node")
+											vehicle.upk_pickupNode = Utils.getNoNil(Utils.indexToObject(vehicle.components, index), 0)
+											self:print('vehicle.upk_pickupNode '..tostring(vehicle.upk_pickupNode))
+											break
+										end
+										i = i + 1
+									end
+								end
+							end
+							delete(xmlFile)
+						end
+						vehicle.upk_vehicleType=UniversalProcessKit.VEHICLE_BALER
+						table.insert(self.fill,otherShapeId,true)
+						table.insert(self.balers,otherShapeId)
+					elseif onLeave then
+						vehicle.upk_vehicleType=nil
+						removeValueFromTable(self.balers,otherShapeId)
+					end
+				end
 			elseif self.allowTrailer then
 				if onEnter then
 					table.insert(self.fill,otherShapeId,true)
@@ -327,12 +565,7 @@ function UPK_FillTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLea
 				elseif onLeave then
 					self.fill[otherShapeId] = nil
 					self.fillDone[otherShapeId] = nil
-					for k,v in pairs(self.trailers) do
-						if otherShapeId==v then
-							table.remove(self.trailers,k)
-							break
-						end
-					end
+					removeValueFromTable(self.trailers,otherShapeId)
 					self:stopFill(otherShapeId)
 				end
 			end

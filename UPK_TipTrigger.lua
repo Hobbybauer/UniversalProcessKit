@@ -25,39 +25,17 @@ function UPK_TipTrigger:load(id, parent)
 		return false
 	end
 
-	-- load fillabledummy
-	self:print(tostring(upkModDirectory))
-	self.fillabledummyId=nil
-	local fillabledummyFilename='fillabledummy.i3d'
-	local fillabledummyDirectory=upkModDirectory..'objects/'
-	local nodeRoot = Utils.loadSharedI3DFile(fillabledummyFilename, fillabledummyDirectory, false, false)
-	if nodeRoot == 0 then
-		self:print('Couldnt load '..tostring(fillabledummyFilename))
-	else
-		local nodeId = getChildAt(nodeRoot, 0)
-		if nodeId == 0 then
-			delete(nodeRoot)
-			self:print('Couldnt get object fillabledummy')
-		else
-			link(self.nodeId, nodeId)
-			delete(nodeRoot)
-			self:print('object fillabledummy loaded successfully')
-			self.fillabledummyId = nodeId
-			addToPhysics(self.fillabledummyId)
-			setTranslation(self.fillabledummyId,0,2,0)
-		end	
-	end
-	
 	self:addTrigger()
 	self:registerUpkTipTrigger()
 	
 	self.trailers = {}
 	
-	self.allowWaterTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_WATER)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowWaterTrailer"),"true"))
-	self.allowFuelTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_FUEL)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelTrailer"),"true"))
-	self.allowLiquidManureTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_LIQUIDMANURE)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowLiquidManureTrailer"),"true"))
-	self.allowMilkTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_MILK)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowMilkTrailer"),"true"))
-	
+	self.allowTrailer = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowTrailer"), true))
+	self.allowWaterTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_WATER)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowWaterTrailer"), true))
+	self.allowFuelTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_FUEL)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowFuelTrailer"), true))
+	self.allowLiquidManureTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_LIQUIDMANURE)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowLiquidManureTrailer"), true))
+	self.allowMilkTrailer=rawget(self.acceptedFillTypes,Fillable.FILLTYPE_MILK)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowMilkTrailer"), true))
+	self.allowSprayer = rawget(self.acceptedFillTypes,Fillable.FILLTYPE_FUEL)==true and tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "allowSprayer"), false))
 	
 	self.fillLitersPerSecond = Utils.getNoNil(getUserAttribute(id, "fillLitersPerSecond"), 1500)
 	-- getNoAllowedText
@@ -138,11 +116,6 @@ function UPK_TipTrigger:delete()
 	end
 	--]]
 	
-	if self.fillabledummyId~=nil then
-		g_currentMission:removeNodeObject(self.fillabledummyId)
-		self.fillabledummyId=nil
-	end
-	
 	g_currentMission:removeActivatableObject(self.tipTriggerActivatable)
 	self.tipTriggerActivatable=nil
 
@@ -160,52 +133,73 @@ function UPK_TipTrigger:unregisterUpkTipTrigger()
 end
 
 function UPK_TipTrigger:updateTrailerTipping(trailer, fillDelta, fillType)
-	local toomuch=0
-	if fillDelta < 0 and fillType~=nil then
-		toomuch=fillDelta+self:addFillLevel(-fillDelta,fillType) -- max 0
-	end
-	if toomuch<0 then
-		trailer:onEndTip()
-		trailer:setFillLevel(trailer:getFillLevel(fillType)-toomuch, fillType) -- put sth back
+	if type(trailer)=="table" then
+		local toomuch=0
+		if fillDelta < 0 and fillType~=nil then
+			toomuch=fillDelta+self:addFillLevel(-fillDelta,fillType) -- max 0
+		end
+		if toomuch<0 then
+			trailer:onEndTip()
+			trailer:setFillLevel(trailer:getFillLevel(fillType)-toomuch, fillType) -- put sth back
+		end
 	end
 end
 
 function UPK_TipTrigger:getTipInfoForTrailer(trailer, tipReferencePointIndex)
-	local minDistance, bestPoint = self:getTipDistanceFromTrailer(trailer, tipReferencePointIndex)
-	fillType=self.fillType
-	trailerFillType=trailer.currentFillType
-	local isAllowed = (self.acceptedFillTypes[trailerFillType] and
-		self.fillLevels[trailerFillType]<self.capacity) and
-		(fillType==Fillable.FILLTYPE_UNKNOWN or ((fillType or trailerFillType)==trailerFillType))
-	return isAllowed, 0, bestPoint
+	if trailer.currentUpkTipTrigger==self then
+		local minDistance, bestPoint = self:getTipDistanceFromTrailer(trailer, tipReferencePointIndex)
+		fillType=self.fillType
+		trailerFillType=trailer.currentFillType
+		local isAllowed = minDistance==0 and
+			(self.acceptedFillTypes[trailerFillType] and
+			self.fillLevels[trailerFillType]<self.capacity) and
+			(fillType==Fillable.FILLTYPE_UNKNOWN or ((fillType or trailerFillType)==trailerFillType))
+		return isAllowed, minDistance, bestPoint
+	end
+	return false,math.huge,nil
 end
 
 function UPK_TipTrigger:getTipDistanceFromTrailer(trailer, tipReferencePointIndex)
 	local minDistance = math.huge
+	local bestPoint=tipReferencePointIndex
 	if tipReferencePointIndex ~= nil then
-		minDistance=self:getTipDistance(trailer.tipReferencePoints[tipReferencePointIndex].node)
-		bestPoint=tipReferencePointIndex
+		minDistance=self:getTipDistance(trailer,tipReferencePointIndex)
 	else
 		for i, point in pairs(trailer.tipReferencePoints) do
-			distance=self:getTipDistance(point.node)
-			if distance < minDistance then
-				bestPoint = i
-				minDistance = distance
+			if minDistance>1 then
+				distance=self:getTipDistance(trailer,i)
+				if distance < minDistance then
+					bestPoint = i
+					minDistance = distance
+				end
 			end
 		end
 	end
-	--self:print('return '..tostring(minDistance)..', '..tostring(bestPoint))
-	return minDistance, bestPoint
+	--self:print('return minDistance '..tostring(minDistance)..', bestPoint '..tostring(bestPoint))
+	return 0, bestPoint
 end
 
-function UPK_TipTrigger:getTipDistance(pointNode)
-	--self:print('UPK_TipTrigger:getTipDistance')
+function UPK_TipTrigger:getTipDistance(trailer,tipReferencePoint)
+	pointNode=trailer.tipReferencePoints[tipReferencePoint].node
 	local pointNodeX, pointNodeY, pointNodeZ = getWorldTranslation(pointNode)
-	Utils.setWorldTranslation(self.fillabledummyId,pointNodeX, pointNodeY+2, pointNodeZ+4)
-	local x,_,z = unpack(self.wpos - self.pos)
-	local distance=mathmax(Utils.vector2Length(pointNodeX - x, pointNodeZ - z),0)
-	--self:print('return '..tostring(distance))
+	local distance=math.huge
+	self.raycastTriggerFound=false
+	raycastAll(pointNodeX, pointNodeY+20, pointNodeZ, 0, -1, 0, "findMyNodeRaycastCallback", 21, self)
+	if self.raycastTriggerFound then
+		local triggerX, _, triggerZ = getWorldTranslation(self.nodeId)
+		distance=Utils.vector2Length(pointNodeX-triggerX,pointNodeZ-triggerZ)
+	end
+	--self:print('return distance '..tostring(distance))
 	return distance
+end
+
+function UPK_TipTrigger:findMyNodeRaycastCallback(transformId, x, y, z, distance)
+	--self:print('UPK_TipTrigger:findMyNodeRaycastCallback')
+	if transformId==self.nodeId then
+		self.raycastTriggerFound=true
+		return false
+	end
+	return true
 end
 
 -- show text if the filltype of the trailer is not accepted
@@ -225,66 +219,66 @@ end
 
 function UPK_TipTrigger:triggerCallback(triggerId, otherActorId, onEnter, onLeave, onStay, otherShapeId)
 	if self.isClient and self.isEnabled then
-		self:print('self.fillabledummyId='..tostring(self.fillabledummyId)..' otherShapeId='..tostring(otherShapeId)..' name='..tostring(getName(otherShapeId)))
-		if self.fillabledummyId==otherShapeId then
-			self:print('detected fillabledummy')
-		end
 		local vehicle=g_currentMission.objectToTrailer[otherShapeId] or {}
-		if self.allowSowingMachine and vehicle.addSowingMachineFillTrigger ~= nil and vehicle.removeSowingMachineFillTrigger ~= nil then
-			if onEnter then
-				vehicle.currentUpkFillTrigger=self
-			else
-				if vehicle.currentUpkFillTrigger==self then
-					vehicle.currentUpkFillTrigger=nil
-				end
-			end
-		elseif self.allowSprayer and vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
-			if onEnter then
-				vehicle.currentUpkFillTrigger=self
-			else
-				if vehicle.currentUpkFillTrigger==self then
-					vehicle.currentUpkFillTrigger=nil
-				end
-			end
-		elseif (self.allowWaterTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_WATERTRAILER)) or
-				(self.allowFuelTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_FUELTRAILER)) or
-				(self.allowLiquidManureTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_LIQUIDMANURETRAILER)) or
-				(self.allowMilkTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_MILKTRAILER)) then
-			if onEnter then
-				self:print('onEnter')
-				vehicle.currentUpkFillTrigger=self
-				self.trailersForActivatableObject=mathmax(0, (self.trailersForActivatableObject or 0)+1)
-				print('self.trailersForActivatableObject='..tostring(self.trailersForActivatableObject))
-				self:enableActivatableObject(vehicle,vehicle.currentFillType)
-				table.insert(self.trailers,vehicle)
-			else
-				self:print('onLeave')
-				if vehicle.currentUpkFillTrigger==self then
-					vehicle.currentUpkFillTrigger=nil
-				end
-				self.trailersForActivatableObject=mathmax(0, (self.trailersForActivatableObject or 1)-1)
-				print('self.trailersForActivatableObject='..tostring(self.trailersForActivatableObject))
-				self:disableActivatableObject()
-				removeValueFromTable(self.trailers,vehicle)
-				setTranslation(self.fillabledummyId,0,2,0)
-			end
-		elseif vehicle.allowTipDischarge then
-			if onEnter then
-				if g_currentMission.trailerTipTriggers[vehicle] == nil then
-					g_currentMission.trailerTipTriggers[vehicle] = {}
-				end
-				table.insert(g_currentMission.trailerTipTriggers[vehicle], self)
-				table.insert(self.trailers,vehicle)
-			else
-				local triggers = g_currentMission.trailerTipTriggers[vehicle]
-				if triggers ~= nil then
-					removeValueFromTable(triggers,self)
-					if table.getn(triggers) == 0 then
-						g_currentMission.trailerTipTriggers[vehicle] = nil
+		if vehicle.currentUpkTipTrigger==nil or vehicle.currentUpkTipTrigger==self then
+			if self.allowSowingMachine and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_SOWINGMACHINE) then
+				if onEnter then
+					vehicle.currentUpkTipTrigger=self
+				else
+					if vehicle.currentUpkTipTrigger==self then
+						vehicle.currentUpkTipTrigger=nil
 					end
 				end
-				removeValueFromTable(self.trailers,vehicle)
-				setTranslation(self.fillabledummyId,0,2,0)
+			elseif self.allowSprayer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_SPRAYER) then
+				if onEnter then
+					vehicle.currentUpkTipTrigger=self
+				else
+					if vehicle.currentUpkTipTrigger==self then
+						vehicle.currentUpkTipTrigger=nil
+					end
+				end
+			elseif (self.allowWaterTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_WATERTRAILER)) or
+					(self.allowFuelTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_FUELTRAILER)) or
+					(self.allowLiquidManureTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_LIQUIDMANURETRAILER)) or
+					(self.allowMilkTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_MILKTRAILER)) then
+				if onEnter then
+					vehicle.currentUpkTipTrigger=self
+					self:print('onEnter')
+					self.trailersForActivatableObject=mathmax(0, (self.trailersForActivatableObject or 0)+1)
+					print('self.trailersForActivatableObject='..tostring(self.trailersForActivatableObject))
+					self:enableActivatableObject(vehicle,vehicle.currentFillType)
+					table.insert(self.trailers,vehicle)
+				elseif onLeave then
+					if vehicle.currentUpkTipTrigger==self then
+						vehicle.currentUpkTipTrigger=nil
+					end
+					self:print('onLeave')
+					self.trailersForActivatableObject=mathmax(0, (self.trailersForActivatableObject or 1)-1)
+					print('self.trailersForActivatableObject='..tostring(self.trailersForActivatableObject))
+					self:disableActivatableObject()
+					removeValueFromTable(self.trailers,vehicle)
+				end
+			elseif self.allowTrailer and UniversalProcessKit.isVehicleType(vehicle,UniversalProcessKit.VEHICLE_TIPPER) then
+				if onEnter then
+					vehicle.currentUpkTipTrigger=self
+					if g_currentMission.trailerTipTriggers[vehicle] == nil then
+						g_currentMission.trailerTipTriggers[vehicle] = {}
+					end
+					table.insert(g_currentMission.trailerTipTriggers[vehicle], self)
+					table.insert(self.trailers,vehicle)
+				elseif onLeave then
+					if vehicle.currentUpkTipTrigger==self then
+						vehicle.currentUpkTipTrigger=nil
+					end
+					local triggers = g_currentMission.trailerTipTriggers[vehicle]
+					if triggers ~= nil then
+						removeValueFromTable(triggers,self)
+						if table.getn(triggers) == 0 then
+							g_currentMission.trailerTipTriggers[vehicle] = nil
+						end
+					end
+					removeValueFromTable(self.trailers,vehicle)
+				end
 			end
 		end
 	end
