@@ -99,7 +99,7 @@ Im Moment gibt es folgende Trigger:
     Namen in der l10n der modDesc zuzugreifen, bspw. auf Namen von
     Fruchtsorten, die der Mod neu einführt. (default: ohne)
 
--   __adjustToTerrainHeight__ (bool): Ob der Ursprung des Shapes (0,0,0) auf die Terrain-Höhe angeglichen wird. Empfehlenswert für die base von allen UPK-Mods (default: false)
+-   __adjustToTerrainHeight__ (bool): Ob der Ursprung des Shapes (0,0,0) auf die Terrain-Höhe angeglichen wird. Empfehlenswert für die base von allen UPK-Mods. Auch ohne Modul bei beliebigen Shapes im UPK-Mod setzbar (default: false)
 
 ### base
 
@@ -282,7 +282,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 -   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen.
 	Und zwar im Verhältnis zu einem Liter des Produkts (default: ohne)
 
--   __useRessources__ (string): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
+-   __useRessources__ (bool): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
     "true")
 
 -   __onlyWholeProducts__ (bool): ob nur ganze Zahlen dem Füllstand
@@ -302,7 +302,7 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
     (default: 0)
 
 -   __d) productsPerSecond__ (float): welche Menge maximal pro Sekunde (Echtzeit)
-    erzeugt wird (veranlasst die Produktion der Fruchtsorte in Echtzeit) (default: 0)
+    erzeugt wird (veranlasst die Produktion der Fruchtsorte in Echtzeit). (default: 0)
 
 -   __productionHours__ (string): für productsPerMinute, productsPerHour oder productsPerSecond. Legt fest, zu welchen Stunden produziert
 	werden soll, Mitternacht ist 0 (nicht 24). Bsp: "6-12, 14-18" bedeutet von 6:00:00 bis 12:59:59 und von 14:00:00 bis 18:59:59 wird produziert (default: 0-23)
@@ -391,17 +391,19 @@ Der _switcher_ umfasst mehrere Shapes oder TransformGroups (auch leere), die ent
 
 -   __*fillTypes__ (string): Auflistung der zu berücksichtigenden Fülltypen (bspw. "water apfel")
 
--   __a) switchFillTypes__ (string): listet die Fruchtsorten auf, für die die Shapes angezeigt werden sollen
+-   __a) switchFillTypes__ (string): listet die Fruchtsorten auf, für die die Shapes angezeigt werden sollen. Zeigt das
+	entsprechende Shape an, für das der Fruchttyp den maximalen oder minimalen (siehe fillTypeChoice) Füllstand hat. Es muss also genau so
+	viele Shapes wie aufgelistete Fruchtsorten geben. Leere TransformGroups sind auch möglich.
 
--   __b) switchFillLevels__ (string): listet die Füllstände auf, für die die Shapes angezeigt werden sollen
+-   __b) switchFillLevels__ (string): listet die Füllstände auf, bis zu welchem maximalen oder minimalen (siehe fillTypeChoice) Füllstand die Shapes angezeigt werden sollen. Die Zahlen geben der Reihenfolge nach an, bis wann ein Shape angezeigt werden soll. Es muss 1 Shape mehr geben als Zahlen aufgelistet sind - das letzte Shape wird immer "bis unenedlich" angezeigt. Leere TransformGroups sind auch möglich.
 
--   __fillTypeChoice__ (string): gibt die Entscheidungsregel an, welche Fruchtsorte bei mehreren genommen wird (default: "max")
+-   __fillTypeChoice__ (string): gibt die Entscheidungsregel an, welche Fruchtsorte (bei switchFillTypes) oder welcher Füllstand (bei switchFillLevels) bei mehreren genommen wird, "max" oder "min" (default: "max")
 
 -   __mode__ (string): gibt den Modus des _switchers_ an. Der Modus "stack" gibt bei Verwendung von switchFillLevels an, dass
 	 alle Shapes bis zu dem entsprechenden Füllstand angezeigt werden. Bspw. um Kartoffelsäcke an einer Marktbude nach und nach
 	 einblenden zu lassen (default: leer)
 
--   __hidingPosition__ (string): relative Position der verborgenen Shapes (default: "0 0 0")
+-   __hidingPosition__ (string): relative Position der verborgenen Shapes (default: "0 -10 0")
 
 ### storage
 

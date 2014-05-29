@@ -174,24 +174,6 @@ function UniversalProcessKit:load(id,parent)
 	self.x,self.y,self.z = getTranslation(self.nodeId)
 	self.pos = __c({self.x,self.y,self.z})
 	self.wpos = __c({getWorldTranslation(self.nodeId)})
-	self.adjustToTerrainHeight = tobool(Utils.getNoNil(getUserAttribute(self.nodeId, "adjustToTerrainHeight"), "false"))
-	if self.adjustToTerrainHeight then
-		self.childrenShapes={}
-		self:findChildrenShapes(self.nodeId)
-		for k,v in pairs(self.childrenShapes) do
-			if v=="Static" then
-				setRigidBodyType(k,"Kinematic")
-			end
-		end
-		local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, self.wpos[1], 0, self.wpos[3])
-		Utils.setWorldTranslation(self.nodeId, self.wpos[1], y, self.wpos[3])
-		self.wpos = __c({getWorldTranslation(self.nodeId)})
-		for k,v in pairs(self.childrenShapes) do
-			if v=="Static" then
-				setRigidBodyType(k,"Static")
-			end
-		end
-	end
 	self.rot = __c({getRotation(self.nodeId)})
 	self.wrot = __c({getWorldRotation(self.nodeId)})
 	self.scale = __c({getScale(self.nodeId)})
@@ -483,6 +465,19 @@ function UniversalProcessKit:findChildren(id)
 					end
 					--]]
 					self:findChildren(childId)
+				end
+				local adjustToTerrainHeight = tobool(getUserAttribute(childId, "adjustToTerrainHeight"))
+				if adjustToTerrainHeight then
+					local rigidBodyType=getRigidBodyType(childId)
+					if rigidBodyType=="Static" then
+						setRigidBodyType(childId,"Kinematic")
+					end
+					local x,_,z=getWorldTranslation(childId)
+					local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z)
+					Utils.setWorldTranslation(childId, x, y, z)
+					if rigidBodyType=="Static" then
+						setRigidBodyType(childId,"Static")
+					end
 				end
 			end
 		end

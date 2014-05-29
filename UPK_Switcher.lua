@@ -21,7 +21,7 @@ function UPK_Switcher:load(id,parent)
 	end
 	
 	self.shapePositions={}
-	self.hidingPosition = getVectorFromUserAttribute(self.nodeId, "hidingPosition", "0 0 0")
+	self.hidingPosition = getVectorFromUserAttribute(self.nodeId, "hidingPosition", "0 -10 0")
 	
 	-- accepted fillTypes or fillTypes to store
 	self.switchAtFillTypes={}
@@ -156,14 +156,17 @@ function UPK_Switcher:update(dt)
 					end
 				end
 				if self.mode=="stack" then
+					--self:print("mode=stack")
 					if oldShapeToShowIndex~=nil then
 						if oldShapeToShowIndex>shapeToShowIndex then
 							for i=(shapeToShowIndex+1),oldShapeToShowIndex do
+								--self:print('hiding node '..tostring(self.switchFillLevels[i]))
 								setVisibility(self.switchFillLevels[i],false)
 								setTranslation(self.switchFillLevels[i],unpack((self.shapePositions[self.switchFillLevels[i]]+self.hidingPosition) or {}))
 							end
 						else
 							for i=(oldShapeToShowIndex+1),shapeToShowIndex do
+								--self:print('showing node '..tostring(self.switchFillLevels[i]))
 								setVisibility(self.switchFillLevels[i],true)
 								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]] or {}))
 							end

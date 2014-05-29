@@ -146,18 +146,23 @@ function UPK_Storage:dayChanged()
 end;
 
 function UPK_Storage:leak()
-	for k,v in pairs(self.leaks) do
-		local leak=v
-		if self.leakVariation~=0 then
-			if self.leakVariationType=="normal" then -- normal distribution
-				local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
-				leak=leak+leak*self.leakVariation*r
-			elseif self.leakVariationType=="equal" then -- equal distribution
-				local r=2*mathrandom()-1
-				leak=leak+leak*self.leakVariation*r
+	if self.isServer and self.isEnabled then
+		for k,v in pairs(self.leaks) do
+			local leak=v
+			if self.leakVariation~=0 then
+				if self.leakVariationType=="normal" then -- normal distribution
+					local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
+					leak=leak+leak*self.leakVariation*r
+				elseif self.leakVariationType=="equal" then -- equal distribution
+					local r=2*mathrandom()-1
+					leak=leak+leak*self.leakVariation*r
+				end
+			end
+			local fillLevel=self:getFillLevel(k)
+			if fillLevel>0 then
+				self:addFillLevel(-self.parentForce:addFillLevel(mathmin(leak,fillLevel),k),k)
 			end
 		end
-		self:addFillLevel(-self.parentForce:addFillLevel(leak,k),k)
 	end
 end;
 
