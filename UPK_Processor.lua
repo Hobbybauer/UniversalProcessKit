@@ -260,13 +260,6 @@ function UPK_Processor:produce(processed)
 			self:print('self.currentInterval = '..tostring(self.currentInterval))
 		end
 		if produce and self.currentInterval==1 then
-			if self.hasProductionPrerequisite then
-				for k,v in pairs(self.productionPrerequisite) do
-					if type(v)=="number" and v>0 then
-						processed=mathmin(processed,self:getFillLevel(k)/v or 0)
-					end
-				end
-			end
 			if self.outcomeVariation~=0 then
 				if self.outcomeVariationType=="normal" then -- normal distribution
 					local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
@@ -274,6 +267,13 @@ function UPK_Processor:produce(processed)
 				elseif self.outcomeVariationType=="equal" then -- equal distribution
 					local r=2*mathrandom()-1
 					processed=processed+processed*self.outcomeVariation*r
+				end
+			end
+			if self.hasProductionPrerequisite then
+				for k,v in pairs(self.productionPrerequisite) do
+					if type(v)=="number" and v>0 then
+						processed=mathmin(processed,self:getFillLevel(k)/v or 0)
+					end
 				end
 			end
 			if self.product~=UniversalProcessKit.FILLTYPE_MONEY then

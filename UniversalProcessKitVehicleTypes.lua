@@ -10,6 +10,7 @@ UniversalProcessKit.VEHICLE_SHOVEL=64
 UniversalProcessKit.VEHICLE_TIPPER=128
 UniversalProcessKit.VEHICLE_FORAGEWAGON=256
 UniversalProcessKit.VEHICLE_BALER=512
+UniversalProcessKit.VEHICLE_MOTORIZED=1024
 
 function UniversalProcessKit.getVehicleType(vehicle)
 	local vehicleType=0
@@ -25,7 +26,7 @@ function UniversalProcessKit.getVehicleType(vehicle)
 	if vehicle.addSprayerFillTrigger ~= nil and vehicle.removeSprayerFillTrigger ~= nil then
 		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_SPRAYER
 	end
-	if vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil then
+	if vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil and vehicle.startMotor==nil then
 		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_FUELTRAILER
 	end
 	if vehicle.allowFillType~=nil and vehicle:allowFillType(Fillable.FILLTYPE_MILK) then
@@ -44,8 +45,10 @@ function UniversalProcessKit.getVehicleType(vehicle)
 		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_FORAGEWAGON
 	end
 	if vehicle.hasBaler ~= nil then
-		print('baler identified!')
 		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_BALER
+	end
+	if vehicle.addFuelFillTrigger ~= nil and vehicle.removeFuelFillTrigger ~= nil and vehicle.startMotor~=nil then
+		vehicleType=vehicleType+UniversalProcessKit.VEHICLE_MOTORIZED
 	end
 
 	return vehicleType

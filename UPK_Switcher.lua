@@ -86,7 +86,7 @@ function UPK_Switcher:load(id,parent)
 	end
 	
 	local modeStr = getUserAttribute(self.nodeId, "mode")
-	if modeStr=="stack" then
+	if modeStr=="stack" or modeStr=="stackReverse" then
 		self.mode=modeStr
 	else
 		self.mode="switch"
@@ -140,7 +140,7 @@ function UPK_Switcher:update(dt)
 			fillLevel=min(max(fillLevel,0),self.capacity)
 			if fillLevel~=self.oldFillLevel then
 				for k,v in pairs(self.maxfillLevelPerShape) do
-					if fillLevel<v then
+					if v>fillLevel then
 						shapeToShow=self.switchFillLevels[k]
 						shapeToShowIndex=k
 						break
@@ -169,6 +169,24 @@ function UPK_Switcher:update(dt)
 								--self:print('showing node '..tostring(self.switchFillLevels[i]))
 								setVisibility(self.switchFillLevels[i],true)
 								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]] or {}))
+							end
+						end
+					end
+				elseif self.mode=="stackReverse" then --wrecked
+					self:print("mode=stackReverse")
+					if oldShapeToShowIndex~=nil then
+						if oldShapeToShowIndex>shapeToShowIndex then
+							for i=(shapeToShowIndex+1),oldShapeToShowIndex do
+								self:print('showing node '..tostring(self.switchFillLevels[i]))
+								setVisibility(self.switchFillLevels[i],true)
+								setTranslation(self.switchFillLevels[i],unpack(self.shapePositions[self.switchFillLevels[i]] or {}))
+								
+							end
+						else
+							for i=(oldShapeToShowIndex+1),shapeToShowIndex do
+								self:print('hiding node '..tostring(self.switchFillLevels[i]))
+								setVisibility(self.switchFillLevels[i],false)
+								setTranslation(self.switchFillLevels[i],unpack((self.shapePositions[self.switchFillLevels[i]]+self.hidingPosition) or {}))
 							end
 						end
 					end

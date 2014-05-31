@@ -4,7 +4,7 @@
 
 Das UniversalProcessKit, kurz UPK, stellt Funktionen für Modder und
 Mapper bereit, damit diese so wenig wie möglich oder auch gar nicht mehr
-selber skripten müssen. Dafür wurden bis jetzt etwa 4.500 Codezeilen neu geschrieben.
+selber skripten müssen. Dafür wurden bis jetzt etwa 4.500 Codezeilen neu geschrieben. Die Nutzung des UPK ist kostenlos.
 
 #### Hinweise zum Gebrauch
 
