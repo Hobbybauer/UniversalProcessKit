@@ -128,7 +128,10 @@ function UPK_Storage:update(dt)
 					leak=leak+leak*self.leakVariation*r
 				end
 			end
-			self:addFillLevel(-self.parentForce:addFillLevel(leak/1000*dt,k),k)
+			local fillLevel=self:getFillLevel(k)
+			if fillLevel>0 then
+				self:addFillLevel(-self.parentForce:addFillLevel(mathmin(leak/1000*dt,fillLevel),k),k)
+			end
 		end
 	end
 end;

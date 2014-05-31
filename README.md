@@ -21,7 +21,7 @@ stehen. Hier ist nichts "fertig" und es kann täglich zu Änderungen der
 Skripte kommen. Wenn du eine gebrauchsfähige Version suchst, schau auf
 http://www.modhoster.de/mods/universalprocesskit.
 
-Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip) herunter und speicher sie in deinem Mod-Ordner.
+Lade dir die AAA_UniversalProcessKit.zip aus dem Ordner 00_mod-beta (https://github.com/mor2000/UniversalProcessKit/blob/master/00_mod-beta/AAA_UniversalProcessKit.zip?raw=true) herunter und speicher sie in deinem Mod-Ordner.
 
 ## Updates
 
@@ -279,11 +279,11 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
     ergeben sich aus 0,5l Weizen + 0,3l Wasser + 0,2l Salz" (default:
     ohne)
 
--   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen.
-	Und zwar im Verhältnis zu einem Liter des Produkts (default: ohne)
+-   __productionPrerequisite__ (string): listet die Füllstände der Fruchtsorten auf, die zwingend vorhanden sein müssen, um 1 Liter des Produkts herzustellen. Bei product="cow" und productionPrerequisite="100 wheat_windrow" werden höchstens 5 Kühe produziert, wenn der Füllstand von Weizenstroh 500 Liter beträgt. Mit den aufgeführten Fruchtsorten passiert nichts weiter (default: ohne)
 
--   __useRessources__ (bool): gibt an, ob die Ausgangsressourcen auch verbraucht werden sollen (default:
-    "true")
+-   useRessources: veraltetet, productionPrerequisite benutzen
+
+-   __byproducts__ (string): ähnlich wie recipe, nur werden die hier aufgelisteten dem Füllstand hinzugefügt, nicht abgezogen, um das Herstellen mehrerer Produkte zu ermöglichen. Im Verhältnis zu einem Liter des Produkts anzugeben. (default: ohne)
 
 -   __onlyWholeProducts__ (bool): ob nur ganze Zahlen dem Füllstand
     hinzugefügt werden sollen, entweder "true" oder "false" (default:
@@ -306,6 +306,8 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
 
 -   __productionHours__ (string): für productsPerMinute, productsPerHour oder productsPerSecond. Legt fest, zu welchen Stunden produziert
 	werden soll, Mitternacht ist 0 (nicht 24). Bsp: "6-12, 14-18" bedeutet von 6:00:00 bis 12:59:59 und von 14:00:00 bis 18:59:59 wird produziert (default: 0-23)
+
+-   __productionInterval__ (float): in welchem Abstand der _processor_ tatsächlich produziert. Bspw. bei Verwendung von productionsPerMinute und productionInteral=5 würde alle 5 Minuten produziert werden. Auch in Kombination mit productionHours und productionProbability möglich. Gut für Wachstumszyklen und Prozessen, die länger als 1 Tag dauern sollen. "1" bedeutet jedes Mal, "x"  jedes x-te Mal (default: 1)
 
 -   __productionProbability__ (float): Wahrscheinlichkeit als Kommazahl zwischen 0 und 1, ob die Produktion tatsächlich
 	ausgeführt wird. Gut für zufällige Ereignisse oder Tierfarmen. Bsp: Beim Verwenden von productsPerHour und einer productionProbability von 0.8 (=80% Wahrscheinlichkeit), wird im Schnitt bei 4 von 5 Stunden etwas produziert (default: 1)

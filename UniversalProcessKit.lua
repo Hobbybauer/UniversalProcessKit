@@ -441,6 +441,9 @@ function UniversalProcessKit:findChildren(id)
 		for i=1,numChildren do
 			local childId = getChildAt(id, i-1)
 			if childId~=nil or childId~=0 then
+				if tobool(getUserAttribute(childId, "adjustToTerrainHeight")) then
+					self:adjustToTerrainHeight(childId)
+				end
 				local type = getUserAttribute(childId, "type")
 				if type~=nil and UniversalProcessKit.ModuleTypes[type]~=nil then
 					childName=Utils.getNoNil(getName(childId),"")
@@ -466,34 +469,47 @@ function UniversalProcessKit:findChildren(id)
 					--]]
 					self:findChildren(childId)
 				end
-				local adjustToTerrainHeight = tobool(getUserAttribute(childId, "adjustToTerrainHeight"))
-				if adjustToTerrainHeight then
-					local rigidBodyType=getRigidBodyType(childId)
-					if rigidBodyType=="Static" then
-						setRigidBodyType(childId,"Kinematic")
-					end
-					local x,_,z=getWorldTranslation(childId)
-					local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z)
-					Utils.setWorldTranslation(childId, x, y, z)
-					if rigidBodyType=="Static" then
-						setRigidBodyType(childId,"Static")
-					end
-				end
+				
 			end
 		end
 	end
 end;
 
-function UniversalProcessKit:findChildrenShapes(id)
+function UniversalProcessKit:findChildrenShapes(id,childrenShapes)
 	local numChildren = getNumOfChildren(id)
 	if type(numChildren)=="number" and numChildren>0 then
 		for i=1,numChildren do
 			local childId = getChildAt(id, i-1)
 			if childId~=nil or childId~=0 then
-				table.insert(self.childrenShapes,childId,getRigidBodyType(childId))
-				self:findChildrenShapes(childId)
+				table.insert(childrenShapes,childId)
+				self:findChildrenShapes(childId,childrenShapes)
 			end
 		end
+	end
+end;
+
+function UniversalProcessKit:adjustToTerrainHeight(id)
+	local childrenShapes={}
+	local staticShapes={}
+	local rigidBodyType=getRigidBodyType(id)
+	if rigidBodyType=="Static" then
+		table.insert(staticShapes,id)
+	end
+	self:findChildrenShapes(id,childrenShapes)
+	for _,v in pairs(childrenShapes) do
+		local rigidBodyType=getRigidBodyType(v)
+		if rigidBodyType=="Static" then
+			table.insert(staticShapes,v)
+		end
+	end
+	for _,v in pairs(staticShapes) do
+		setRigidBodyType(v,"Kinematic")
+	end
+	local x,_,z=getWorldTranslation(id)
+	local y=getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z)
+	Utils.setWorldTranslation(id, x, y, z)
+	for _,v in pairs(staticShapes) do
+		setRigidBodyType(v,"Static")
 	end
 end;
 

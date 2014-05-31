@@ -63,6 +63,21 @@ function UPK_Processor:load(id, parent)
 	end
 	self.productsPerDay = Utils.getNoNil(tonumber(getUserAttribute(id, "productsPerDay")),0)
 	
+	self.productionInterval = mathmin(mathfloor(Utils.getNoNil(tonumber(getUserAttribute(id, "productionInterval")),1)),1)
+	self.currentInterval = self.productionInterval
+	
+	self.productionPrerequisite={}
+	self.hasProductionPrerequisite=false
+	local prerequisiteArr=gmatch(Utils.getNoNil(getUserAttribute(id, "productionPrerequisite"),""),"%S+")
+	for i=1,#prerequisiteArr,2 do
+		local amount=tonumber(prerequisiteArr[i])
+		local type=unpack(UniversalProcessKit.fillTypeNameToInt(prerequisiteArr[i+1]))
+		if amount~=nil and type~=nil then
+			self.productionPrerequisite[type]=amount
+			self.hasProductionPrerequisite=true
+		end
+	end
+	
 	local productionProbability=tonumber(getUserAttribute(id, "productionProbability"))
 	if productionProbability~=nil then
 		if productionProbability <= 0 then
@@ -191,6 +206,7 @@ end
 
 function UPK_Processor:loadExtraNodes(xmlFile, key)
 	self.bufferedProducts = Utils.getNoNil(getXMLFloat(xmlFile, key .. "#bufferedProducts"),0)
+	self.currentInterval = Utils.getNoNil(getXMLInt(xmlFile, key .. "#currentInterval"),1)
 	return true
 end
 
@@ -198,6 +214,9 @@ function UPK_Processor:getSaveExtraNodes(nodeIdent)
 	local nodes=""
 	if self.bufferedProducts>0 then
 		nodes=nodes .. " bufferedProducts=\""..tostring(mathfloor(self.bufferedProducts*1000+0.5)/1000).."\""
+	end
+	if self.productionInterval>1 then
+		nodes=nodes .. " currentInterval=\""..tostring(self.currentInterval).."\""
 	end
 	return nodes
 end	
@@ -236,7 +255,18 @@ function UPK_Processor:produce(processed)
 		if not produce then
 			produce = mathrandom()<=self.productionProbability
 		end
-		if produce then
+		if self.productionInterval>1 then
+			self.currentInterval = self.currentInterval % self.productionInterval + 1
+			self:print('self.currentInterval = '..tostring(self.currentInterval))
+		end
+		if produce and self.currentInterval==1 then
+			if self.hasProductionPrerequisite then
+				for k,v in pairs(self.productionPrerequisite) do
+					if type(v)=="number" and v>0 then
+						processed=mathmin(processed,self:getFillLevel(k)/v or 0)
+					end
+				end
+			end
 			if self.outcomeVariation~=0 then
 				if self.outcomeVariationType=="normal" then -- normal distribution
 					local r=mathmin(mathmax(getNormalDistributedRandomNumber(),-2),2)/2
