@@ -55,6 +55,8 @@ Die _base_ verwaltet alle Füllstände. Alle Trigger und Funktionen greifen im e
 
 Die _base_ ist über PlaceableUPK platzierbar oder über mit dem GE in eine Karte verbaubar (siehe Anwendung).
 
+1.  __UPKversion__: benötigte Mindest-Version des UPK
+
 ### Trigger
 
 Im Moment gibt es folgende Trigger:
@@ -179,10 +181,6 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 
 -   __allowMilkTrailer__ (bool): akzeptiert Milchanhänger als Füllobjekt, entweder "true" oder "false" (default: true)
 
--   __allowForageWagon__ (bool): akzeptiert Ladewagen als Füllobjekt, entweder "true" oder "false" (default: false)
-
--   __allowBaler__ (bool): akzeptiert Ballenpressen als Füllobjekt, entweder "true" oder "false" (default: false)
-
 -   __useParticleSystem__ (bool): legt fest ob Partikel beim Laden angezeigt werden sollen, entweder "true" oder "false" (default:
     false)
 
@@ -196,24 +194,22 @@ Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch
 
 ### balertrigger
 
-Identisch zum _filltrigger_ mit denselben Attributen, jedoch mit der Standardkonfiguration, dass nur Ladewagen und Ballenpressen akzeptiert werden. Da die Ladewagen oder Ballenpressen in den Trigger fahren müssen, um erkannt zu werden, ist er zu groß für die Konfiguration mit Schaufeln, da diese dann in 2 oder 3 Meter Entfernung schon befüllt werden würden.
+Zum Befüllen von Ladewagen und Ballenpressen über die Gras/Heu/Strohaufnahme. Wenn der Wagen die Aufnahme startet, wird er befüllt.
 
--   __allowTrailer__ (bool): akzeptiert Kipper als Füllobjekt, entweder "true" oder "false" (default: false)
+-   __*fillType__ (string): Name der auszusammelnden Fruchtsorte, bspw. "grass_windrow" (default: "unknown")
 
--   __allowShovel__ (bool): akzeptiert Schaufeln als Füllobjekt, entweder "true" oder "false" (default: false)
+-   __fillLitersPerSecond__ (float): Geschwindigkeit des Aufsammelns (default: 1500)
 
--   __allowSowingMachine__ (bool): akzeptiert Sämaschinen als Füllobjekt, entweder "true" oder "false" (default: false)
+-   __createFillType__ (bool): greift auf den Füllstand zurück oder erzeugt fillType einfach so, entweder "true" oder
+	"false" (default: false)
 
--   __allowWaterTrailer__ (bool): akzeptiert Wasseranhänger als Füllobjekt, entweder "true" oder "false" (default: false)
+-   __pricePerLiter__ (float): Kosten des fillTypes pro Liter (default: 0)
 
--   __allowSprayer__ (bool): akzeptiert Spritzen/ Düngestreuer als Füllobjekt, entweder "true" oder "false" (default: false)
-
--   __allowFuelTrailer__ (bool): akzeptiert Tankanhänger als Füllobjekt, entweder "true" oder "false" (default: false)
-
--   __allowFuelRefill__ (bool): (für fillType=fuel) legt fest, ob der Filltrigger bei Treibstoff auch Traktoren, Erntemaschinen etc. betanken kann, entweder "true" oder "false". Nicht
-	vergessen die collisionMask des Triggers entsprechend abzuändern! (default: false)
-
--   __allowMilkTrailer__ (bool): akzeptiert Milchanhänger als Füllobjekt, entweder "true" oder "false" (default: false)
+-   __statName__ (string): (falls pricePerLiter nicht 0) zu welcher Statistik
+    die Kosten gebucht wird, entweder "newVehiclesCost",
+    "newAnimalsCost", "constructionCost", "vehicleRunningCost",
+    "propertyMaintenance", "wagePayment", "harvestIncome",
+    "missionIncome", "other", "loanInterest" (default: "other")
 
 -   __allowForageWagon__ (bool): akzeptiert Ladewagen als Füllobjekt, entweder "true" oder "false" (default: true)
 

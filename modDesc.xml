@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="9">
     <author>mor2000</author>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <title>
         <en>AAA UniversalProcessKit</en>
         <de>AAA UniversalProcessKit</de>
@@ -87,12 +87,19 @@
 		<text name="mohn"> <en>poppy</en> <de>Mohn</de> </text>
 		<text name="fertilizer"> <en>fertilizer</en> <de><![CDATA[Dünger]]></de> </text>
 		<text name="kalk"> <en>chalk</en> <de>Kalk</de> </text>
+		
 		<text name="apfel"> <en>apples</en> <de><![CDATA[Äpfel]]></de> </text>
 		<text name="apple"> <en>apples</en> <de><![CDATA[Äpfel]]></de> </text>
 		<text name="kirsche"> <en>cherries</en> <de>Kirschen</de> </text>
+		<text name="cherry"> <en>cherries</en> <de>Kirschen</de> </text>
 		<text name="pflaume"> <en>plums</en> <de>Pflaumen</de> </text>
+		<text name="plum"> <en>plums</en> <de>Pflaumen</de> </text>
 		<text name="orange"> <en>oranges</en> <de>Orangen</de> </text>
 		<text name="birne"> <en>pears</en> <de>Birnen</de> </text>
+		<text name="pear"> <en>pears</en> <de>Birnen</de> </text>
+		<text name="erdbeere"> <en>strawberries</en> <de>Erdbeeren</de> </text>
+		<text name="strawberry"> <en>strawberries</en> <de>Erdbeeren</de> </text>
+		
 		<text name="kies"> <en>gravel</en> <de>Kies</de> </text>
 		<text name="sand"> <en>sand</en> <de>Sand</de> </text>
 		

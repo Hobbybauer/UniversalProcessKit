@@ -26,6 +26,32 @@ function UPK_Base:load(id, placeable)
 		g_currentMission:addOnCreateLoadedObjectToSave(self)
 	end
 	
+	local upk=ModsUtil.modNameToMod["AAA_UniversalProcessKit"]
+	if upk==nil then
+		print('ERROR (YOUR FAULT): DO NOT RENAME THE UniversalProcessKit MOD FILE - NOTHING WILL WORK - it has to be "AAA_UniversalProcessKit"')
+		return false
+	end
+	
+	local UPKversion = getUserAttribute(id, "UPKversion")
+	if UPKversion~=nil then
+		local reqversion={}
+		for _,v in pairs(gmatch(UPKversion,"[0-9]+")) do
+			table.insert(reqversion,v)
+		end;
+		local upk_version={}
+		for _,v in pairs(gmatch(upk.version,"[0-9]+")) do
+			table.insert(upk_version,v)
+		end;
+		for k,v in pairs(upk_version) do
+			if v>(reqversion[k] or 0) then
+				break
+			elseif v<(reqversion[k] or 0) then
+				print('Error (your fault): the required upk version of this mod ('..tostring(UPKversion)..') doesnt fit your upk mod ('..tostring(upk.version)..')', true)
+				return false
+			end
+		end
+	end
+	
 	if not UPK_Base:superClass().load(self, id, nil) then
 		self:print('Error: loading Base failed',true)
 		return false
@@ -34,7 +60,9 @@ function UPK_Base:load(id, placeable)
 	for k,_ in pairs(UniversalProcessKit.fillTypeIntToName) do
 		rawset(self.fillLevels,k,0)
 	end
+	
 	rawset(self,'maxFillLevel',0)
+
 	self:print('loaded Base successfully')
 	return true
 end
