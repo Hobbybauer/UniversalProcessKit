@@ -146,6 +146,8 @@ function UPK_Processor:load(id, parent)
 		end
 	end
 	
+	self.disableChildrenIfNotProcessing = tobool(Utils.getNoNil(getUserAttribute(id, "disableChildrenIfNotProcessing"),false))
+	
 	self.statName=getUserAttribute(id, "statName")
 	local validStatName=false
 	if self.statName~=nil then
@@ -308,12 +310,21 @@ function UPK_Processor:produce(processed)
 					finalProducts=self.bufferedProducts
 					self.bufferedProducts=0
 				end
-				self:addFillLevel(finalProducts,self.product)
-				if self.hasByproducts then
-					for k,v in pairs(self.byproducts) do
-						if type(v)=="number" and v>0 then
-							self:addFillLevel(v*finalProducts,k)
+				if finalProducts>0 then
+					self:addFillLevel(finalProducts,self.product)
+					if self.hasByproducts then
+						for k,v in pairs(self.byproducts) do
+							if type(v)=="number" and v>0 then
+								self:addFillLevel(v*finalProducts,k)
+							end
 						end
+					end
+					if self.disableChildrenIfNotProcessing then
+						self:setEnableChildren(true)
+					end
+				else
+					if self.disableChildrenIfNotProcessing then
+						self:setEnableChildren(false)
 					end
 				end
 			end

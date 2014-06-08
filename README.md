@@ -351,6 +351,8 @@ Dieser Trigger aktiviert die Funktionen untergeordneter Module, d.h. er schaltet
 	Gleichverteilung und "normal" für Normalverteilung. Der Rechenaufwand für "normal" ist höher als für "equal", deshalb
 	diese Variante sparsam einsetzen! (default: "equal")
 
+-   __disableChildrenIfNotProcessing__ (bool): ob die untergeordneten Module abgeschaltet werden sollen, falls nichts produziert wird. Z.Bsp. um eine Animation mit dem _animator_ abzuspielen, wenn etwas produziert wird (default: false).
+
 -   __statName__ (string): (falls product="money") zu welcher Statistik (siehe Finanzen im PDA)
     der Betrag gebucht wird, entweder "newVehiclesCost",
     "newAnimalsCost", "constructionCost", "vehicleRunningCost",
