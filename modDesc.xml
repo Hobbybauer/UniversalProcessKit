@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="9">
     <author>mor2000</author>
-    <version>1.1.9</version>
+    <version>1.1.10</version>
     <title>
         <en>AAA UniversalProcessKit</en>
         <de>AAA UniversalProcessKit</de>
@@ -34,6 +34,7 @@
 		<sourceFile filename="UPK_Conveyor.lua"/>
 		<sourceFile filename="UPK_DisplayTrigger.lua"/>
 		<sourceFile filename="UPK_DumpTrigger.lua"/>
+		<sourceFile filename="UPK_EntityTrigger.lua"/>
 		<sourceFile filename="UPK_FillTrigger.lua"/>
 		<sourceFile filename="UPK_BalerTrigger.lua"/>
 		<sourceFile filename="UPK_Mover.lua"/>

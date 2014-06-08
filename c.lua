@@ -163,6 +163,31 @@ function getTableLength(table)
 	return len
 end;
 
+function loopThruChildren(id,func,class)
+	if id==nil or id==0 or type(func)~="function" then
+		return false
+	end
+	local useClass=type(class)=="table"
+	local numChildren = getNumOfChildren(id)
+	if type(numChildren)=="number" and numChildren>0 then
+		for i=1,numChildren do
+			local childId = getChildAt(id, i-1)
+			if childId~=nil or childId~=0 then
+				if useClass then
+					if not class:func(id) then
+						return true
+					end
+				else
+					if not func(id) then
+						return true
+					end
+				end
+			end
+		end
+	end
+	return true
+end;
+
 local secondNormalDistributedRandomNumber=false -- function below generates 2 normal distributed random numbers
 
 function getNormalDistributedRandomNumber() -- see http://de.wikipedia.org/wiki/Polar-Methode
@@ -191,6 +216,7 @@ _g.UPK_BuyTrigger={}
 _g.UPK_Conveyor={}
 _g.UPK_DisplayTrigger={}
 _g.UPK_DumpTrigger={}
+_g.UPK_EntityTrigger={}
 _g.UPK_FillTrigger={}
 _g.UPK_BalerTrigger={}
 _g.UPK_Mover={}

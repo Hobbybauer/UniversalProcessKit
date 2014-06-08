@@ -55,8 +55,6 @@ Die _base_ verwaltet alle Füllstände. Alle Trigger und Funktionen greifen im e
 
 Die _base_ ist über PlaceableUPK platzierbar oder über mit dem GE in eine Karte verbaubar (siehe Anwendung).
 
-1.  __UPKversion__: benötigte Mindest-Version des UPK
-
 ### Trigger
 
 Im Moment gibt es folgende Trigger:
@@ -72,6 +70,8 @@ Im Moment gibt es folgende Trigger:
 5.  __displaytrigger__: veranlasst die Anzeige von Füllständen
 
 6.  __buytrigger__: ermöglicht das Freischalten von untergeordneten Modulen durch Kauf oder Miete
+
+7.  __entitytrigger__: aktiviert untergeordnete Module, wenn Spieler oder Fahrzeuge im Trigger sind
 
 ### Funktionen
 
@@ -106,6 +106,8 @@ Im Moment gibt es folgende Trigger:
 ### base
 
 Besonderheit: "type" wird durch die Verwendung als Basis festgelegt, nicht durch das Setzen des UserAttributes.
+
+-   __UPKversion__ (string): benötigte Mindest-Version des UPK (dreistellig mit Punkten getrennt, bspw. "1.1.0") (default: ohne)
 
 -   __storageType__ (string): wie die Füllstande gespeichert werden sollen, entweder "separate", "single", "fifo" oder "filo" (default: "separate")
 
@@ -263,6 +265,38 @@ Dieses Trigger ist gerade in der Entwicklung und noch nicht einsatzfähig.
     Fruchtsorten, die der Mod neu einführt. (default: ohne)
 
 -   __objectName__ (string): Name des kauf-/mietbaren Objekts, der auf den entsprechenden Eintrag in der modDesc verweist (default: ohne)
+
+### entitytrigger
+
+Dieser Trigger aktiviert die Funktionen untergeordneter Module, d.h. er schaltet sie an oder ab, wenn Fahrzeuge oder Spieler im Trigger sind.
+
+-   __enableOnEmpty__ (bool): ob der Trigger aktiviert werden soll, wenn nichts im Trigger ist (=umgekehrte Funktionsweise) (default: false)
+
+-   __allowWalker__ (bool): reagiert auf Spieler als Fußgänger (default: true)
+
+-   __allowMotorized__ (bool): reagiert auf alle Fahrzeuge mit Motor (default: true)
+
+-   __allowFillable__ (bool): reagiert auf alle füllbaren Anhänger (schließt alle nachfolgenden Optionen ein) (default: true)
+
+-   __allowTrailer__ (bool): reagiert auf Kipper (default: false)
+
+-   __allowShovel__ (bool): reagiert auf Schaufeln (default: false)
+
+-   __allowWaterTrailer__ (bool): reagiert auf Wasseranhänger (default: false)
+
+-   __allowFuelTrailer__ (bool): reagiert auf Tankanhänger (default: false)
+
+-   __allowLiquidManureTrailer__ (bool): reagiert auf Gülleanhänger (default: false)
+
+-   __allowMilkTrailer__ (bool): reagiert auf Milchanhänger (default: false)
+
+-   __allowSowingMachine__ (bool): reagiert auf Sämaschinen (default: false)
+
+-   __allowSprayer__ (bool): reagiert auf Spritzen/ Düngestreuer (default: false)
+
+-   __allowForageWagon__ (bool): reagiert auf Ladewagen (default: false)
+
+-   __allowBaler__ (bool): reagiert auf Ballenpressen (default: false)
 
 ### processor
 
